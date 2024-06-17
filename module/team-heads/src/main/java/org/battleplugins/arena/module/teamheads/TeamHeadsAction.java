@@ -18,6 +18,10 @@ public class TeamHeadsAction extends EventAction {
 
     @Override
     public void call(ArenaPlayer arenaPlayer) {
+        if (!arenaPlayer.getArena().isModuleEnabled(TeamHeads.ID)) {
+            return;
+        }
+
         ArenaTeam team = arenaPlayer.getTeam();
         if (team == null || !arenaPlayer.getArena().getTeams().isNamedTeams() || arenaPlayer.getArena().getTeams().isNonTeamGame()) {
             return; // Not a team game, no head

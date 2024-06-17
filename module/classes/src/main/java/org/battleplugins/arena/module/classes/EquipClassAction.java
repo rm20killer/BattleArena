@@ -19,6 +19,10 @@ public class EquipClassAction extends EventAction {
 
     @Override
     public void call(ArenaPlayer arenaPlayer) {
+        if (!arenaPlayer.getArena().isModuleEnabled(Classes.ID)) {
+            return;
+        }
+
         Arena arena = arenaPlayer.getArena();
         Optional<Classes> moduleOpt = arena.getPlugin()
                 .<Classes>module(Classes.ID)

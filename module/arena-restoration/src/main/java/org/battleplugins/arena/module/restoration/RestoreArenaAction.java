@@ -33,6 +33,10 @@ public class RestoreArenaAction extends EventAction {
 
     @Override
     public void postProcess(Arena arena, Competition<?> competition) {
+        if (!arena.isModuleEnabled(ArenaRestoration.ID)) {
+            return;
+        }
+
         if (!(competition instanceof LiveCompetition<?> liveCompetition)) {
             return; // Cannot restore a non-live competition
         }

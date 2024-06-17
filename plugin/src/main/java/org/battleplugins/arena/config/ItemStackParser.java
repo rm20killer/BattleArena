@@ -1,0 +1,241 @@
+package org.battleplugins.arena.config;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ColorableArmorMeta;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+
+import java.awt.Color;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+public final class ItemStackParser implements Function<Object, ItemStack> {
+
+    @Override
+    public ItemStack apply(Object object) {
+        if (object instanceof String string) {
+            return deserializeSingular(string);
+        }
+
+        if (object instanceof ConfigurationSection section) {
+            return deserializeNode(section);
+        }
+
+        throw new ParseException("Invalid ItemStack for object: " + object);
+    }
+
+    public static ItemStack deserializeSingular(String contents) {
+        ItemStack itemStack;
+
+        SingularValueParser.ArgumentBuffer buffer = SingularValueParser.parseNamed(contents, SingularValueParser.BraceStyle.CURLY, ';');
+        if (!buffer.hasNext()) {
+            throw new ParseException("No data found for ItemStack");
+        }
+
+        SingularValueParser.Argument root = buffer.pop();
+        if (root.key().equals("root")) {
+            Material material = Material.matchMaterial(root.value());
+            if (material == null) {
+                throw new ParseException("Invalid material " + root.value());
+            }
+
+            itemStack = new ItemStack(material);
+        } else {
+            throw new ParseException("Invalid ItemStack root tag " + root.key());
+        }
+
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        while (buffer.hasNext()) {
+            SingularValueParser.Argument argument = buffer.pop();
+            String key = argument.key();
+            String value = argument.value();
+            switch (key) {
+                case "color" -> {
+                    if (itemMeta instanceof ColorableArmorMeta colorMeta) {
+                        colorMeta.setColor(org.bukkit.Color.fromRGB(Color.getColor(value).getRGB()));
+                    } else if (itemMeta instanceof PotionMeta potionMeta) {
+                        potionMeta.setColor(org.bukkit.Color.fromRGB(Color.getColor(value).getRGB()));
+                    }
+                }
+                case "custom-model-data" -> {
+                    itemMeta.setCustomModelData(Integer.parseInt(value));
+                }
+                case "damage" -> {
+                    if (itemMeta instanceof Damageable damageable) {
+                        damageable.setDamage(Integer.parseInt(value));
+                    }
+                }
+                case "display-name", "name" -> {
+                    itemMeta.displayName(MiniMessage.miniMessage().deserialize(value));
+                }
+                case "enchants", "enchantments" -> {
+                    for (String enchant : getList(value)) {
+                        String[] del = enchant.split(":");
+                        Enchantment enchantment = Enchantment.getByKey(NamespacedKey.fromString(del[0]));
+                        if (enchantment == null) {
+                            throw new ParseException("Invalid enchantment " + del[0]);
+                        }
+
+                        itemMeta.addEnchant(enchantment, Integer.parseInt(del[1]), true);
+                    }
+                }
+                case "item-flags" -> {
+                    Set<ItemFlag> flags = new HashSet<>();
+                    for (String itemFlag : getList(value)) {
+                        ItemFlag flag = ItemFlag.valueOf(itemFlag.toUpperCase(Locale.ROOT));
+                        flags.add(flag);
+                    }
+
+                    itemMeta.addItemFlags(flags.toArray(new ItemFlag[0]));
+                }
+                case "lore" -> {
+                    List<Component> lore = getList(value)
+                            .stream()
+                            .map(MiniMessage.miniMessage()::deserialize)
+                            .toList();
+
+                    itemMeta.lore(lore);
+                }
+                case "quantity", "amount", "count" -> {
+                    itemStack.setAmount(Integer.parseInt(value));
+                }
+                case "unbreakable" -> {
+                    itemMeta.setUnbreakable(Boolean.parseBoolean(value));
+                }
+                case "effects", "potion-effects" -> {
+                    if (!(itemMeta instanceof PotionMeta potionMeta)) {
+                        continue;
+                    }
+
+                    for (String effect : getList(value)) {
+                        String[] effectSplit = effect.split(" ");
+                        PotionEffectType effectType = PotionEffectType.getByName(effectSplit[0]);
+                        if (effectType == null) {
+                            throw new ParseException("Invalid potion effect " + effectSplit[0]);
+                        }
+
+                        int duration = Integer.parseInt(effectSplit[1]) * 20;
+                        int amplifier = Integer.parseInt(effectSplit[2]) - 1;
+
+                        potionMeta.addCustomEffect(new PotionEffect(effectType, duration, amplifier), true);
+                    }
+                }
+            }
+        }
+
+        itemStack.setItemMeta(itemMeta);
+        return itemStack;
+    }
+
+    private static ItemStack deserializeNode(ConfigurationSection section) {
+        String materialName = section.getString("item", section.getString("type", section.getString("material")));
+        if (materialName == null) {
+            throw new ParseException("No material found for itemstack");
+        }
+
+        Material material = Material.matchMaterial(materialName);
+        if (material == null) {
+            throw new ParseException("Invalid material " + materialName);
+        }
+
+        ItemStack itemStack = new ItemStack(material);
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        for (String meta : section.getKeys(false)) {
+            switch (meta) {
+                case "color": {
+                    if (itemMeta instanceof ColorableArmorMeta colorMeta) {
+                        colorMeta.setColor(org.bukkit.Color.fromRGB(Color.getColor(section.getString(meta)).getRGB()));
+                    } else if (itemMeta instanceof PotionMeta potionMeta) {
+                        potionMeta.setColor(org.bukkit.Color.fromRGB(Color.getColor(section.getString(meta)).getRGB()));
+                    }
+                }
+                case "custom-model-data": {
+                    itemMeta.setCustomModelData(section.getInt(meta));
+                }
+                case "damage": {
+                    if (itemMeta instanceof Damageable damageable) {
+                        damageable.setDamage(section.getInt(meta));
+                    }
+                }
+                case "display-name", "name": {
+                    itemMeta.displayName(MiniMessage.miniMessage().deserialize(section.getString(meta)));
+                }
+                case "enchants", "enchantments": {
+                    for (String enchant : section.getStringList(meta)) {
+                        String[] del = enchant.split(":");
+                        Enchantment enchantment = Enchantment.getByKey(NamespacedKey.fromString(del[0]));
+                        if (enchantment == null) {
+                            throw new ParseException("Invalid enchantment " + del[0]);
+                        }
+
+                        itemMeta.addEnchant(enchantment, Integer.parseInt(del[1]), true);
+                    }
+                }
+                case "item-flags": {
+                    Set<ItemFlag> flags = new HashSet<>();
+                    for (String itemFlag : section.getStringList(meta)) {
+                        ItemFlag flag = ItemFlag.valueOf(itemFlag.toUpperCase(Locale.ROOT));
+                        flags.add(flag);
+                    }
+
+                    itemMeta.addItemFlags(flags.toArray(new ItemFlag[0]));
+                }
+                case "lore": {
+                    List<Component> lore = section.getStringList(meta)
+                            .stream()
+                            .map(MiniMessage.miniMessage()::deserialize)
+                            .toList();
+
+                    itemMeta.lore(lore);
+                }
+                case "quantity", "amount", "count": {
+                    itemStack.setAmount(section.getInt(meta));
+                }
+                case "unbreakable": {
+                    itemMeta.setUnbreakable(section.getBoolean(meta));
+                }
+                case "effects", "potion-effects": {
+                    if (!(itemMeta instanceof PotionMeta potionMeta)) {
+                        continue;
+                    }
+
+                    for (String effect : section.getStringList(meta)) {
+                        String[] effectSplit = effect.split(" ");
+                        PotionEffectType effectType = PotionEffectType.getByName(effectSplit[0]);
+                        if (effectType == null) {
+                            throw new ParseException("Invalid potion effect " + effectSplit[0]);
+                        }
+
+                        int duration = Integer.parseInt(effectSplit[1]) * 20;
+                        int amplifier = Integer.parseInt(effectSplit[2]) - 1;
+
+                        potionMeta.addCustomEffect(new PotionEffect(effectType, duration, amplifier), true);
+                    }
+                }
+            }
+        }
+
+        itemStack.setItemMeta(itemMeta);
+        return itemStack;
+    }
+
+    private static List<String> getList(String value) {
+        return Arrays.asList(value.replace("[", "")
+                .replace("]", "").split(","));
+    }
+}

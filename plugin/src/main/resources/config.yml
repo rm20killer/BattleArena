@@ -1,0 +1,18 @@
+# -----------------
+# Main configuration for BattleArena
+#
+# Documentation: https://docs.battleplugins.org/docs/ba/
+# Support: https://discord.gg/tMVPVJf
+# GitHub: https://github.com/BattlePlugins/BattleArena
+# -----------------
+config-version: 3.0 # The config version, do not change!
+
+# Whether player inventories should be backed up when joining competitions.
+backup-inventories: true
+
+# The maximum number of backups to save for each player.
+max-backups: 5
+
+# The maximum number of dynamic maps an Arena can have allocated at once.
+# Set to -1 to disable this limit.
+max-dynamic-maps: 5

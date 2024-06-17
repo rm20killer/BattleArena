@@ -1,0 +1,702 @@
+package org.battleplugins.arena.command;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import org.battleplugins.arena.BattleArena;
+import org.battleplugins.arena.config.ItemStackParser;
+import org.battleplugins.arena.messages.Messages;
+import org.battleplugins.arena.util.PaginationCalculator;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
+public class BaseCommandExecutor implements TabExecutor {
+    private static final int COMMANDS_PER_PAGE = 10;
+
+    protected final String parentCommand;
+    protected final String permissionSubNode;
+
+    private final Map<String, Set<CommandWrapper>> commandMethods = new HashMap<>();
+
+    private final List<BaseSubCommandExecutor> subCommandExecutors = new ArrayList<>();
+
+    public BaseCommandExecutor(String parentCommand) {
+        this(parentCommand, null);
+    }
+
+    public BaseCommandExecutor(String parentCommand, @Nullable String permissionSubNode) {
+        this.parentCommand = parentCommand;
+        this.permissionSubNode = permissionSubNode;
+
+        this.registerCommands();
+    }
+
+    @Override
+    public final boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length == 0) {
+            this.sendNoArgumentMessage(sender);
+            return true;
+        }
+
+        System.out.println("cmd " + label + " " + String.join(" ", args));
+
+        if ("help".equals(args[0])) {
+            int page = args.length > 1 ? Integer.parseInt(args[1]) : 1;
+            this.sendHelpMessage(sender, page);
+            return true;
+        }
+
+        String subCommand = args[0];
+        String args1 = args.length > 1 ? args[1] : null;
+
+        List<CommandWrapper> wrappers = this.getCommandWrappers(subCommand, args1);
+        if (wrappers.isEmpty()) {
+            this.sendHelpMessage(sender, 1);
+            return true;
+        }
+
+        boolean invalidPerms = false;
+        for (CommandWrapper wrapper : wrappers) {
+            if (wrapper != null) {
+                int index = 1;
+
+                if (!Arrays.asList(wrapper.getCommand().subCommands()).isEmpty()) {
+                    index++;
+                }
+
+                CompletableFuture<CommandResult> resultFuture = this.runCommand(sender, wrapper, Arrays.copyOfRange(args, index, args.length));
+                if (resultFuture.isDone()) {
+                    System.out.println("Done");
+                    CommandResult result = resultFuture.join();
+                    switch (result) {
+                        case NO_PERMISSIONS -> {
+                            invalidPerms = true;
+                        }
+                        case INCOMPATIBLE_METHOD -> {
+                            System.out.println("Method incompatibility");
+                            // Ignore
+                        }
+                        case COMMAND_ERROR -> {
+                            Messages.UNKNOWN_ERROR.send(sender);
+                            return true;
+                        }
+                        case SUCCESS, COMMAND_ERROR_HANDLED -> {
+                            return true;
+                        }
+                    }
+                } else {
+                    System.out.println("Not done, assume success");
+                    // Assume that if we are waiting, we are executing
+                    // a command. Attempting to go over other command
+                    // wrappers by this point will be needlessly expensive
+                    // and issues caught here will mean there's a problem in
+                    // the command system.
+                    return true;
+                }
+            }
+        }
+
+        if (invalidPerms) {
+            Messages.NO_PERMISSION.send(sender);
+            return true;
+        }
+
+        System.out.println("No valid wrappers");
+        this.sendUsageMessage(sender, wrappers.get(0).method);
+        return true;
+    }
+
+    private void registerCommands() {
+        for (Method method : this.getClass().getDeclaredMethods()) {
+            if (method.isAnnotationPresent(ArenaCommand.class)) {
+                ArenaCommand arenaCommand = method.getAnnotation(ArenaCommand.class);
+
+                CommandWrapper wrapper = new CommandWrapper(this, method, this.getUsage(method));
+                for (String cmd : arenaCommand.commands()) {
+                    Set<CommandWrapper> wrappers = this.commandMethods.getOrDefault(cmd, new HashSet<>());
+                    wrappers.add(wrapper);
+
+                    this.commandMethods.put(cmd, wrappers);
+                }
+            }
+        }
+    }
+
+    public void injectWrapper(CommandWrapper wrapper) {
+        for (String cmd : wrapper.getCommand().commands()) {
+            Set<CommandWrapper> wrappers = this.commandMethods.getOrDefault(cmd, new HashSet<>());
+            wrappers.add(wrapper);
+
+            this.commandMethods.put(cmd, wrappers);
+        }
+    }
+
+    public void injectExecutor(BaseSubCommandExecutor executor) {
+        this.subCommandExecutors.add(executor);
+    }
+
+    private CommandResult canRunCommand(CommandSender sender, CommandWrapper wrapper, String[] args) {
+        ArenaCommand arenaCommand = wrapper.getCommand();
+
+        try {
+            if (arenaCommand.requiresOp() && !sender.isOp()) {
+                return CommandResult.NO_PERMISSIONS;
+            }
+
+            if (!arenaCommand.permissionNode().isEmpty() && !BattleArena.getInstance().hasPermission(sender, this.getPermissionNode(arenaCommand.permissionNode()))) {
+                return CommandResult.NO_PERMISSIONS;
+            }
+
+            Method method = wrapper.method;
+            Class<?>[] requestedParams = method.getParameterTypes();
+            int argCount = args.length;
+
+            if (!(sender instanceof Player) && requestedParams[0].equals(Player.class)) {
+                System.out.println("Incompatible method (player != sender)");
+                return CommandResult.INCOMPATIBLE_METHOD;
+            }
+
+            if (requestedParams[requestedParams.length - 1].equals(String[].class)) {
+                argCount = requestedParams.length - 2;
+                int varParamCount = args.length - argCount;
+
+                if (arenaCommand.minArgs() > varParamCount) {
+                    System.out.println("Incompatible method varargs too big");
+                    return CommandResult.INCOMPATIBLE_METHOD;
+                }
+
+                if (arenaCommand.maxArgs() != -1 && arenaCommand.maxArgs() < varParamCount) {
+                    System.out.println("Incompatible method varargs too small");
+                    return CommandResult.INCOMPATIBLE_METHOD;
+                }
+            } else if (requestedParams.length - 1 != argCount) {
+                System.out.println("Incompatible method (arg count)");
+                return CommandResult.INCOMPATIBLE_METHOD;
+            }
+
+            return CommandResult.SUCCESS;
+        } catch (ArenaCommandException e) {
+            BattleArena.getInstance().error("An error occurred while executing command", e);
+            return CommandResult.COMMAND_ERROR;
+        }
+    }
+
+    private CompletableFuture<CommandResult> runCommand(CommandSender sender, CommandWrapper wrapper, String[] args) {
+        try {
+            CommandResult canRun = this.canRunCommand(sender, wrapper, args);
+            if (canRun != CommandResult.SUCCESS) {
+                System.out.println("Failed " + canRun);
+                return CompletableFuture.completedFuture(canRun);
+            }
+
+            Method method = wrapper.method;
+            Class<?>[] requestedParams = method.getParameterTypes();
+            Object[] params = new Object[requestedParams.length];
+            int argCount = args.length;
+
+            params[0] = sender;
+
+            if (requestedParams[requestedParams.length - 1].equals(String[].class)) {
+                argCount = requestedParams.length - 2;
+                int varParamCount = args.length - argCount;
+
+                String[] varParams = varParamCount == 0 ? new String[0] : Arrays.copyOfRange(args, argCount, args.length);
+                params[params.length - 1] = varParams;
+            }
+
+            boolean sentInvalidArgument = false;
+            boolean commandFound = true;
+            for (int i = 0; i < argCount; i++) {
+                Object obj = this.verifyArgument(sender, args[i], requestedParams[i + 1]);
+
+                if (obj == null) {
+                    commandFound = false;
+
+                    boolean invalidArgument = this.onInvalidArgument(sender, requestedParams[i + 1], args[i]);
+                    if (invalidArgument) {
+                        sentInvalidArgument = true;
+                        break;
+                    }
+
+                    break;
+                } else {
+                    params[i + 1] = obj;
+                }
+            }
+
+            if (sentInvalidArgument) {
+                return CompletableFuture.completedFuture(CommandResult.COMMAND_ERROR_HANDLED);
+            }
+
+            if (commandFound) {
+                Object[] completedParams = new Object[params.length];
+                // Check to see if any of our parameters are futures
+                List<CompletableFuture<?>> futures = new ArrayList<>();
+                for (int i = 0; i < params.length; i++) {
+                    Object param = params[i];
+                    if (param instanceof CompletableFuture<?> future) {
+                        futures.add(future);
+
+                        int paramIdx = i;
+                        future.thenAccept(result -> completedParams[paramIdx] = result);
+                    } else {
+                        completedParams[i] = param;
+                    }
+                }
+
+                if (futures.isEmpty()) {
+                    return CompletableFuture.completedFuture(this.invokeCommand(method, wrapper, params));
+                }
+
+                // Wait for all futures to complete
+                return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                        .thenApply(result -> this.invokeCommand(method, wrapper, completedParams));
+            }
+        } catch (ArenaCommandException e) {
+            BattleArena.getInstance().error("An error occurred while executing command", e);
+            return CompletableFuture.completedFuture(CommandResult.COMMAND_ERROR);
+        }
+
+        return CompletableFuture.completedFuture(CommandResult.COMMAND_ERROR);
+    }
+
+    private CommandResult invokeCommand(Method method, CommandWrapper wrapper, Object[] params) {
+        try {
+            Object result = method.invoke(wrapper.instance, params);
+            if (result instanceof CommandResult commandResult) {
+                return commandResult;
+            }
+
+            if (result instanceof Boolean bool) {
+                if (bool) {
+                    return CommandResult.SUCCESS;
+                } else {
+                    return CommandResult.FAILURE;
+                }
+            }
+        } catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException e) {
+            BattleArena.getInstance().error("An error occurred while executing command", e);
+            return CommandResult.COMMAND_ERROR;
+        }
+
+        // Assume success?
+        return CommandResult.SUCCESS;
+    }
+
+    public void sendNoArgumentMessage(CommandSender sender) {
+        this.sendHelpMessage(sender, 1);
+    }
+
+    public void sendHeader(CommandSender sender) {
+        Messages.HEADER.sendCentered(sender, "BattleArena");
+    }
+
+    public void sendHelpMessage(CommandSender sender, int page) {
+        this.sendHeader(sender);
+
+        // Compile all the command arguments
+        Map<String, CommandWrapper> commandWrappers = new HashMap<>();
+        for (Map.Entry<String, Set<CommandWrapper>> entry : this.commandMethods.entrySet()) {
+            for (CommandWrapper wrapper : entry.getValue()) {
+                commandWrappers.put(wrapper.usage, wrapper);
+            }
+        }
+
+        // Sort alphabetically
+        List<CommandWrapper> commands = new ArrayList<>(commandWrappers.values());
+        commands.sort(Comparator.comparing(wrapper -> wrapper.usage));
+
+        // Now send a certain page
+        int maxPages = (int) Math.ceil(commands.size() / (double) COMMANDS_PER_PAGE);
+        if (page > maxPages) {
+            page = maxPages;
+        }
+
+        if (page < 1) {
+            page = 1;
+        }
+
+        int startIndex = (page - 1) * COMMANDS_PER_PAGE;
+        int endIndex = Math.min(startIndex + COMMANDS_PER_PAGE, commands.size());
+        for (int i = startIndex; i < endIndex; i++) {
+            CommandWrapper wrapper = commands.get(i);
+            if (wrapper == null) {
+                continue;
+            }
+
+            if (BattleArena.getInstance().hasPermission(sender, this.getPermissionNode(wrapper.getCommand().permissionNode()))) {
+                sender.sendMessage(
+                        Component.text("/" + this.parentCommand + " " + wrapper.usage, Messages.PRIMARY_COLOR)
+                                .append(Component.text(wrapper.getCommand().description(), Messages.SECONDARY_COLOR))
+                );
+            }
+        }
+
+        TextComponent.Builder rootComponent = Component.text();
+
+        Component pageMessage = Component.text("Page " + page + "/" + maxPages, NamedTextColor.WHITE, TextDecoration.BOLD);
+        if (page > 1) {
+            rootComponent.append(Component.text("«     ", Messages.PRIMARY_COLOR)
+                    .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/" + this.parentCommand + " help " + (page - 1)))
+                    .hoverEvent(Component.text("Click to go to the previous page.", Messages.SECONDARY_COLOR))
+            );
+        } else {
+            rootComponent.append(Component.text("      "));
+        }
+
+        rootComponent.append(pageMessage);
+
+        if (page < maxPages) {
+            rootComponent.append(Component.text("     »", Messages.PRIMARY_COLOR)
+                    .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/" + this.parentCommand + " help " + (page + 1)))
+                    .hoverEvent(Component.text("Click to go to the next page.", Messages.SECONDARY_COLOR))
+            );
+        } else {
+            rootComponent.append(Component.text("      "));
+        }
+
+        sender.sendMessage(Component.text());
+        sender.sendMessage(PaginationCalculator.center(rootComponent.build(), Component.space()));
+    }
+
+    public void sendUsageMessage(CommandSender sender, Method method) {
+        Messages.COMMAND_USAGE.send(sender, "/" + this.parentCommand + " " + getUsage(method).trim());
+    }
+
+    private List<CommandWrapper> getCommandWrappers(String command, String subCommand) {
+        List<CommandWrapper> wrappers = new ArrayList<>();
+
+        for (String cmd : this.commandMethods.keySet()) {
+            for (CommandWrapper wrapper : this.commandMethods.get(cmd)) {
+                ArenaCommand arenaCommand = wrapper.getCommand();
+
+                if (!Arrays.asList(arenaCommand.commands()).contains(command)) {
+                    continue;
+                }
+
+                if (Arrays.asList(arenaCommand.subCommands()).isEmpty() || Arrays.asList(arenaCommand.subCommands()).contains(subCommand)) {
+                    wrappers.add(wrapper);
+                }
+            }
+        }
+
+        return wrappers;
+    }
+
+    private Object verifyArgument(CommandSender sender, String arg, Class<?> parameter) {
+        Object customArg = this.onVerifyArgument(sender, arg, parameter);
+        if (customArg != null) {
+            return customArg;
+        }
+
+        switch (parameter.getSimpleName().toLowerCase()) {
+            case "string" -> {
+                return arg;
+            }
+            case "int" -> {
+                return Integer.parseInt(arg);
+            }
+            case "double" -> {
+                return Double.parseDouble(arg);
+            }
+            case "float" -> {
+                return Float.parseFloat(arg);
+            }
+            case "boolean" -> {
+                return switch (arg) {
+                    case "true", "yes", "on" -> true;
+                    case "false", "no", "off" -> false;
+                    default -> null;
+                };
+            }
+            case "material" -> {
+                return ItemStackParser.deserializeSingular(arg);
+            }
+            case "player" -> {
+                Player player = Bukkit.getPlayer(arg);
+                if (player == null) {
+                    throw new ArenaCommandException("offline-player");
+                }
+                return player;
+            }
+            case "offlineplayer" -> {
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(arg);
+                if (offlinePlayer == null) {
+                    throw new ArenaCommandException("player-invalid");
+                }
+                return offlinePlayer;
+            }
+            case "world" -> {
+                return Bukkit.getWorld(arg);
+            }
+            case "arena" -> {
+                return BattleArena.getInstance().getArena(arg);
+            }
+            default -> {
+                for (BaseSubCommandExecutor subCommandExecutor : this.subCommandExecutors) {
+                    Object obj = subCommandExecutor.onVerifyArgument(sender, arg, parameter);
+                    if (obj != null) {
+                        return obj;
+                    }
+                }
+
+                if (parameter.isEnum()) {
+                    try {
+                        return Enum.valueOf((Class<Enum>) parameter, arg.toUpperCase(Locale.ROOT));
+                    } catch (IllegalArgumentException e) {
+                        return null;
+                    }
+                }
+
+                return null;
+            }
+        }
+    }
+
+    protected Object onVerifyArgument(CommandSender sender, String arg, Class<?> parameter) {
+        return null;
+    }
+
+    protected boolean onInvalidArgument(CommandSender sender, Class<?> parameter, String input) {
+        for (BaseSubCommandExecutor subCommandExecutor : this.subCommandExecutors) {
+            boolean success = subCommandExecutor.onInvalidArgument(sender, parameter, input);
+            if (success) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private List<String> verifyTabComplete(String arg, Class<?> parameter) {
+        List<String> completions = switch (parameter.getSimpleName().toLowerCase()) {
+            case "material" -> Arrays.stream(Material.values()).map(Material::name).collect(Collectors.toList());
+            case "player" -> Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
+            case "offlineplayer" ->
+                // lol no way we're listing all offline players
+                Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
+            case "world" -> Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList());
+            default -> new ArrayList<>();
+        };
+
+        List<String> customCompletions = this.onVerifyTabComplete(arg, parameter);
+        if (customCompletions != null && !customCompletions.isEmpty()) {
+            completions.addAll(customCompletions);
+        }
+
+        for (BaseSubCommandExecutor subCommandExecutor : this.subCommandExecutors) {
+            List<String> subCompletions = subCommandExecutor.onVerifyTabComplete(arg, parameter);
+            if (subCompletions != null && !subCompletions.isEmpty()) {
+                completions.addAll(subCompletions);
+            }
+        }
+
+        for (int i = 0; i < completions.size(); i++) {
+            String completion = completions.get(i);
+            if (!completion.toLowerCase().startsWith(arg.toLowerCase())) {
+                completions.remove(completion);
+                i--;
+            }
+        }
+
+        if (completions.isEmpty() && parameter.isEnum()) {
+            completions.addAll(Arrays.stream(parameter.getEnumConstants())
+                    .map(obj -> obj.toString().toLowerCase(Locale.ROOT))
+                    .toList()
+            );
+        }
+
+        return completions;
+    }
+
+    protected List<String> onVerifyTabComplete(String arg, Class<?> parameter) {
+        return null;
+    }
+
+    public String getUsage(Method method) {
+        ArenaCommand arenaCommand = method.getAnnotation(ArenaCommand.class);
+        StringBuilder builder = new StringBuilder(arenaCommand.commands().length > 0 ? arenaCommand.commands()[0] + " " : "");
+        int index = 1;
+
+        if (arenaCommand.subCommands().length > 0) {
+            builder.append(arenaCommand.subCommands()[0]).append(" ");
+        }
+
+        Parameter[] requestedParams = method.getParameters();
+        for (int i = index; i < requestedParams.length; i++) {
+            Parameter parameter = requestedParams[i];
+            Argument argument = parameter.getAnnotation(Argument.class);
+            builder.append(this.getUsageString(parameter.getType(), argument));
+        }
+
+        return builder.toString();
+    }
+
+    private String getUsageString(Class<?> parameter, @Nullable Argument argument) {
+        if (argument != null) {
+            if (parameter.isArray()) {
+                return "[" + argument.name() + "...] ";
+            }
+
+            return "<" + argument.name() + "> ";
+        }
+
+        return switch (parameter.getSimpleName().toLowerCase()) {
+            case "string[]" -> "[string...] ";
+            case "int", "double", "float" -> "<number> ";
+            case "boolean" -> "<true|false> ";
+            case "material" -> "<material> ";
+            case "player", "offlineplayer" -> "<player> ";
+            case "world" -> "<world> ";
+            case "arena" -> "<arena> ";
+            case "competition" -> "<map> "; // Best name for player-facing values
+            default -> {
+                for (BaseSubCommandExecutor subCommandExecutor : this.subCommandExecutors) {
+                    String usage = subCommandExecutor.getUsageString(parameter);
+                    if (usage != null) {
+                        yield usage;
+                    }
+                }
+
+                if (parameter.isEnum()) {
+                    if (parameter.getEnumConstants().length < 5) {
+                        yield "<" + Arrays.stream(parameter.getEnumConstants())
+                                .map(obj -> obj.toString().toLowerCase(Locale.ROOT))
+                                .collect(Collectors.joining("|")) + "> ";
+                    }
+
+                    yield "<" + parameter.getSimpleName().toLowerCase(Locale.ROOT) + "> ";
+                }
+
+                yield "<string> ";
+            }
+        };
+    }
+
+    @NotNull
+    @Override
+    public final List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        List<String> completions = new ArrayList<>();
+
+        try {
+            if (args.length == 1) {
+                for (String cmd : this.commandMethods.keySet()) {
+                    CommandWrapper wrapper = this.commandMethods.get(cmd).iterator().next();
+                    ArenaCommand arenaCommand = wrapper.getCommand();
+
+                    if (!arenaCommand.permissionNode().isEmpty() && !BattleArena.getInstance().hasPermission(sender, this.getPermissionNode(arenaCommand.permissionNode()))) {
+                        continue;
+                    }
+
+                    if (arenaCommand.requiresOp() && !sender.isOp()) {
+                        continue;
+                    }
+
+                    completions.add(cmd);
+                }
+
+                for (int i = 0; i < completions.size(); i++) {
+                    String completion = completions.get(i);
+                    if (!completion.toLowerCase().startsWith(args[0].toLowerCase())) {
+                        completions.remove(completion);
+                        i--;
+                    }
+                }
+            }
+
+            if (args.length == 2) {
+                if (!this.commandMethods.containsKey(args[0])) {
+                    return List.of();
+                }
+            }
+
+            if (args.length > 1) {
+                Set<CommandWrapper> wrappers = this.commandMethods.get(args[0]);
+                for (CommandWrapper wrapper : wrappers) {
+                    ArenaCommand arenaCommand = wrapper.getCommand();
+                    if (!arenaCommand.permissionNode().isEmpty() && !BattleArena.getInstance().hasPermission(sender, this.getPermissionNode(arenaCommand.permissionNode()))) {
+                        continue;
+                    }
+
+                    Class<?>[] requestedParams = wrapper.method.getParameterTypes();
+                    if (requestedParams.length < args.length) {
+                        continue;
+                    }
+
+                    Class<?> requestedParam = requestedParams[args.length - 1];
+                    if (arenaCommand.subCommands().length > 0 && Arrays.asList(arenaCommand.subCommands()).contains(args[1])) {
+                        requestedParam = requestedParams[args.length - 2];
+                    }
+
+                    completions.addAll(this.verifyTabComplete(args[args.length - 1], requestedParam));
+                }
+
+                for (int i = 0; i < completions.size(); i++) {
+                    String completion = completions.get(i);
+                    if (!completion.toLowerCase().startsWith(args[args.length - 1].toLowerCase())) {
+                        completions.remove(completion);
+                        i--;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // TODO: Try and get this exception to not throw at all if possible?
+        }
+
+        return completions;
+    }
+
+    private String getPermissionNode(String node) {
+        return "battlearena.command." + (this.permissionSubNode == null ? "" : node + ".") + node;
+    }
+
+    public enum CommandResult {
+        NO_PERMISSIONS,
+        COMMAND_ERROR,
+        COMMAND_ERROR_HANDLED,
+        INCOMPATIBLE_METHOD,
+        SUCCESS,
+        FAILURE
+    }
+
+    public static class CommandWrapper {
+        protected final Object instance;
+        protected final Method method;
+        protected final String usage;
+
+        public CommandWrapper(Object instance, Method method, String usage) {
+            this.instance = instance;
+            this.method = method;
+            this.usage = usage;
+        }
+
+        public ArenaCommand getCommand() {
+            return this.method.getAnnotation(ArenaCommand.class);
+        }
+    }
+}

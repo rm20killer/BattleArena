@@ -1,0 +1,82 @@
+# -----------------
+# Teams configuration for BattleArena
+#
+# Documentation: https://docs.battleplugins.org/docs/ba/customization/teams
+# Support: https://discord.gg/tMVPVJf
+# GitHub: https://github.com/BattlePlugins/BattleArena
+# -----------------
+config-version: 2.0 # The config version, do not change!
+
+teams:
+  - name: Red
+    color: 255,0,0
+    item: red_wool
+  - name: Blue
+    color: 0,0,255
+    item: blue_wool
+  - name: Green
+    color: 0,128,0
+    item: green_wool
+  - name: Yellow
+    color: 255,255,0
+    item: yellow_wool
+  - name: Pink
+    color: 255,204,255
+    item: pink_wool
+  - name: Aqua
+    color: 0,255,255
+    item: cyan_wool
+  - name: Gray
+    color: 128,128,128
+    item: light_gray_wool
+  - name: Lime
+    color: 0,255,255
+    item: lime_wool
+  - name: Purple
+    color: 192,0,192
+    item: purple_wool
+  - name: Orange
+    color: 255,165,0
+    item: orange_wool
+  - name: White
+    color: 255,255,255
+    item: white_wool
+  - name: Black
+    color: 32,32,32
+    item: black_wool
+  - name: Ice
+    color: 153,153,153
+    item: ice
+  - name: Cobblestone
+    color: 150,150,150
+    item: cobblestone
+  - name: TNT
+    color: 200,50,50
+    item: tnt
+  - name: Sponge
+    color: 255,130,100
+    item: sponge
+  - name: Glass
+    color: 255,255,255
+    item: glass
+  - name: Obby
+    color: 10,10,0
+    item: obsidian
+  - name: Snow
+    color: 255,255,255
+    item: snow_block
+  - name: Nether
+    color: 102,0,0
+    item: netherrack
+  - name: Iron
+    color: 208,208,208
+    item: iron_block
+  - name: Diamond
+    color: 102,204,255
+    item: diamond_block
+  - name: Emerald
+    color: 0,255,255
+    item: emerald_block
+  - name: Gold
+    color: 255,215,0
+    item: gold_block

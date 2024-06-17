@@ -1,0 +1,35 @@
+name: Skirmish
+mode: Arena
+type: Match
+team-options:
+  named-teams: false
+  team-size: 1
+  team-amount: 1+
+  team-selection: none
+lives:
+  enabled: false
+events:
+  on-join:
+    - store{types=location}
+    - teleport{location=waitroom}
+  on-leave:
+    - restore{types=location}
+  on-kill:
+    - play-sound{sound=entity.player.levelup;pitch=1;volume=1}
+  on-death:
+    - respawn
+  on-respawn:
+    - teleport{location=team_spawn;random=true}
+options:
+  - block-break{enabled=false}
+  - block-place{enabled=false}
+  - block-interact{enabled=false}
+  - keep-inventory{enabled=true}
+  - keep-experience{enabled=true}
+  - damage-entities{option=never}
+  - damage-players{option=other_team}
+initial-phase: ingame
+phases:
+  ingame:
+    allow-join: true
+    allow-spectate: true

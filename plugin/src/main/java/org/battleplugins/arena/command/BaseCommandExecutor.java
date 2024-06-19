@@ -63,8 +63,6 @@ public class BaseCommandExecutor implements TabExecutor {
             return true;
         }
 
-        System.out.println("cmd " + label + " " + String.join(" ", args));
-
         if ("help".equals(args[0])) {
             int page = args.length > 1 ? Integer.parseInt(args[1]) : 1;
             this.sendHelpMessage(sender, page);
@@ -91,14 +89,12 @@ public class BaseCommandExecutor implements TabExecutor {
 
                 CompletableFuture<CommandResult> resultFuture = this.runCommand(sender, wrapper, Arrays.copyOfRange(args, index, args.length));
                 if (resultFuture.isDone()) {
-                    System.out.println("Done");
                     CommandResult result = resultFuture.join();
                     switch (result) {
                         case NO_PERMISSIONS -> {
                             invalidPerms = true;
                         }
                         case INCOMPATIBLE_METHOD -> {
-                            System.out.println("Method incompatibility");
                             // Ignore
                         }
                         case COMMAND_ERROR -> {
@@ -110,7 +106,6 @@ public class BaseCommandExecutor implements TabExecutor {
                         }
                     }
                 } else {
-                    System.out.println("Not done, assume success");
                     // Assume that if we are waiting, we are executing
                     // a command. Attempting to go over other command
                     // wrappers by this point will be needlessly expensive
@@ -126,7 +121,6 @@ public class BaseCommandExecutor implements TabExecutor {
             return true;
         }
 
-        System.out.println("No valid wrappers");
         this.sendUsageMessage(sender, wrappers.get(0).method);
         return true;
     }
@@ -177,7 +171,6 @@ public class BaseCommandExecutor implements TabExecutor {
             int argCount = args.length;
 
             if (!(sender instanceof Player) && requestedParams[0].equals(Player.class)) {
-                System.out.println("Incompatible method (player != sender)");
                 return CommandResult.INCOMPATIBLE_METHOD;
             }
 
@@ -186,16 +179,13 @@ public class BaseCommandExecutor implements TabExecutor {
                 int varParamCount = args.length - argCount;
 
                 if (arenaCommand.minArgs() > varParamCount) {
-                    System.out.println("Incompatible method varargs too big");
                     return CommandResult.INCOMPATIBLE_METHOD;
                 }
 
                 if (arenaCommand.maxArgs() != -1 && arenaCommand.maxArgs() < varParamCount) {
-                    System.out.println("Incompatible method varargs too small");
                     return CommandResult.INCOMPATIBLE_METHOD;
                 }
             } else if (requestedParams.length - 1 != argCount) {
-                System.out.println("Incompatible method (arg count)");
                 return CommandResult.INCOMPATIBLE_METHOD;
             }
 
@@ -210,7 +200,6 @@ public class BaseCommandExecutor implements TabExecutor {
         try {
             CommandResult canRun = this.canRunCommand(sender, wrapper, args);
             if (canRun != CommandResult.SUCCESS) {
-                System.out.println("Failed " + canRun);
                 return CompletableFuture.completedFuture(canRun);
             }
 
@@ -237,7 +226,7 @@ public class BaseCommandExecutor implements TabExecutor {
                 if (obj == null) {
                     commandFound = false;
 
-                    boolean invalidArgument = this.onInvalidArgument(sender, requestedParams[i + 1], args[i]);
+                    boolean invalidArgument = this.invalidArgument(sender, requestedParams[i + 1], args[i]);
                     if (invalidArgument) {
                         sentInvalidArgument = true;
                         break;
@@ -480,6 +469,30 @@ public class BaseCommandExecutor implements TabExecutor {
 
     protected Object onVerifyArgument(CommandSender sender, String arg, Class<?> parameter) {
         return null;
+    }
+
+    protected boolean invalidArgument(CommandSender sender, Class<?> parameter, String input) {
+        boolean invalidArgument = this.onInvalidArgument(sender, parameter, input);
+        if (invalidArgument) {
+            return true;
+        }
+
+        switch (parameter.getSimpleName().toLowerCase()) {
+            case "string", "int", "double", "float", "boolean" -> {
+                Messages.INVALID_TYPE.send(sender, input, parameter.getSimpleName().toLowerCase(Locale.ROOT));
+                return true;
+            }
+            case "player", "offlineplayer" -> {
+                Messages.PLAYER_NOT_ONLINE.send(sender, input);
+                return true;
+            }
+            case "arena" -> {
+                Messages.ARENA_DOES_NOT_EXIST.send(sender, input);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected boolean onInvalidArgument(CommandSender sender, Class<?> parameter, String input) {

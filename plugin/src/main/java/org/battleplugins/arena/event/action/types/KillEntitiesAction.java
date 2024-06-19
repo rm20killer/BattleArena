@@ -1,6 +1,9 @@
 package org.battleplugins.arena.event.action.types;
 
+import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaPlayer;
+import org.battleplugins.arena.competition.Competition;
+import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.competition.map.options.Bounds;
 import org.battleplugins.arena.config.SingularValueParser;
 import org.battleplugins.arena.event.action.EventAction;
@@ -21,7 +24,15 @@ public class KillEntitiesAction extends EventAction {
 
     @Override
     public void call(ArenaPlayer arenaPlayer) {
-        Bounds bounds = arenaPlayer.getCompetition().getMap().getBounds();
+    }
+
+    @Override
+    public void postProcess(Arena arena, Competition<?> competition) {
+        if (!(competition instanceof LiveCompetition<?> liveCompetition)) {
+            return;
+        }
+
+        Bounds bounds = liveCompetition.getMap().getBounds();
         if (bounds == null) {
             return;
         }
@@ -36,7 +47,7 @@ public class KillEntitiesAction extends EventAction {
             }
         }
 
-        arenaPlayer.getPlayer().getWorld().getEntities().stream()
+        liveCompetition.getMap().getWorld().getEntities().stream()
                 .filter(entity -> bounds.isInside(entity.getLocation()))
                 .filter(entity -> !(entity instanceof Player))
                 .filter(entity -> excludedGroups.isEmpty() || !excludedGroups.contains(entity.getSpawnCategory().name().toLowerCase(Locale.ROOT)))

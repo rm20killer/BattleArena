@@ -1,5 +1,7 @@
 package org.battleplugins.arena.config;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.BattleArena;
 import org.battleplugins.arena.competition.CompetitionType;
@@ -14,16 +16,18 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
 import java.awt.Color;
+import java.time.Duration;
 import java.util.function.Function;
 
 final class DefaultParsers {
 
-    public static void register() {
+    static void register() {
         ArenaConfigParser.registerContextProvider(EventContextProvider.class, new EventContextProvider());
         ArenaConfigParser.registerContextProvider(OptionContextProvider.class, new OptionContextProvider());
         ArenaConfigParser.registerContextProvider(PhaseContextProvider.class, new PhaseContextProvider());
         ArenaConfigParser.registerContextProvider(VictoryConditionContextProvider.class, new VictoryConditionContextProvider());
 
+        ArenaConfigParser.registerProvider(Duration.class, new DurationParser());
         ArenaConfigParser.registerProvider(ItemStack.class, new ItemStackParser());
         ArenaConfigParser.registerProvider(PositionWithRotation.class, configValue -> {
             if (!(configValue instanceof ConfigurationSection positionSection)) {
@@ -79,6 +83,14 @@ final class DefaultParsers {
             } else {
                 return Color.getColor(value);
             }
+        });
+
+        ArenaConfigParser.registerProvider(Component.class, configValue -> {
+            if (!(configValue instanceof String value)) {
+                return null;
+            }
+
+            return MiniMessage.miniMessage().deserialize(value);
         });
     }
 

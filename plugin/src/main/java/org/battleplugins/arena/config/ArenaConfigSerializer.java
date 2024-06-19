@@ -42,7 +42,7 @@ public final class ArenaConfigSerializer {
             if (serializer != null) {
                 try {
                     serializer.serialize(name, configuration, field.get(instance));
-                } catch (IllegalAccessException e) {
+                } catch (Exception e) {
                     throw new ParseException("Failed to serialize custom object field " + field.getName() + " in class " + instance.getClass().getName(), e);
                 }
                 continue;
@@ -54,13 +54,13 @@ public final class ArenaConfigSerializer {
             } else if (type == String.class) {
                 try {
                     configuration.set(name, field.get(instance));
-                } catch (IllegalAccessException e) {
+                } catch (Exception e) {
                     throw new ParseException("Failed to serialize string field " + field.getName() + " in class " + instance.getClass().getName(), e);
                 }
             } else if (type.isEnum()) {
                 try {
-                    configuration.set(name, field.get(instance).toString().toLowerCase(Locale.ROOT));
-                } catch (IllegalAccessException e) {
+                    configuration.set(name, field.get(instance));
+                } catch (Exception e) {
                     throw new ParseException("Failed to serialize enum field " + field.getName() + " in class " + instance.getClass().getName(), e);
                 }
             } else {
@@ -80,7 +80,7 @@ public final class ArenaConfigSerializer {
                         } else {
                             configuration.set(name, sections);
                         }
-                    } catch (IllegalAccessException e) {
+                    } catch (Exception e) {
                         throw new ParseException("Failed to serialize list field " + field.getName() + " in class " + instance.getClass().getName(), e);
                     }
                 } else if (Map.class.isAssignableFrom(type)) {
@@ -102,7 +102,7 @@ public final class ArenaConfigSerializer {
                             ConfigurationSection section = configuration.createSection(name + "." + key);
                             serializeFields(value, section);
                         }
-                    } catch (IllegalAccessException e) {
+                    } catch (Exception e) {
                         throw new ParseException("Failed to serialize map field " + field.getName() + " in class " + instance.getClass().getName(), e);
                     }
                 } else {
@@ -120,7 +120,7 @@ public final class ArenaConfigSerializer {
                         }
 
                         configuration.set(name, section);
-                    } catch (IllegalAccessException e) {
+                    } catch (Exception e) {
                         throw new ParseException("Failed to serialize object field " + field.getName() + " in class " + instance.getClass().getName(), e);
                     }
                 }
@@ -136,43 +136,43 @@ public final class ArenaConfigSerializer {
         if (type == boolean.class) {
             try {
                 configuration.set(name, field.getBoolean(instance));
-            } catch (IllegalAccessException e) {
+            } catch (Exception e) {
                 throw new ParseException("Failed to serialize field " + field.getName() + " in class " + instance.getClass().getName(), e);
             }
         } else if (type == int.class) {
             try {
                 configuration.set(name, field.getInt(instance));
-            } catch (IllegalAccessException e) {
+            } catch (Exception e) {
                 throw new ParseException("Failed to serialize field " + field.getName() + " in class " + instance.getClass().getName(), e);
             }
         } else if (type == double.class) {
             try {
                 configuration.set(name, field.getDouble(instance));
-            } catch (IllegalAccessException e) {
+            } catch (Exception e) {
                 throw new ParseException("Failed to serialize field " + field.getName() + " in class " + instance.getClass().getName(), e);
             }
         } else if (type == float.class) {
             try {
                 configuration.set(name, field.getFloat(instance));
-            } catch (IllegalAccessException e) {
+            } catch (Exception e) {
                 throw new ParseException("Failed to serialize field " + field.getName() + " in class " + instance.getClass().getName(), e);
             }
         } else if (type == long.class) {
             try {
                 configuration.set(name, field.getLong(instance));
-            } catch (IllegalAccessException e) {
+            } catch (Exception e) {
                 throw new ParseException("Failed to serialize field " + field.getName() + " in class " + instance.getClass().getName(), e);
             }
         } else if (type == short.class) {
             try {
                 configuration.set(name, field.getShort(instance));
-            } catch (IllegalAccessException e) {
+            } catch (Exception e) {
                 throw new ParseException("Failed to serialize field " + field.getName() + " in class " + instance.getClass().getName(), e);
             }
         } else if (type == byte.class) {
             try {
                 configuration.set(name, field.getByte(instance));
-            } catch (IllegalAccessException e) {
+            } catch (Exception e) {
                 throw new ParseException("Failed to serialize field " + field.getName() + " in class " + instance.getClass().getName(), e);
             }
         } else {
@@ -200,7 +200,7 @@ public final class ArenaConfigSerializer {
         return sections;
     }
 
-    interface ConfigSerializer<T> {
+    public interface ConfigSerializer<T> {
 
         void serialize(String node, ConfigurationSection section, T value);
     }

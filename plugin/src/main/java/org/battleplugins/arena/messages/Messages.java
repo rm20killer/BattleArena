@@ -26,7 +26,7 @@ public class Messages {
     static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     // Misc
-    public static final Message HEADER = Message.of("header",
+    public static final Message HEADER = message("header",
             Component.text("------------------").color(NamedTextColor.GRAY)
                     .append(Component.text("[").color(SECONDARY_COLOR))
                     .append(Component.text(" "))
@@ -36,6 +36,8 @@ public class Messages {
                     .append(Component.text("------------------")).color(NamedTextColor.GRAY)
     );
 
+    public static final Message PREFIX = message("prefix", "<secondary>[</secondary><primary>BattleArena</primary><secondary>]</secondary>");
+
     // Command messages
     public static final Message MUST_BE_PLAYER = error("command-must-be-player", "You must be a player to use this command!");
     public static final Message COMMAND_USAGE = error("command-usage", "Invalid syntax! Usage: {}");
@@ -43,7 +45,8 @@ public class Messages {
     public static final Message NO_PERMISSION = error("command-no-permission", "You do not have permission to execute this command!");
     public static final Message UNKNOWN_ERROR = error("command-unknown-error", "An unknown error occurred while executing this command! Please contact a server administrator!");
     public static final Message AN_ERROR_OCCURRED = error("command-an-error-occurred", "An error occurred while executing this command: {}!");
-    public static final Message PLAYER_NOT_ONLINE = error("command-player-not-online", "The player <secondary>{}</secondary> is not online!");
+    public static final Message PLAYER_NOT_ONLINE = error("command-player-not-found", "The player <secondary>{}</secondary> could not be found!");
+    public static final Message INVALID_TYPE = error("command-invalid-type", "The specified type <secondary>{}</secondary> was not a valid {}!");
 
     // Arena messages
     public static final Message NO_OPEN_ARENAS = error("arena-no-open-arenas", "There are no open arenas!");
@@ -57,6 +60,10 @@ public class Messages {
     public static final Message ARENA_JOINED = info("arena-joined", "You have joined <secondary>{}</secondary>!");
     public static final Message ARENA_SPECTATE = info("arena-spectate", "You are now spectating <secondary>{}</secondary>!");
     public static final Message ARENA_LEFT = info("arena-left", "You have left <secondary>{}</secondary>!");
+    public static final Message NOT_EVENT = error("arena-not-event", "The specified arena is not an event!");
+    public static final Message MANUAL_EVENT_MESSAGE = info("arena-manual-event-message", "%prefix% A {} event is starting! Run <secondary>/{} join</secondary> to join!");
+    public static final Message ADVANCED_PHASE = info("arena-advanced-phase", "Advanced to the next phase: <secondary>{}</secondary>!");
+    public static final Message NO_PHASES = error("arena-no-phases", "There are no phases to advance to!");
 
     public static final Message ARENA_STARTS_IN = info("arena-starts-in", "{} will start in <secondary>{}</secondary>!");
     public static final Message ARENA_START_CANCELLED = error("arena-starts-cancelled", "Countdown cancelled as there is not enough players to start!");

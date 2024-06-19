@@ -21,6 +21,13 @@ public class VictoryPhase<T extends LiveCompetition<T>> extends LiveCompetitionP
 
     @Override
     public void onStart() {
+        // Ensure the victory manager has not closed. If it has, we should not
+        // start the victory phase as it means the server is likely shutting down,
+        // or this competition has been removed.
+        if (this.competition.getVictoryManager().isClosed()) {
+            return;
+        }
+
         this.durationTask = Bukkit.getScheduler().runTaskLater(
                 this.competition.getArena().getPlugin(),
                 this::advanceToNextPhase,

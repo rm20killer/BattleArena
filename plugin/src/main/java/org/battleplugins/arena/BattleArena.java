@@ -1,24 +1,23 @@
 package org.battleplugins.arena;
 
-import org.battleplugins.arena.command.ArenaCommandExecutor;
 import org.battleplugins.arena.command.BACommandExecutor;
 import org.battleplugins.arena.competition.Competition;
 import org.battleplugins.arena.competition.CompetitionType;
 import org.battleplugins.arena.competition.JoinResult;
 import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.competition.PlayerRole;
+import org.battleplugins.arena.competition.event.EventOptions;
+import org.battleplugins.arena.competition.event.EventScheduler;
+import org.battleplugins.arena.competition.event.EventType;
 import org.battleplugins.arena.competition.map.LiveCompetitionMap;
 import org.battleplugins.arena.competition.map.MapType;
 import org.battleplugins.arena.competition.phase.CompetitionPhaseType;
 import org.battleplugins.arena.competition.phase.phases.VictoryPhase;
 import org.battleplugins.arena.config.ArenaConfigParser;
-import org.battleplugins.arena.config.BattleArenaConfig;
 import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.event.BattleArenaPostInitializeEvent;
 import org.battleplugins.arena.event.BattleArenaPreInitializeEvent;
 import org.battleplugins.arena.event.BattleArenaShutdownEvent;
-import org.battleplugins.arena.event.arena.ArenaCreateExecutorEvent;
-import org.battleplugins.arena.event.arena.ArenaInitializeEvent;
 import org.battleplugins.arena.messages.MessageLoader;
 import org.battleplugins.arena.module.ArenaModuleContainer;
 import org.battleplugins.arena.module.ArenaModuleLoader;
@@ -44,6 +43,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -60,13 +60,15 @@ import java.util.stream.Stream;
 public class BattleArena extends JavaPlugin implements Listener {
     private static BattleArena instance;
 
-    private final Map<String, Class<? extends Arena>> arenaTypes = new HashMap<>();
-    private final Map<String, Arena> arenas = new HashMap<>();
+    final Map<String, Class<? extends Arena>> arenaTypes = new HashMap<>();
+    final Map<String, Arena> arenas = new HashMap<>();
 
     private final Map<Arena, List<LiveCompetitionMap<?>>> arenaMaps = new HashMap<>();
     private final Map<Arena, List<Competition<?>>> competitions = new HashMap<>();
 
     private final Map<String, ArenaLoader> arenaLoaders = new HashMap<>();
+
+    private EventScheduler eventScheduler;
 
     private BattleArenaConfig config;
     private ArenaModuleLoader moduleLoader;
@@ -132,6 +134,8 @@ public class BattleArena extends JavaPlugin implements Listener {
         // Register default arenas
         this.registerArena("Arena", Arena.class);
 
+        this.eventScheduler = new EventScheduler();
+
         // Create arena loaders
         try (Stream<Path> arenaPaths = Files.walk(this.arenasPath)) {
             arenaPaths.forEach(arenaPath -> {
@@ -148,7 +152,7 @@ public class BattleArena extends JavaPlugin implements Listener {
                     }
 
                     String mode = configuration.getString("mode", name);
-                    ArenaLoader arenaLoader = new ArenaLoader(mode, configuration, arenaPath);
+                    ArenaLoader arenaLoader = new ArenaLoader(this, mode, configuration, arenaPath);
                     this.arenaLoaders.put(name, arenaLoader);
 
                     // Because Bukkit locks its command map upon startup, we need to
@@ -179,6 +183,9 @@ public class BattleArena extends JavaPlugin implements Listener {
 
         // Close all active competitions
         this.completeAllActiveCompetitions();
+
+        // Stop all scheduled events
+        this.eventScheduler.stopAllScheduledEvents();
 
         // Clear dynamic maps
         this.clearDynamicMaps();
@@ -214,6 +221,24 @@ public class BattleArena extends JavaPlugin implements Listener {
                 }
             }
         }
+
+        // Initialize events
+        for (Map.Entry<String, List<EventOptions>> entry : this.config.getEvents().entrySet()) {
+            Arena arena = this.arenas.get(entry.getKey());
+            if (arena == null) {
+                this.warn("Event {} does not have a valid arena!", entry.getKey());
+                continue;
+            }
+
+            for (EventOptions options : entry.getValue()) {
+                if (options.getType() != EventType.SCHEDULED) {
+                    continue; // We are not interested in starting manual events
+                }
+
+                this.eventScheduler.scheduleEvent(arena, options);
+                this.info("Scheduled event for arena {} in {}m.", arena.getName(), options.getInterval());
+            }
+        }
     }
 
     public <T extends Arena> void registerArena(String name, Class<T> arena) {
@@ -247,42 +272,56 @@ public class BattleArena extends JavaPlugin implements Listener {
         this.competitions.computeIfAbsent(arena, k -> new ArrayList<>()).add(competition);
     }
 
+    @SuppressWarnings("unchecked")
+    public void removeCompetition(Arena arena, Competition<?> competition) {
+        List<Competition<?>> competitions = this.competitions.get(arena);
+        if (competitions == null) {
+            return;
+        }
+
+        Set<CompetitionPhaseType<?, ?>> phases = arena.getPhases();
+
+        // Check if we have a victory phase
+        CompetitionPhaseType<?, VictoryPhase<?>> victoryPhase = null;
+        for (CompetitionPhaseType<?, ?> phase : phases) {
+            if (VictoryPhase.class.isAssignableFrom(phase.getPhaseType())) {
+                victoryPhase = (CompetitionPhaseType<?, VictoryPhase<?>>) phase;
+                break;
+            }
+        }
+
+        boolean removed = competitions.remove(competition);
+        if (removed && competition instanceof LiveCompetition<?> liveCompetition) {
+            // De-reference any remaining resources
+            liveCompetition.getVictoryManager().end(true);
+
+            if (victoryPhase != null && !(VictoryPhase.class.isAssignableFrom(liveCompetition.getPhase().getPhaseType()))) {
+                liveCompetition.getPhaseManager().setPhase(victoryPhase);
+
+                VictoryPhase<?> phase = (VictoryPhase<?>) liveCompetition.getPhaseManager().getCurrentPhase();
+                phase.onDraw(); // Mark as a draw
+            } else {
+                // No victory phase - just forcefully kick every player
+                for (ArenaPlayer player : liveCompetition.getPlayers()) {
+                    liveCompetition.leave(player);
+                }
+            }
+        }
+
+        competitions.remove(competition);
+        if (competition.getMap().getType() == MapType.DYNAMIC && competition.getMap() instanceof LiveCompetitionMap<?> map) {
+            this.clearDynamicMap(map);
+        }
+    }
+
     public Path getMapsPath() {
         return this.getDataFolder().toPath().resolve("maps");
     }
 
-    @SuppressWarnings("unchecked")
     private void completeAllActiveCompetitions() {
-        for (Map.Entry<Arena, List<Competition<?>>> competitions : this.competitions.entrySet()) {
-            Set<CompetitionPhaseType<?, ?>> phases = competitions.getKey().getPhases();
-
-            // Check if we have a victory phase
-            CompetitionPhaseType<?, VictoryPhase<?>> victoryPhase = null;
-            for (CompetitionPhaseType<?, ?> phase : phases) {
-                if (VictoryPhase.class.isAssignableFrom(phase.getPhaseType())) {
-                    victoryPhase = (CompetitionPhaseType<?, VictoryPhase<?>>) phase;
-                    break;
-                }
-            }
-
-            for (Competition<?> competition : competitions.getValue()) {
-                // We can only complete live competitions
-                if (competition instanceof LiveCompetition<?> liveCompetition) {
-                    if (victoryPhase != null) {
-                        liveCompetition.getPhaseManager().setPhase(victoryPhase);
-
-                        VictoryPhase<?> phase = (VictoryPhase<?>) liveCompetition.getPhaseManager().getCurrentPhase();
-                        phase.onDraw(); // Mark as a draw
-
-                        // Dereference any remaining resources
-                        liveCompetition.getVictoryManager().end();
-                    } else {
-                        // No victory phase - just forcefully kick every player
-                        for (ArenaPlayer player : liveCompetition.getPlayers()) {
-                            liveCompetition.leave(player);
-                        }
-                    }
-                }
+        for (Map.Entry<Arena, List<Competition<?>>> entry : Map.copyOf(this.competitions).entrySet()) {
+            for (Competition<?> competition : List.copyOf(entry.getValue())) {
+                this.removeCompetition(entry.getKey(), competition);
             }
         }
     }
@@ -294,13 +333,13 @@ public class BattleArena extends JavaPlugin implements Listener {
             try {
                 value.load();
             } catch (Exception e) {
-                this.error("An error occurred when loading arena {}: {}", value.arenaPath.getFileName(), e.getMessage(), e);
+                this.error("An error occurred when loading arena {}: {}", value.arenaPath().getFileName(), e.getMessage(), e);
             }
         }
     }
 
     private void loadArenaMaps() {
-        // All the arenas have been loaded, now we can load the competitions
+        // All the arenas have been loaded, now we can load the maps
         Path mapsPath = this.getMapsPath();
         if (Files.notExists(mapsPath)) {
             // No maps to load
@@ -357,7 +396,7 @@ public class BattleArena extends JavaPlugin implements Listener {
             return List.of();
         }
 
-        return maps;
+        return List.copyOf(maps);
     }
 
     @Nullable
@@ -391,6 +430,11 @@ public class BattleArena extends JavaPlugin implements Listener {
         return joinableCompetition.thenApplyAsync(comp -> {
             if (comp != null) {
                 return comp;
+            }
+
+            if (arena.getType() == CompetitionType.EVENT) {
+                // Cannot create non-requested dynamic competitions for events
+                return null;
             }
 
             List<LiveCompetitionMap<?>> maps = this.arenaMaps.get(arena);
@@ -466,6 +510,10 @@ public class BattleArena extends JavaPlugin implements Listener {
         }
     }
 
+    public EventScheduler getEventScheduler() {
+        return this.eventScheduler;
+    }
+
     public BattleArenaConfig getMainConfig() {
         return this.config;
     }
@@ -495,6 +543,40 @@ public class BattleArena extends JavaPlugin implements Listener {
         return this.getDataFolder().toPath().resolve("backups").resolve(type);
     }
 
+    private void clearDynamicMaps() {
+        for (File file : Bukkit.getWorldContainer().listFiles()) {
+            if (file.isDirectory() && file.getName().startsWith("ba-dynamic")) {
+                try {
+                    try (Stream<Path> pathsToDelete = Files.walk(file.toPath())) {
+                        for (Path path : pathsToDelete.sorted(Comparator.reverseOrder()).toList()) {
+                            Files.deleteIfExists(path);
+                        }
+                    }
+                } catch (IOException e) {
+                    this.error("Failed to delete dynamic map {}", file.getName(), e);
+                }
+            }
+        }
+    }
+
+    private void clearDynamicMap(LiveCompetitionMap<?> map) {
+        if (map.getType() != MapType.DYNAMIC) {
+            return;
+        }
+
+        Bukkit.unloadWorld(map.getWorld(), false);
+
+        try {
+            try (Stream<Path> pathsToDelete = Files.walk(map.getWorld().getWorldFolder().toPath())) {
+                for (Path path : pathsToDelete.sorted(Comparator.reverseOrder()).toList()) {
+                    Files.deleteIfExists(path);
+                }
+            }
+        } catch (IOException e) {
+            this.error("Failed to delete dynamic map {}", map.getName(), e);
+        }
+    }
+
     public boolean hasPermission(CommandSender sender, String permission) {
         return sender.isOp() || sender.hasPermission(permission);
     }
@@ -515,65 +597,7 @@ public class BattleArena extends JavaPlugin implements Listener {
         this.getSLF4JLogger().warn(message, args);
     }
 
-    private void clearDynamicMaps() {
-        for (File file : Bukkit.getWorldContainer().listFiles()) {
-            if (file.isDirectory() && file.getName().startsWith("ba-dynamic")) {
-                try {
-                    Files.delete(file.toPath());
-                } catch (IOException e) {
-                    this.error("Failed to delete dynamic map {}", file.getName(), e);
-                }
-            }
-        }
-    }
-
     public static BattleArena getInstance() {
         return instance;
-    }
-
-    class ArenaLoader {
-        private final String mode;
-        private final Configuration configuration;
-        private final Path arenaPath;
-
-        public ArenaLoader(String mode, Configuration configuration, Path arenaPath) {
-            this.mode = mode;
-            this.configuration = configuration;
-            this.arenaPath = arenaPath;
-        }
-
-        public void load() {
-            if (Files.isDirectory(arenaPath)) {
-                return;
-            }
-
-            try {
-                Class<? extends Arena> arenaType = arenaTypes.get(mode);
-                if (arenaType == null) {
-                    info("Arena {} does not have a valid mode! Recognized modes: {}", arenaPath.getFileName(), arenaTypes.keySet());
-                    return;
-                }
-
-                Arena arena = ArenaConfigParser.newInstance(arenaType, configuration, BattleArena.this);
-                Bukkit.getPluginManager().registerEvents(arena, BattleArena.this);
-
-                arenas.put(arena.getName(), arena);
-
-                // Register command
-                PluginCommand command = getCommand(arena.getName().toUpperCase(Locale.ROOT));
-
-                ArenaCommandExecutor executor = arena.createCommandExecutor();
-                ArenaCreateExecutorEvent event = new ArenaCreateExecutorEvent(arena, executor);
-                event.callEvent();
-
-                command.setExecutor(executor);
-
-                new ArenaInitializeEvent(arena).callEvent();
-
-                info("Loaded arena: {}.", arena.getName());
-            } catch (ParseException e) {
-                error("An error occurred when loading arena {}: {}", arenaPath.getFileName(), e.getMessage(), e);
-            }
-        }
     }
 }

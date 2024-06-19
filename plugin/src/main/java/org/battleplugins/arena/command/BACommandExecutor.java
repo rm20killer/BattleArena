@@ -3,16 +3,22 @@ package org.battleplugins.arena.command;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.event.ClickEvent;
+import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.BattleArena;
+import org.battleplugins.arena.competition.CompetitionType;
+import org.battleplugins.arena.competition.event.EventOptions;
+import org.battleplugins.arena.competition.event.EventType;
 import org.battleplugins.arena.messages.Messages;
-import org.battleplugins.arena.util.OptionSelector;
 import org.battleplugins.arena.util.InventoryBackup;
+import org.battleplugins.arena.util.OptionSelector;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
 public class BACommandExecutor extends BaseCommandExecutor {
@@ -104,5 +110,50 @@ public class BACommandExecutor extends BaseCommandExecutor {
                     component = component.hoverEvent(Component.join(JoinConfiguration.newlines(), hoverLines));
                     player.sendMessage(component);
                 });
+    }
+
+    @ArenaCommand(commands = "start", description = "Starts an event manually.", permissionNode = "start")
+    public void event(Player player, Arena arena) {
+        if (arena.getType() != CompetitionType.EVENT) {
+            Messages.NOT_EVENT.send(player);
+            return;
+        }
+
+        arena.getPlugin().getEventScheduler().startEvent(arena, new EventOptions(
+                EventType.MANUAL,
+                Duration.ZERO,
+                Messages.MANUAL_EVENT_MESSAGE.toComponent(arena.getName(), arena.getName().toLowerCase(Locale.ROOT))
+        ));
+    }
+
+    @ArenaCommand(commands = "stop", description = "Stops an event manually.", permissionNode = "stop")
+    public void stop(Player player, Arena arena) {
+        if (arena.getType() != CompetitionType.EVENT) {
+            Messages.NOT_EVENT.send(player);
+            return;
+        }
+
+        arena.getPlugin().getEventScheduler().stopEvent(arena);
+    }
+
+    @ArenaCommand(commands = "stopall", description = "Stops all events manually.", permissionNode = "stopall")
+    public void stopAll(Player player) {
+        for (Arena scheduledEvent : BattleArena.getInstance().getEventScheduler().getScheduledEvents()) {
+            BattleArena.getInstance().getEventScheduler().stopEvent(scheduledEvent);
+        }
+    }
+
+    @ArenaCommand(commands = "schedule", description = "Schedules an event to start automatically.", permissionNode = "schedule")
+    public void schedule(Player player, Arena arena, Duration interval) {
+        if (arena.getType() != CompetitionType.EVENT) {
+            Messages.NOT_EVENT.send(player);
+            return;
+        }
+
+        arena.getPlugin().getEventScheduler().scheduleEvent(arena, new EventOptions(
+                EventType.SCHEDULED,
+                interval,
+                Messages.MANUAL_EVENT_MESSAGE.toComponent(arena.getName(), arena.getName().toLowerCase(Locale.ROOT))
+        ));
     }
 }

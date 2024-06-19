@@ -8,6 +8,9 @@ import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.competition.PlayerRole;
 import org.battleplugins.arena.competition.map.CompetitionMap;
 import org.battleplugins.arena.competition.map.LiveCompetitionMap;
+import org.battleplugins.arena.competition.phase.CompetitionPhase;
+import org.battleplugins.arena.competition.phase.CompetitionPhaseType;
+import org.battleplugins.arena.competition.phase.PhaseManager;
 import org.battleplugins.arena.editor.ArenaEditorWizards;
 import org.battleplugins.arena.editor.WizardStage;
 import org.battleplugins.arena.editor.context.MapCreateContext;
@@ -45,8 +48,7 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
     }
 
     @ArenaCommand(commands = { "join", "j" }, description = "Join an arena.", permissionNode = "join")
-    public void join(Player player, CompetitionMap<?> map) {
-        System.out.println("Running w/ " + map);
+    public void join(Player player, @Argument(name = "map") CompetitionMap<?> map) {
         if (ArenaPlayer.getArenaPlayer(player) != null) {
             Messages.ALREADY_IN_ARENA.send(player);
             return;
@@ -158,16 +160,34 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
     }
 
     @ArenaCommand(commands = "edit", description = "Edit an arena map.", permissionNode = "edit")
-    public void map(Player player, Competition<?> competition, MapOption option) {
-        if (!(competition instanceof LiveCompetition<?> liveCompetition)) {
+    public void map(Player player, CompetitionMap<?> map, MapOption option) {
+        if (!(map instanceof LiveCompetitionMap<?> liveMap)) {
             Messages.NO_ARENA_WITH_NAME.send(player);
             return;
         }
 
-        LiveCompetitionMap<?> map = liveCompetition.getMap();
-
         WizardStage<MapCreateContext> stage = ArenaEditorWizards.MAP_CREATION.getStage(option);
-        ArenaEditorWizards.MAP_CREATION.openSingleWizardStage(player, this.arena, stage, context -> context.reconstructFrom(map));
+        ArenaEditorWizards.MAP_CREATION.openSingleWizardStage(player, this.arena, stage, context -> context.reconstructFrom(liveMap));
+    }
+
+    @ArenaCommand(commands = "advance", description = "Advances to arena to the next phase.", permissionNode = "advance")
+    public void advance(Player player) {
+        ArenaPlayer arenaPlayer = ArenaPlayer.getArenaPlayer(player);
+        if (arenaPlayer == null) {
+            Messages.NOT_IN_ARENA.send(player);
+            return;
+        }
+
+        LiveCompetition<?> competition = arenaPlayer.getCompetition();
+        PhaseManager<?> phaseManager = competition.getPhaseManager();
+        CompetitionPhaseType<?, ? extends CompetitionPhase<?>> nextPhase = phaseManager.getCurrentPhase().getNextPhase();
+        if (nextPhase != null) {
+            Messages.ADVANCED_PHASE.send(player, nextPhase.getName());
+
+            phaseManager.setPhase(nextPhase);
+        } else {
+            Messages.NO_PHASES.send(player);
+        }
     }
 
     @Override
@@ -207,6 +227,12 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
             return BattleArena.getInstance().getCompetitions(this.arena)
                     .stream()
                     .map(competition -> competition.getMap().getName())
+                    .toList();
+        } else if (parameter.getSimpleName().equalsIgnoreCase("competitionmap")) {
+            return BattleArena.getInstance().getMaps(this.arena)
+                    .stream()
+                    .map(CompetitionMap::getName)
+                    .distinct()
                     .toList();
         }
 

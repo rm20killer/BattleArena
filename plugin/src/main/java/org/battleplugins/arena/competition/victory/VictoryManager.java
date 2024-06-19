@@ -20,6 +20,8 @@ public class VictoryManager<T extends Competition<T>> implements ArenaListener, 
 
     private final T competition;
 
+    private boolean closed = false;
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public VictoryManager(Arena arena, T competition) {
         this.competition = competition;
@@ -61,7 +63,9 @@ public class VictoryManager<T extends Competition<T>> implements ArenaListener, 
         return victors;
     }
 
-    public void end() {
+    public void end(boolean closed) {
+        this.closed = closed;
+
         for (VictoryCondition<?> condition : this.victoryConditions.values()) {
             condition.end();
         }
@@ -80,5 +84,9 @@ public class VictoryManager<T extends Competition<T>> implements ArenaListener, 
     @Override
     public T getCompetition() {
         return this.competition;
+    }
+
+    public final boolean isClosed() {
+        return this.closed;
     }
 }

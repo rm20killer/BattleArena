@@ -1,5 +1,6 @@
 package org.battleplugins.arena.event.action;
 
+import org.battleplugins.arena.event.action.types.BroadcastAction;
 import org.battleplugins.arena.event.action.types.ChangeGamemodeAction;
 import org.battleplugins.arena.event.action.types.ClearEffectsAction;
 import org.battleplugins.arena.event.action.types.DelayAction;
@@ -15,6 +16,7 @@ import org.battleplugins.arena.event.action.types.RestoreAction;
 import org.battleplugins.arena.event.action.types.RunCommandAction;
 import org.battleplugins.arena.event.action.types.SendMessageAction;
 import org.battleplugins.arena.event.action.types.StoreAction;
+import org.battleplugins.arena.event.action.types.TeardownAction;
 import org.battleplugins.arena.event.action.types.TeleportAction;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,6 +27,7 @@ import java.util.function.Function;
 public final class EventActionType<T extends EventAction> {
     private static final Map<String, EventActionType<?>> ACTION_TYPES = new HashMap<>();
 
+    public static final EventActionType<BroadcastAction> BROADCAST = new EventActionType<>("broadcast", BroadcastAction.class, BroadcastAction::new);
     public static final EventActionType<ChangeGamemodeAction> CHANGE_GAMEMODE = new EventActionType<>("change-gamemode", ChangeGamemodeAction.class, ChangeGamemodeAction::new);
     public static final EventActionType<ClearEffectsAction> CLEAR_EFFECTS = new EventActionType<>("clear-effects", ClearEffectsAction.class, ClearEffectsAction::new);
     public static final EventActionType<DelayAction> DELAY = new EventActionType<>("delay", DelayAction.class, DelayAction::new);
@@ -40,6 +43,7 @@ public final class EventActionType<T extends EventAction> {
     public static final EventActionType<RunCommandAction> RUN_COMMAND = new EventActionType<>("run-command", RunCommandAction.class, RunCommandAction::new);
     public static final EventActionType<SendMessageAction> SEND_MESSAGE = new EventActionType<>("send-message", SendMessageAction.class, SendMessageAction::new);
     public static final EventActionType<StoreAction> STORE = new EventActionType<>("store", StoreAction.class, StoreAction::new);
+    public static final EventActionType<TeardownAction> TEARDOWN = new EventActionType<>("teardown", TeardownAction.class, TeardownAction::new);
     public static final EventActionType<TeleportAction> TELEPORT = new EventActionType<>("teleport", TeleportAction.class, TeleportAction::new);
 
     private final Class<T> clazz;

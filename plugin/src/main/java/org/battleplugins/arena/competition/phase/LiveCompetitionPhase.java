@@ -46,6 +46,12 @@ public abstract class LiveCompetitionPhase<T extends LiveCompetition<T>> extends
             return;
         }
 
+        // If the victory manager is closed, don't advance to the next phase.
+        // This competition is no longer joinable and should be de-referenced.
+        if (this.competition.getVictoryManager().isClosed()) {
+            return;
+        }
+
         this.setPhase(this.nextPhase);
     }
 

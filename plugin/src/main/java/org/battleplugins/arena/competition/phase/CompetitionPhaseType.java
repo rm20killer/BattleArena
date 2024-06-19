@@ -19,12 +19,18 @@ public final class CompetitionPhaseType<C extends Competition<C>, T extends Comp
     public static final CompetitionPhaseType<?, IngamePhase<?>> INGAME = new CompetitionPhaseType("ingame", IngamePhase.class);
     public static final CompetitionPhaseType<?, VictoryPhase<?>> VICTORY = new CompetitionPhaseType("victory", VictoryPhase.class);
 
+    private final String name;
     private final Class<T> clazz;
 
     CompetitionPhaseType(String name, Class<T> clazz) {
+        this.name = name;
         this.clazz = clazz;
 
         PHASE_TYPES.put(name, this);
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public Class<T> getPhaseType() {

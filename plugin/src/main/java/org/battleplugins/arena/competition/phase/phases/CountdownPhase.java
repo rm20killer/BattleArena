@@ -22,6 +22,9 @@ public class CountdownPhase<T extends LiveCompetition<T>> extends LiveCompetitio
     @ArenaOption(name = "countdown-time", description = "The time to countdown for the competition to start.", required = true)
     private int countdownTime;
 
+    @ArenaOption(name = "sound", description = "The sound to play when a countdown number is broadcasted.")
+    private String sound;
+
     private int countdown;
     private BukkitTask countdownTask;
 
@@ -56,12 +59,16 @@ public class CountdownPhase<T extends LiveCompetition<T>> extends LiveCompetitio
     }
 
     private void onCountdown() {
-        if (this.countdown == 30 || this.countdown == 15 || this.countdown == 10 || this.countdown <= 5) {
+        if (this.countdown % 60 == 0 || this.countdown == 30 || this.countdown == 15 || this.countdown == 10 || this.countdown <= 5) {
             for (ArenaPlayer arenaPlayer : this.getCompetition().getPlayers()) {
                 Player player = arenaPlayer.getPlayer();
                 String timeToStart = UnitUtil.toUnitString(player, this.countdown, TimeUnit.SECONDS);
 
                 Messages.ARENA_STARTS_IN.send(player, this.competition.getArena().getName(), timeToStart);
+
+                if (this.sound != null) {
+                    player.playSound(player.getLocation(), this.sound, 1, 1);
+                }
             }
         }
     }

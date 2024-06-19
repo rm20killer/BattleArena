@@ -16,3 +16,10 @@ max-backups: 5
 # The maximum number of dynamic maps an Arena can have allocated at once.
 # Set to -1 to disable this limit.
 max-dynamic-maps: 5
+
+# Event configurations
+events:
+  Deathmatch:
+    - type: scheduled # Type of event
+      interval: 20m # Interval until start
+      message: "<gold>[</gold><yellow>BattleArena</yellow><gold>]</gold> <yellow>A Deathmatch event is starting! Run <gold>/deathmatch join</gold> to join!</yellow>"

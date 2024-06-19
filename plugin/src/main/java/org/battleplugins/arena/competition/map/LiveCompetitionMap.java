@@ -1,5 +1,6 @@
 package org.battleplugins.arena.competition.map;
 
+import net.kyori.adventure.util.TriState;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaLike;
 import org.battleplugins.arena.competition.Competition;
@@ -47,9 +48,10 @@ public class LiveCompetitionMap<T extends Competition<T>> implements ArenaLike, 
     public LiveCompetitionMap() {
     }
 
-    public LiveCompetitionMap(String name, Arena arena, String world, @Nullable Bounds bounds, @Nullable Spawns spawns) {
+    public LiveCompetitionMap(String name, Arena arena, MapType type, String world, @Nullable Bounds bounds, @Nullable Spawns spawns) {
         this.name = name;
         this.arena = arena;
+        this.type = type;
         this.world = world;
         this.bounds = bounds;
         this.spawns = spawns;
@@ -118,12 +120,13 @@ public class LiveCompetitionMap<T extends Competition<T>> implements ArenaLike, 
     }
 
     @Nullable
-    public T createDynamicCompetition(Arena arena) {
+    public final T createDynamicCompetition(Arena arena) {
         String worldName = "ba-dynamic-" + UUID.randomUUID();
         World world = Bukkit.createWorld(WorldCreator.name(worldName)
                 .generator(VoidChunkGenerator.INSTANCE)
                 .environment(World.Environment.NORMAL)
                 .generateStructures(false)
+                .keepSpawnLoaded(TriState.FALSE)
                 .type(WorldType.NORMAL)
         );
 
@@ -135,7 +138,7 @@ public class LiveCompetitionMap<T extends Competition<T>> implements ArenaLike, 
             return null; // Failed to copy
         }
 
-        LiveCompetitionMap<T> copy = new LiveCompetitionMap<>(this.name, arena, worldName, this.bounds, this.spawns);
+        LiveCompetitionMap<T> copy = new LiveCompetitionMap<>(this.name, arena, this.type, worldName, this.bounds, this.spawns);
         copy.mapWorld = world;
 
         return copy.createCompetition(arena);

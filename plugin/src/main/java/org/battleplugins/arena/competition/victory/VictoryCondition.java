@@ -72,6 +72,6 @@ public class VictoryCondition<T extends LiveCompetition<T>> implements Competiti
 
         // End all competition phases to ensure no other
         // victory conditions can run and get out of sync
-        this.competition.getVictoryManager().end();
+        this.competition.getVictoryManager().end(false);
     }
 }

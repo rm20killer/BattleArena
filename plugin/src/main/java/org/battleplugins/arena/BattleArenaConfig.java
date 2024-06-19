@@ -1,4 +1,10 @@
-package org.battleplugins.arena.config;
+package org.battleplugins.arena;
+
+import org.battleplugins.arena.competition.event.EventOptions;
+import org.battleplugins.arena.config.ArenaOption;
+
+import java.util.List;
+import java.util.Map;
 
 public class BattleArenaConfig {
 
@@ -14,6 +20,9 @@ public class BattleArenaConfig {
     @ArenaOption(name = "max-dynamic-maps", required = true, description = "The maximum number of dynamic maps an Arena can have allocated at once.")
     private int maxDynamicMaps;
 
+    @ArenaOption(name = "events", required = true, description = "The configured events.")
+    private Map<String, List<EventOptions>> events;
+
     public String getConfigVersion() {
         return this.configVersion;
     }
@@ -28,5 +37,9 @@ public class BattleArenaConfig {
 
     public int getMaxDynamicMaps() {
         return this.maxDynamicMaps;
+    }
+
+    public Map<String, List<EventOptions>> getEvents() {
+        return this.events;
     }
 }

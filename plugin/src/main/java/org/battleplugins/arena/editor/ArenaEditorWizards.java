@@ -125,7 +125,7 @@ public final class ArenaEditorWizards {
                 ctx.getSpawns().forEach((team, spawns) -> teamSpawns.put(team, new TeamSpawns(spawns)));
                 Spawns spawns = new Spawns(ctx.getWaitroomSpawn(), ctx.getSpectatorSpawn(), teamSpawns);
 
-                LiveCompetitionMap<?> map = new LiveCompetitionMap<>(ctx.getMapName(), ctx.getArena(), ctx.getPlayer().getWorld().getName(), bounds, spawns);
+                LiveCompetitionMap<?> map = new LiveCompetitionMap<>(ctx.getMapName(), ctx.getArena(), ctx.getMapType(), ctx.getPlayer().getWorld().getName(), bounds, spawns);
 
                 // If our competition is a match, create it
                 if (map.getCompetitionType() == CompetitionType.MATCH && map.getType() == MapType.STATIC) {
@@ -157,7 +157,7 @@ public final class ArenaEditorWizards {
                     ArenaConfigSerializer.serialize(map, configuration);
 
                     configuration.save(mapPath.toFile());
-                } catch (IOException e) {
+                } catch (Exception e) {
                     BattleArena.getInstance().error("Failed to create map file for arena {}", ctx.getArena().getName(), e);
                 }
 

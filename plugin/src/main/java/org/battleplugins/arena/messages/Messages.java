@@ -10,7 +10,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
-public class Messages {
+public final class Messages {
     public static final TextColor PRIMARY_COLOR = NamedTextColor.YELLOW;
     public static final TextColor SECONDARY_COLOR = NamedTextColor.GOLD;
     public static final TextColor ERROR_COLOR = NamedTextColor.RED;
@@ -58,6 +58,9 @@ public class Messages {
     public static final Message ALREADY_IN_ARENA = error("arena-already-in-arena", "You are already in an arena!");
     public static final Message NOT_IN_ARENA = error("arena-not-in-arena", "You are not in an arena!");
     public static final Message ARENA_JOINED = info("arena-joined", "You have joined <secondary>{}</secondary>!");
+    public static final Message ARENA_KICKED = success("arena-kicked", "You have kicked <secondary>{}</secondary> from the arena!");
+    public static final Message ARENA_CANNOT_KICK_SELF = error("arena-cannot-kick-self", "You cannot kick yourself from the arena! Use <secondary>/{} leave</secondary> to leave the Arena.");
+    public static final Message ARENA_KICKED_PLAYER = error("arena-kicked-player", "You have been kicked from the arena!");
     public static final Message ARENA_SPECTATE = info("arena-spectate", "You are now spectating <secondary>{}</secondary>!");
     public static final Message ARENA_LEFT = info("arena-left", "You have left <secondary>{}</secondary>!");
     public static final Message NOT_EVENT = error("arena-not-event", "The specified arena is not an event!");

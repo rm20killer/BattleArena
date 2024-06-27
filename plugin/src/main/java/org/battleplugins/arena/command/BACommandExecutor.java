@@ -103,7 +103,7 @@ public class BACommandExecutor extends BaseCommandExecutor {
                     hoverLines.add(Component.text("Module " + moduleName + " v" + exception.getModule().version() + " failed to load:"));
                     hoverLines.add(Component.empty());
 
-                    for (StackTraceElement element : exception.getCause().getStackTrace()) {
+                    for (StackTraceElement element : exception.getStackTrace()) {
                         hoverLines.add(Component.text(element.toString()));
                     }
 

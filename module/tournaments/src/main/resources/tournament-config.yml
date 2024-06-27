@@ -1,0 +1,24 @@
+# -----------------
+# Tournament configuration for BattleArena
+#
+# Documentation: https://docs.battleplugins.org/docs/ba/customization/teams
+# Support: https://discord.gg/tMVPVJf
+# GitHub: https://github.com/BattlePlugins/BattleArena
+# -----------------
+config-version: 1.0 # The config version, do not change!
+
+# Whether to broadcast when tournaments start to all players on the server.
+broadcast-tournament: true
+
+# How long until each round starts in the tournament after the previous
+# round has ended. It is recommended to keep this value at 10s or higher
+# to allow for players to be removed from the arena and for the arena to
+# be reset fully.
+advance-time: 10s
+
+# The commands to run when a player wins a tournament. The argument
+# %player_name% will be replaced with the player's name. The commands are run
+# in the console. These are executed individually for each player, so be careful
+# with commands that affect multiple players (like message broadcasts.
+commands-on-win:
+  - "give %player_name% diamond 16"

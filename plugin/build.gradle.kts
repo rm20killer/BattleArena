@@ -1,5 +1,5 @@
 plugins {
-    id("xyz.jpenilla.run-paper") version "2.0.1"
+    id("xyz.jpenilla.run-paper") version "2.3.0"
 }
 
 repositories {
@@ -13,7 +13,7 @@ dependencies {
 
 tasks {
     runServer {
-        minecraftVersion("1.20.4")
+        minecraftVersion("1.20.6")
     }
 
     shadowJar {

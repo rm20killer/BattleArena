@@ -54,6 +54,10 @@ public class JoinMessages implements ArenaModuleInitializer, ArenaListener {
 
     @ArenaEventHandler
     public void onLeave(ArenaLeaveEvent event) {
+        if (event.getCause() == ArenaLeaveEvent.Cause.SHUTDOWN || event.getCause() == ArenaLeaveEvent.Cause.GAME) {
+            return;
+        }
+
         LiveCompetition<?> competition = event.getCompetition();
         boolean hasMax = competition.getArena().getTeams().hasMaxPlayers();
         for (ArenaPlayer player : competition.getPlayers()) {

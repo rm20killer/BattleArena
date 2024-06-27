@@ -11,7 +11,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.command.ArenaCommand;
-import org.battleplugins.arena.command.BaseSubCommandExecutor;
+import org.battleplugins.arena.command.SubCommandExecutor;
 import org.battleplugins.arena.competition.Competition;
 import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.competition.map.options.Bounds;
@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class ArenaRestorationExecutor implements BaseSubCommandExecutor {
+public class ArenaRestorationExecutor implements SubCommandExecutor {
     private final ArenaRestoration module;
     private final Arena arena;
 

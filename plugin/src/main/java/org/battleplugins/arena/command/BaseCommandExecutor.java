@@ -5,6 +5,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.apache.commons.lang3.StringUtils;
 import org.battleplugins.arena.BattleArena;
 import org.battleplugins.arena.config.ItemStackParser;
 import org.battleplugins.arena.messages.Messages;
@@ -43,7 +44,7 @@ public class BaseCommandExecutor implements TabExecutor {
 
     private final Map<String, Set<CommandWrapper>> commandMethods = new HashMap<>();
 
-    private final List<BaseSubCommandExecutor> subCommandExecutors = new ArrayList<>();
+    private final List<SubCommandExecutor> subCommandExecutors = new ArrayList<>();
 
     public BaseCommandExecutor(String parentCommand) {
         this(parentCommand, null);
@@ -150,7 +151,7 @@ public class BaseCommandExecutor implements TabExecutor {
         }
     }
 
-    public void injectExecutor(BaseSubCommandExecutor executor) {
+    public void injectExecutor(SubCommandExecutor executor) {
         this.subCommandExecutors.add(executor);
     }
 
@@ -302,7 +303,7 @@ public class BaseCommandExecutor implements TabExecutor {
     }
 
     public void sendHeader(CommandSender sender) {
-        Messages.HEADER.sendCentered(sender, "BattleArena");
+        Messages.HEADER.sendCentered(sender, StringUtils.capitalize(this.parentCommand));
     }
 
     public void sendHelpMessage(CommandSender sender, int page) {
@@ -447,7 +448,7 @@ public class BaseCommandExecutor implements TabExecutor {
                 return BattleArena.getInstance().getArena(arg);
             }
             default -> {
-                for (BaseSubCommandExecutor subCommandExecutor : this.subCommandExecutors) {
+                for (SubCommandExecutor subCommandExecutor : this.subCommandExecutors) {
                     Object obj = subCommandExecutor.onVerifyArgument(sender, arg, parameter);
                     if (obj != null) {
                         return obj;
@@ -496,7 +497,7 @@ public class BaseCommandExecutor implements TabExecutor {
     }
 
     protected boolean onInvalidArgument(CommandSender sender, Class<?> parameter, String input) {
-        for (BaseSubCommandExecutor subCommandExecutor : this.subCommandExecutors) {
+        for (SubCommandExecutor subCommandExecutor : this.subCommandExecutors) {
             boolean success = subCommandExecutor.onInvalidArgument(sender, parameter, input);
             if (success) {
                 return true;
@@ -522,7 +523,7 @@ public class BaseCommandExecutor implements TabExecutor {
             completions.addAll(customCompletions);
         }
 
-        for (BaseSubCommandExecutor subCommandExecutor : this.subCommandExecutors) {
+        for (SubCommandExecutor subCommandExecutor : this.subCommandExecutors) {
             List<String> subCompletions = subCommandExecutor.onVerifyTabComplete(arg, parameter);
             if (subCompletions != null && !subCompletions.isEmpty()) {
                 completions.addAll(subCompletions);
@@ -589,7 +590,7 @@ public class BaseCommandExecutor implements TabExecutor {
             case "arena" -> "<arena> ";
             case "competition" -> "<map> "; // Best name for player-facing values
             default -> {
-                for (BaseSubCommandExecutor subCommandExecutor : this.subCommandExecutors) {
+                for (SubCommandExecutor subCommandExecutor : this.subCommandExecutors) {
                     String usage = subCommandExecutor.getUsageString(parameter);
                     if (usage != null) {
                         yield usage;

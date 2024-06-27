@@ -64,7 +64,7 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
         this.phaseManager.setPhase(initialPhase);
     }
 
-    public ArenaPlayer createPlayer(Player player) {
+    private ArenaPlayer createPlayer(Player player) {
         return new ArenaPlayer(player, this.arena, this);
     }
 
@@ -85,23 +85,23 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
 
             for (ArenaTeam availableTeam : availableTeams) {
                 int playersOnTeam = this.teamManager.getNumberOfPlayersOnTeam(availableTeam);
-                if (playersOnTeam < teamSize.getMax()) {
-                    return CompletableFuture.completedFuture(JoinResult.SUCCESS);
-                } else if (teams.isNonTeamGame()) {
-                    // If the team selection is none and the default team is available, then
-                    // we can just put the player on the default team. But first, we need to
-                    // check to see if the default team is full
-                    int teamSizeMax = teamSize.getMax();
-                    int teamAmount = teams.getTeamAmount().getMax();
-                    if (teamAmount == Integer.MAX_VALUE || teamSizeMax == Integer.MAX_VALUE || playersOnTeam < teamAmount * teamSizeMax) {
-                        // Not full - allow them through
-                        return CompletableFuture.completedFuture(JoinResult.SUCCESS);
+                if (playersOnTeam >= teamSize.getMax()) {
+                    if (teams.isNonTeamGame()) {
+                        // If the team selection is none and the default team is available, then
+                        // we can just put the player on the default team. But first, we need to
+                        // check to see if the default team is full
+                        int teamSizeMax = teamSize.getMax();
+                        int teamAmount = teams.getTeamAmount().getMax();
+                        if (teamAmount == Integer.MAX_VALUE || teamSizeMax == Integer.MAX_VALUE || playersOnTeam < teamAmount * teamSizeMax) {
+                            // Not full - allow them through
+                            return CompletableFuture.completedFuture(JoinResult.SUCCESS);
+                        } else {
+                            // No available teams - return false
+                            return CompletableFuture.completedFuture(JoinResult.ARENA_FULL);
+                        }
                     }
                 }
             }
-
-            // No available teams - return false
-            return CompletableFuture.completedFuture(JoinResult.ARENA_FULL);
         }
 
         // Check if the player can spectate the competition in its current phase
@@ -116,18 +116,30 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
 
     @Override
     public void join(Player player, PlayerRole type) {
+        this.join(player, type, null);
+    }
+
+    public void join(Player player, PlayerRole type, @Nullable ArenaTeam team) {
+        if (this.arena.getPlugin().isInArena(player)) {
+            throw new IllegalStateException("Player is already in an arena!");
+        }
+
         ArenaPlayer arenaPlayer = this.createPlayer(player);
         arenaPlayer.setRole(type);
 
-        this.join(arenaPlayer);
+        this.join(arenaPlayer, null);
     }
 
-    public void join(ArenaPlayer player) {
+    private void join(ArenaPlayer player, @Nullable ArenaTeam team) {
         this.players.put(player.getPlayer(), player);
         this.playersByRole.computeIfAbsent(player.getRole(), e -> new HashSet<>()).add(player);
 
-        if (player.getRole() == PlayerRole.PLAYING) {
-            this.findAndJoinTeamIfApplicable(player);
+        if (team == null) {
+            if (player.getRole() == PlayerRole.PLAYING) {
+                this.findAndJoinTeamIfApplicable(player);
+            }
+        } else {
+            this.teamManager.joinTeam(player, team);
         }
 
         if (player.getRole() == PlayerRole.PLAYING) {
@@ -140,22 +152,22 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
     }
 
     @Override
-    public void leave(Player player) {
+    public void leave(Player player, ArenaLeaveEvent.Cause cause) {
         ArenaPlayer arenaPlayer = this.players.get(player);
         if (arenaPlayer == null) {
             return;
         }
 
-        this.leave(arenaPlayer);
+        this.leave(arenaPlayer, cause);
     }
 
-    public void leave(ArenaPlayer player) {
+    public void leave(ArenaPlayer player, ArenaLeaveEvent.Cause cause) {
         this.players.remove(player.getPlayer());
         this.playersByRole.get(player.getRole()).remove(player);
 
         this.teamManager.leaveTeam(player);
 
-        ArenaLeaveEvent event = new ArenaLeaveEvent(player);
+        ArenaLeaveEvent event = new ArenaLeaveEvent(player, cause);
         this.arena.getEventManager().callEvent(event);
 
         player.remove();

@@ -5,6 +5,7 @@ import org.battleplugins.arena.event.BattleArenaPostInitializeEvent;
 import org.battleplugins.arena.event.action.EventActionType;
 import org.battleplugins.arena.event.arena.ArenaCreateExecutorEvent;
 import org.battleplugins.arena.module.ArenaModule;
+import org.battleplugins.arena.module.ArenaModuleContainer;
 import org.battleplugins.arena.module.ArenaModuleInitializer;
 import org.battleplugins.arena.options.ArenaOptionType;
 import org.battleplugins.arena.options.types.BooleanArenaOption;
@@ -34,14 +35,20 @@ public class Classes implements ArenaModuleInitializer {
 
     @EventHandler
     public void onPostInitialize(BattleArenaPostInitializeEvent event) {
+        ArenaModuleContainer<Classes> container = event.getBattleArena()
+                .<Classes>module(ID)
+                .orElseThrow();
+
         Path dataFolder = event.getBattleArena().getDataFolder().toPath();
         Path classesPath = dataFolder.resolve("classes.yml");
         if (Files.notExists(classesPath)) {
-            InputStream inputStream = getClass().getResourceAsStream("/classes.yml");
+            InputStream inputStream = container.getResource("classes.yml");
             try {
                 Files.copy(inputStream, classesPath);
             } catch (Exception e) {
-                e.printStackTrace();
+                event.getBattleArena().error("Failed to copy classes.yml to data folder!", e);
+                container.disable("Failed to copy classes.yml to data folder!");
+                return;
             }
         }
 

@@ -2,6 +2,7 @@ package org.battleplugins.arena.event.action.types;
 
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.event.action.EventAction;
+import org.battleplugins.arena.event.player.ArenaLeaveEvent;
 
 import java.util.Map;
 
@@ -13,6 +14,6 @@ public class LeaveAction extends EventAction {
 
     @Override
     public void call(ArenaPlayer arenaPlayer) {
-        arenaPlayer.getCompetition().leave(arenaPlayer);
+        arenaPlayer.getCompetition().leave(arenaPlayer, ArenaLeaveEvent.Cause.GAME);
     }
 }

@@ -1,7 +1,9 @@
 package org.battleplugins.arena;
 
 import org.battleplugins.arena.command.BACommandExecutor;
+import org.battleplugins.arena.command.BaseCommandExecutor;
 import org.battleplugins.arena.competition.Competition;
+import org.battleplugins.arena.competition.CompetitionResult;
 import org.battleplugins.arena.competition.CompetitionType;
 import org.battleplugins.arena.competition.JoinResult;
 import org.battleplugins.arena.competition.LiveCompetition;
@@ -18,6 +20,7 @@ import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.event.BattleArenaPostInitializeEvent;
 import org.battleplugins.arena.event.BattleArenaPreInitializeEvent;
 import org.battleplugins.arena.event.BattleArenaShutdownEvent;
+import org.battleplugins.arena.event.player.ArenaLeaveEvent;
 import org.battleplugins.arena.messages.MessageLoader;
 import org.battleplugins.arena.module.ArenaModuleContainer;
 import org.battleplugins.arena.module.ArenaModuleLoader;
@@ -303,7 +306,7 @@ public class BattleArena extends JavaPlugin implements Listener {
             } else {
                 // No victory phase - just forcefully kick every player
                 for (ArenaPlayer player : liveCompetition.getPlayers()) {
-                    liveCompetition.leave(player);
+                    liveCompetition.leave(player, ArenaLeaveEvent.Cause.SHUTDOWN);
                 }
             }
         }
@@ -385,6 +388,10 @@ public class BattleArena extends JavaPlugin implements Listener {
         }
     }
 
+    public boolean isInArena(Player player) {
+        return ArenaPlayer.getArenaPlayer(player) != null;
+    }
+
     @Nullable
     public Arena getArena(String name) {
         return this.arenas.get(name);
@@ -413,7 +420,7 @@ public class BattleArena extends JavaPlugin implements Listener {
     }
 
     public List<Competition<?>> getCompetitions(Arena arena) {
-        return this.competitions.getOrDefault(arena, List.of());
+        return List.copyOf(this.competitions.getOrDefault(arena, List.of()));
     }
 
     public List<Competition<?>> getCompetitions(Arena arena, String name) {
@@ -423,30 +430,30 @@ public class BattleArena extends JavaPlugin implements Listener {
                 .toList();
     }
 
-    public CompletableFuture<Competition<?>> getOrCreateCompetition(Arena arena, Player player, PlayerRole role, @Nullable String name) {
+    public CompletableFuture<CompetitionResult> getOrCreateCompetition(Arena arena, Player player, PlayerRole role, @Nullable String name) {
         // See if we can join any already open competitions
         List<Competition<?>> openCompetitions = this.getCompetitions(arena, name);
-        CompletableFuture<Competition<?>> joinableCompetition = this.findJoinableCompetition(openCompetitions, player, role);
-        return joinableCompetition.thenApplyAsync(comp -> {
-            if (comp != null) {
-                return comp;
+        CompletableFuture<CompetitionResult> joinableCompetition = this.findJoinableCompetition(openCompetitions, player, role);
+        return joinableCompetition.thenApplyAsync(result -> {
+            if (result.competition() != null) {
+                return result;
             }
 
             if (arena.getType() == CompetitionType.EVENT) {
                 // Cannot create non-requested dynamic competitions for events
-                return null;
+                return result;
             }
 
             List<LiveCompetitionMap<?>> maps = this.arenaMaps.get(arena);
             if (maps == null) {
                 // No maps, return
-                return null;
+                return result;
             }
 
             // Ensure we have WorldEdit installed
             if (this.getServer().getPluginManager().getPlugin("WorldEdit") == null) {
                 this.error("WorldEdit is required to create dynamic competitions! Not proceeding with creating a new dynamic competition.");
-                return null;
+                return result;
             }
 
             // Check if we have exceeded the maximum number of dynamic maps
@@ -458,7 +465,7 @@ public class BattleArena extends JavaPlugin implements Listener {
 
             if (dynamicMaps >= this.config.getMaxDynamicMaps() && this.config.getMaxDynamicMaps() != -1) {
                 this.warn("Exceeded maximum number of dynamic maps for arena {}! Not proceeding with creating a new dynamic competition.", arena.getName());
-                return null;
+                return result;
             }
 
             // Create a new competition if possible
@@ -484,7 +491,7 @@ public class BattleArena extends JavaPlugin implements Listener {
                     this.addCompetition(arena, competition);
 
                     // TODO: Call event in Arena.java
-                    return competition;
+                    return new CompetitionResult(competition, JoinResult.SUCCESS);
                 }
             }
 
@@ -493,20 +500,25 @@ public class BattleArena extends JavaPlugin implements Listener {
         }, Bukkit.getScheduler().getMainThreadExecutor(this));
     }
 
-    public CompletableFuture<Competition<?>> findJoinableCompetition(List<Competition<?>> competitions, Player player, PlayerRole role) {
+    public CompletableFuture<CompetitionResult> findJoinableCompetition(List<Competition<?>> competitions, Player player, PlayerRole role) {
+        return this.findJoinableCompetition(competitions, player, role, null);
+    }
+
+    private CompletableFuture<CompetitionResult> findJoinableCompetition(List<Competition<?>> competitions, Player player, PlayerRole role, @Nullable JoinResult lastResult) {
         if (competitions.isEmpty()) {
-            return CompletableFuture.completedFuture(null);
+            return CompletableFuture.completedFuture(new CompetitionResult(null, lastResult == null ? JoinResult.NOT_JOINABLE : lastResult));
         }
 
         Competition<?> competition = competitions.get(0);
         CompletableFuture<JoinResult> result = competition.canJoin(player, role);
-        if (result.join() == JoinResult.SUCCESS) {
-            return CompletableFuture.completedFuture(competition);
+        JoinResult joinResult = result.join();
+        if (joinResult == JoinResult.SUCCESS) {
+            return CompletableFuture.completedFuture(new CompetitionResult(competition, JoinResult.SUCCESS));
         } else {
             List<Competition<?>> remainingCompetitions = new ArrayList<>(competitions);
             remainingCompetitions.remove(competition);
 
-            return this.findJoinableCompetition(remainingCompetitions, player, role);
+            return this.findJoinableCompetition(remainingCompetitions, player, role, joinResult);
         }
     }
 
@@ -537,6 +549,11 @@ public class BattleArena extends JavaPlugin implements Listener {
 
     public Set<ModuleLoadException> getFailedModules() {
         return this.moduleLoader.getFailedModules();
+    }
+
+    public void registerExecutor(String name, BaseCommandExecutor executor) {
+        PluginCommand command = CommandInjector.inject(name, name.toLowerCase(Locale.ROOT));
+        command.setExecutor(executor);
     }
 
     public Path getBackupPath(String type) {

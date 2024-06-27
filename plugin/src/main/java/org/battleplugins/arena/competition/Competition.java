@@ -3,6 +3,7 @@ package org.battleplugins.arena.competition;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.competition.map.CompetitionMap;
 import org.battleplugins.arena.competition.phase.CompetitionPhaseType;
+import org.battleplugins.arena.event.player.ArenaLeaveEvent;
 import org.bukkit.entity.Player;
 
 import java.util.concurrent.CompletableFuture;
@@ -60,7 +61,7 @@ public interface Competition<T extends Competition<T>> extends CompetitionLike<T
      *
      * @param player the player to leave
      */
-    void leave(Player player);
+    void leave(Player player, ArenaLeaveEvent.Cause cause);
 
     @Override
     default T getCompetition() {

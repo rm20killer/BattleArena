@@ -4,7 +4,7 @@ import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.command.ArenaCommand;
 import org.battleplugins.arena.command.ArenaCommandExecutor;
 import org.battleplugins.arena.command.BaseCommandExecutor;
-import org.battleplugins.arena.command.BaseSubCommandExecutor;
+import org.battleplugins.arena.command.SubCommandExecutor;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -56,8 +56,8 @@ public class ArenaCreateExecutorEvent extends Event {
             }
         }
 
-        if (instance instanceof BaseSubCommandExecutor) {
-            this.executor.injectExecutor((BaseSubCommandExecutor) instance);
+        if (instance instanceof SubCommandExecutor executor) {
+            this.executor.injectExecutor(executor);
         }
     }
 

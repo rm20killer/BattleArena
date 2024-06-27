@@ -4,7 +4,7 @@ import org.bukkit.command.CommandSender;
 
 import java.util.List;
 
-public interface BaseSubCommandExecutor {
+public interface SubCommandExecutor {
     default Object onVerifyArgument(CommandSender sender, String arg, Class<?> parameter) {
         return null;
     }

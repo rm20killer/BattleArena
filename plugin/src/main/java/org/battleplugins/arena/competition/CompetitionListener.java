@@ -9,6 +9,7 @@ import org.battleplugins.arena.event.ArenaListener;
 import org.battleplugins.arena.event.arena.ArenaPhaseCompleteEvent;
 import org.battleplugins.arena.event.player.ArenaDeathEvent;
 import org.battleplugins.arena.event.player.ArenaKillEvent;
+import org.battleplugins.arena.event.player.ArenaLeaveEvent;
 import org.battleplugins.arena.event.player.ArenaRespawnEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
@@ -39,7 +40,7 @@ public class CompetitionListener<T extends Competition<T>> implements ArenaListe
 
     @ArenaEventHandler(priority = EventPriority.HIGHEST)
     public void onQuit(PlayerQuitEvent event, ArenaPlayer player) {
-        player.getCompetition().leave(player);
+        player.getCompetition().leave(player, ArenaLeaveEvent.Cause.DISCONNECT);
     }
 
     @ArenaEventHandler(priority = EventPriority.HIGHEST)

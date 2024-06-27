@@ -4,6 +4,7 @@ import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.BattleArena;
 import org.battleplugins.arena.competition.Competition;
+import org.battleplugins.arena.competition.JoinResult;
 import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.competition.PlayerRole;
 import org.battleplugins.arena.competition.map.CompetitionMap;
@@ -15,6 +16,7 @@ import org.battleplugins.arena.editor.ArenaEditorWizards;
 import org.battleplugins.arena.editor.WizardStage;
 import org.battleplugins.arena.editor.context.MapCreateContext;
 import org.battleplugins.arena.editor.type.MapOption;
+import org.battleplugins.arena.event.player.ArenaLeaveEvent;
 import org.battleplugins.arena.messages.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -60,13 +62,14 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
         }
 
         List<Competition<?>> competitions = this.arena.getPlugin().getCompetitions(this.arena, map.getName());
-        this.arena.getPlugin().findJoinableCompetition(competitions, player, PlayerRole.PLAYING).whenCompleteAsync((competition, e) -> {
+        this.arena.getPlugin().findJoinableCompetition(competitions, player, PlayerRole.PLAYING).whenCompleteAsync((result, e) -> {
             if (e != null) {
                 Messages.ARENA_ERROR.send(player, e.getMessage());
                 this.arena.getPlugin().error("An error occurred while joining the arena", e);
                 return;
             }
 
+            Competition<?> competition = result.competition();
             if (competition != null) {
                 competition.join(player, PlayerRole.PLAYING);
 
@@ -75,26 +78,51 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
                 // Try and create a dynamic competition if possible
                 this.arena.getPlugin()
                         .getOrCreateCompetition(this.arena, player, PlayerRole.PLAYING, map.getName())
-                        .whenComplete((newCompetition, ex) -> {
+                        .whenComplete((newResult, ex) -> {
                             if (ex != null) {
                                 Messages.ARENA_ERROR.send(player, ex.getMessage());
                                 this.arena.getPlugin().error("An error occurred while joining the arena", ex);
                                 return;
                             }
 
-                            if (newCompetition == null) {
+                            if (newResult.competition() == null) {
                                 // No competition - something happened that stopped the
                                 // dynamic arena from being created. Not much we can do here,
                                 // but info will be in console in the event of an error
-                                Messages.ARENA_NOT_JOINABLE.send(player);
+                                if (newResult.result() != JoinResult.NOT_JOINABLE && newResult.result().getMessage() != null) {
+                                    newResult.result().getMessage().send(player);
+                                } else if (result.result() != JoinResult.NOT_JOINABLE && result.result().getMessage() != null) {
+                                    result.result().getMessage().send(player);
+                                } else {
+                                    Messages.ARENA_NOT_JOINABLE.send(player);
+                                }
+
                                 return;
                             }
 
-                            newCompetition.join(player, PlayerRole.PLAYING);
-                            Messages.ARENA_JOINED.send(player, newCompetition.getMap().getName());
+                            newResult.competition().join(player, PlayerRole.PLAYING);
+                            Messages.ARENA_JOINED.send(player, newResult.competition().getMap().getName());
                         });
             }
         }, Bukkit.getScheduler().getMainThreadExecutor(this.arena.getPlugin()));
+    }
+
+    @ArenaCommand(commands = "kick", description = "Kick a player from the arena.", permissionNode = "kick")
+    public void kick(Player player, Player target) {
+        ArenaPlayer arenaPlayer = ArenaPlayer.getArenaPlayer(target);
+        if (arenaPlayer == null) {
+            Messages.NOT_IN_ARENA.send(player);
+            return;
+        }
+
+        if (player == target) {
+            Messages.ARENA_CANNOT_KICK_SELF.send(player, this.parentCommand);
+            return;
+        }
+
+        arenaPlayer.getCompetition().leave(target, ArenaLeaveEvent.Cause.KICKED);
+        Messages.ARENA_KICKED.send(player, target.getName());
+        Messages.ARENA_KICKED_PLAYER.send(target);
     }
 
     @ArenaCommand(commands = { "spectate", "s" }, description = "Spectate an arena.", permissionNode = "spectate")
@@ -150,7 +178,7 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
             return;
         }
 
-        arenaPlayer.getCompetition().leave(player);
+        arenaPlayer.getCompetition().leave(player, ArenaLeaveEvent.Cause.COMMAND);
         Messages.ARENA_LEFT.send(player, arenaPlayer.getCompetition().getMap().getName());
     }
 
@@ -237,5 +265,10 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
         }
 
         return super.onVerifyTabComplete(arg, parameter);
+    }
+
+    @Override
+    public final void sendHeader(CommandSender sender) {
+        Messages.HEADER.sendCentered(sender, this.arena.getName());
     }
 }

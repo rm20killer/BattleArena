@@ -93,7 +93,7 @@ public class ArenaModuleLoader {
                             }
 
                             Object mainClass = moduleMainClass.getConstructor().newInstance();
-                            this.modules.put(arenaModule.id(), new ArenaModuleContainer<>(this, arenaModule, mainClass));
+                            this.modules.put(arenaModule.id(), new ArenaModuleContainer<>(path, this, arenaModule, mainClass));
                         } catch (Throwable e) {
                             this.plugin.error("Failed to load module {}!", path.getFileName().toString(), e);
                         }
@@ -125,7 +125,7 @@ public class ArenaModuleLoader {
         return Set.copyOf(this.failedModules);
     }
 
-    public void disableModule(ModuleLoadException reason) {
+    void disableModule(ModuleLoadException reason) {
         this.plugin.info("Disabling module {} for reason {}!", reason.getModule().name(), reason.getMessage());
         ArenaModuleContainer<?> module = this.modules.remove(reason.getModule().id());
         if (module != null && module.mainClass() instanceof ArenaModuleInitializer moduleInitializer) {
@@ -133,6 +133,22 @@ public class ArenaModuleLoader {
         }
 
         this.failedModules.add(reason);
+    }
+
+    @Nullable
+    InputStream getResource(Path path, String location) {
+        try {
+            ZipFile zipFile = new ZipFile(path.toFile());
+            ZipEntry entry = zipFile.getEntry(location);
+            if (entry == null) {
+                return null;
+            }
+
+            return zipFile.getInputStream(entry);
+        } catch (IOException e) {
+            this.plugin.error("Failed to get resource {} from module {}!", location, path.getFileName().toString(), e);
+            return null;
+        }
     }
 
     private static String getClassCanonicalName(ZipEntry entry) {

@@ -21,7 +21,3 @@ allprojects {
         plugin("com.github.johnrengelman.shadow")
     }
 }
-
-tasks.test {
-    useJUnitPlatform()
-}

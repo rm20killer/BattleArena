@@ -71,7 +71,7 @@ public class Message {
             strReplacements[i] = replacement.asPlainText();
         }
 
-        return this.withContext(this.toComponent(strReplacements));
+        return this.withContext(strReplacements);
     }
 
     public Message withContext(Component... replacements) {

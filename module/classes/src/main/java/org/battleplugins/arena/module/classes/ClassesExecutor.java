@@ -3,7 +3,7 @@ package org.battleplugins.arena.module.classes;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.command.ArenaCommand;
-import org.battleplugins.arena.command.BaseSubCommandExecutor;
+import org.battleplugins.arena.command.SubCommandExecutor;
 import org.battleplugins.arena.messages.Messages;
 import org.battleplugins.arena.options.types.BooleanArenaOption;
 import org.bukkit.command.CommandSender;
@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public class ClassesExecutor implements BaseSubCommandExecutor {
+public class ClassesExecutor implements SubCommandExecutor {
     private final Classes module;
     private final Arena arena;
 

@@ -79,6 +79,10 @@ public class TeamManager {
         return null;
     }
 
+    public Set<ArenaTeam> getTeams() {
+        return Set.copyOf(this.teams.keySet());
+    }
+
     public StatHolder getStats(ArenaTeam team) {
         return this.stats.computeIfAbsent(team, e -> new TeamStatHolder(this, team));
     }

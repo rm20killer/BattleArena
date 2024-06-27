@@ -68,7 +68,7 @@ public class InventoryBackup {
 
                 stream.writeBoolean(true);
 
-                byte[] itemBytes = Bukkit.getUnsafe().serializeItem(item);
+                byte[] itemBytes = item.serializeAsBytes();
                 stream.writeInt(itemBytes.length);
                 stream.write(itemBytes);
             }
@@ -123,7 +123,7 @@ public class InventoryBackup {
                         byte[] itemBytes = new byte[itemLength];
 
                         stream.readFully(itemBytes);
-                        items[i] = Bukkit.getUnsafe().deserializeItem(itemBytes);
+                        items[i] = ItemStack.deserializeBytes(itemBytes);
                     }
                 }
 

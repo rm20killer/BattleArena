@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 public final class UnitUtil {
 
-    public static String toUnitString(CommandSender viewer, int amount, TimeUnit unit) {
+    public static String toUnitString(CommandSender viewer, long amount, TimeUnit unit) {
         switch (unit) {
             case SECONDS -> {
                 if (amount == 1) {

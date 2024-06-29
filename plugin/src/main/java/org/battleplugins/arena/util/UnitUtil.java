@@ -10,6 +10,13 @@ public final class UnitUtil {
 
     public static String toUnitString(CommandSender viewer, long amount, TimeUnit unit) {
         switch (unit) {
+            case MILLISECONDS -> {
+                if (amount == 1) {
+                    return amount + " " + Messages.MILLISECOND.asPlainText();
+                } else {
+                    return amount + " " + Messages.MILLISECONDS.asPlainText();
+                }
+            }
             case SECONDS -> {
                 if (amount == 1) {
                     return amount + " " + Messages.SECOND.asPlainText();
@@ -30,6 +37,13 @@ public final class UnitUtil {
                     return amount + " " + Messages.HOUR.asPlainText();
                 } else {
                     return amount + " " + Messages.HOURS.asPlainText();
+                }
+            }
+            case DAYS -> {
+                if (amount == 1) {
+                    return amount + " " + Messages.DAY.asPlainText();
+                } else {
+                    return amount + " " + Messages.DAYS.asPlainText();
                 }
             }
         }

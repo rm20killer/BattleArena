@@ -9,6 +9,10 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Called for {@link ArenaPlayer}s who lose a life
  * in an {@link Arena}.
+ * <p>
+ * This event will be called any time a player has a
+ * life left to live. In the event the player has no
+ * lives left, {@link ArenaLivesExhaustEvent} will be called.
  */
 @EventTrigger("on-life-deplete")
 public class ArenaLifeDepleteEvent extends BukkitArenaPlayerEvent {

@@ -11,6 +11,7 @@ import org.battleplugins.arena.competition.event.EventType;
 import org.battleplugins.arena.messages.Messages;
 import org.battleplugins.arena.util.InventoryBackup;
 import org.battleplugins.arena.util.OptionSelector;
+import org.battleplugins.arena.util.UnitUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -20,6 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class BACommandExecutor extends BaseCommandExecutor {
 
@@ -161,5 +163,22 @@ public class BACommandExecutor extends BaseCommandExecutor {
     public void debug(Player player) {
         BattleArena.getInstance().setDebugMode(!BattleArena.getInstance().isDebugMode());
         Messages.DEBUG_MODE_SET_TO.send(player, Boolean.toString(BattleArena.getInstance().isDebugMode()));
+    }
+
+    @ArenaCommand(commands = "reload", description = "Reloads the plugin.", permissionNode = "reload")
+    public void reload(Player player) {
+        Messages.STARTING_RELOAD.send(player);
+        long start = System.currentTimeMillis();
+
+        try {
+            BattleArena.getInstance().reload();
+        } catch (Exception e) {
+            Messages.RELOAD_FAILED.send(player);
+            BattleArena.getInstance().error("Failed to reload plugin", e);
+            return;
+        }
+
+        long end = System.currentTimeMillis();
+        Messages.RELOAD_COMPLETE.send(player, UnitUtil.toUnitString(player, end - start, TimeUnit.MILLISECONDS));
     }
 }

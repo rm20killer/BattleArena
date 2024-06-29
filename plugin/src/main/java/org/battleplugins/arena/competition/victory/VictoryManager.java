@@ -18,12 +18,14 @@ import java.util.Set;
 public class VictoryManager<T extends Competition<T>> implements ArenaListener, CompetitionLike<T> {
     private final Map<VictoryConditionType<?, ?>, VictoryCondition<?>> victoryConditions = new HashMap<>();
 
+    private final Arena arena;
     private final T competition;
 
     private boolean closed = false;
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public VictoryManager(Arena arena, T competition) {
+        this.arena = arena;
         this.competition = competition;
 
         for (Map.Entry<VictoryConditionType<?, ?>, VictoryConditionType.Provider<?, ?>> entry : arena.getVictoryConditions().entrySet()) {
@@ -70,6 +72,13 @@ public class VictoryManager<T extends Competition<T>> implements ArenaListener, 
 
         for (VictoryCondition<?> condition : this.victoryConditions.values()) {
             condition.end();
+        }
+
+        if (closed) {
+            this.arena.getEventManager().unregisterEvents(this);
+            for (VictoryCondition<?> condition : this.victoryConditions.values()) {
+                this.arena.getEventManager().unregisterEvents(condition);
+            }
         }
     }
 

@@ -11,6 +11,7 @@ import org.battleplugins.arena.event.player.ArenaJoinEvent;
 import org.battleplugins.arena.event.player.ArenaKillEvent;
 import org.battleplugins.arena.event.player.ArenaLeaveEvent;
 import org.battleplugins.arena.event.player.ArenaLifeDepleteEvent;
+import org.battleplugins.arena.event.player.ArenaLivesExhaustEvent;
 import org.battleplugins.arena.event.player.ArenaRespawnEvent;
 import org.battleplugins.arena.event.player.ArenaSpectateEvent;
 import org.battleplugins.arena.event.player.ArenaStatChangeEvent;
@@ -31,6 +32,7 @@ public final class ArenaEventType<T extends ArenaEvent> {
     public static final ArenaEventType<ArenaJoinEvent> ON_JOIN = new ArenaEventType<>("on-join", ArenaJoinEvent.class);
     public static final ArenaEventType<ArenaLeaveEvent> ON_LEAVE = new ArenaEventType<>("on-leave", ArenaLeaveEvent.class);
     public static final ArenaEventType<ArenaLifeDepleteEvent> ON_LIFE_DEPLETE = new ArenaEventType<>("on-life-deplete", ArenaLifeDepleteEvent.class);
+    public static final ArenaEventType<ArenaLivesExhaustEvent> ON_LIVES_EXHAUST = new ArenaEventType<>("on-lives-exhaust", ArenaLivesExhaustEvent.class);
     public static final ArenaEventType<ArenaLoseEvent> ON_LOSE = new ArenaEventType<>("on-lose", ArenaLoseEvent.class);
     public static final ArenaEventType<ArenaRespawnEvent> ON_RESPAWN = new ArenaEventType<>("on-respawn", ArenaRespawnEvent.class);
     public static final ArenaEventType<ArenaSpectateEvent> ON_SPECTATE = new ArenaEventType<>("on-spectate", ArenaSpectateEvent.class);

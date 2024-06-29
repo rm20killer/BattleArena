@@ -47,6 +47,10 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
     private final TeamManager teamManager;
     private final VictoryManager<T> victoryManager;
 
+    private final CompetitionListener<T> competitionListener;
+    private final OptionsListener<T> optionsListener;
+    private final StatListener<T> statListener;
+
     public LiveCompetition(Arena arena, LiveCompetitionMap<T> map) {
         this.arena = arena;
         this.map = map;
@@ -55,13 +59,19 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
         this.teamManager = new TeamManager(this);
         this.victoryManager = new VictoryManager<>(arena, (T) this);
 
-        arena.getEventManager().registerEvents(new CompetitionListener<>(this));
-        arena.getEventManager().registerEvents(new OptionsListener<>(this));
-        arena.getEventManager().registerEvents(new StatListener<>(this));
+        arena.getEventManager().registerEvents(this.competitionListener = new CompetitionListener<>(this));
+        arena.getEventManager().registerEvents(this.optionsListener = new OptionsListener<>(this));
+        arena.getEventManager().registerEvents(this.statListener = new StatListener<>(this));
 
         // Set the initial phase
         CompetitionPhaseType<?, ?> initialPhase = arena.getInitialPhase();
         this.phaseManager.setPhase(initialPhase);
+    }
+
+    protected void onDestroy() {
+        this.arena.getEventManager().unregisterEvents(this.competitionListener);
+        this.arena.getEventManager().unregisterEvents(this.optionsListener);
+        this.arena.getEventManager().unregisterEvents(this.statListener);
     }
 
     private ArenaPlayer createPlayer(Player player) {

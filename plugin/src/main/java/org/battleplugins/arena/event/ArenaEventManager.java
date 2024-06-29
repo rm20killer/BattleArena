@@ -69,6 +69,7 @@ public class ArenaEventManager {
         }
     };
 
+    private final List<ArenaListener> trackedListeners = new ArrayList<>();
     private final Arena arena;
 
     public ArenaEventManager(Arena arena) {
@@ -161,6 +162,8 @@ public class ArenaEventManager {
     }
 
     public void registerEvents(ArenaListener listener) {
+        this.trackedListeners.add(listener);
+
         for (Method method : listener.getClass().getDeclaredMethods()) {
             method.setAccessible(true);
 
@@ -262,6 +265,15 @@ public class ArenaEventManager {
 
     public void unregisterEvents(ArenaListener listener) {
         HandlerList.unregisterAll(listener);
+        this.trackedListeners.remove(listener);
+    }
+
+    public void unregisterAll() {
+        for (ArenaListener listener : this.trackedListeners) {
+            HandlerList.unregisterAll(listener);
+        }
+
+        this.trackedListeners.clear();
     }
 
     @Nullable

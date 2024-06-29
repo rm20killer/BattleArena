@@ -105,12 +105,16 @@ public final class Messages {
     public static final Message MAP_FAILED_TO_SAVE = error("editor-map-failed-to-save", "An error occurred saving map <secondary>{}</secondary>! Please see the console for errors.");
 
     // Util strings
+    public static final Message MILLISECONDS = message("util-milliseconds", "milliseconds");
+    public static final Message MILLISECOND = message("util-millisecond", "millisecond");
     public static final Message SECONDS = message("util-seconds", "seconds");
     public static final Message SECOND = message("util-second", "second");
     public static final Message MINUTES = message("util-minutes", "minutes");
     public static final Message MINUTE = message("util-minute", "minute");
     public static final Message HOURS = message("util-hours", "hours");
     public static final Message HOUR = message("util-hour", "hour");
+    public static final Message DAYS = message("util-days", "days");
+    public static final Message DAY = message("util-day", "day");
     public static final Message ENABLED = message("util-enabled", "enabled", NamedTextColor.GREEN);
     public static final Message DISABLED = message("util-disabled", "disabled", NamedTextColor.RED);
 
@@ -128,6 +132,9 @@ public final class Messages {
     public static final Message BACKUP_NUMBER = message("util-backup-number", "Backup <secondary>#{}</secondary>");
     public static final Message MODULES = message("util-modules", "Modules");
     public static final Message MODULE = message("util-module", "<gray>-</gray> <secondary>{}:</secondary> {}");
+    public static final Message STARTING_RELOAD = info("util-starting-reload", "Reloading BattleArena...");
+    public static final Message RELOAD_COMPLETE = success("util-reload-complete", "Reload complete in <secondary>{}</secondary>!");
+    public static final Message RELOAD_FAILED = error("util-reload-failed", "Reload failed! Please see the console for more information.");
 
     static void init() {
         // no-op

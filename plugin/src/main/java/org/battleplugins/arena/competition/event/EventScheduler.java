@@ -101,12 +101,13 @@ public class EventScheduler {
         arena.getPlugin().info("Event in arena {} has ended. Rescheduling event at interval.", arena.getName());
     }
 
-    public void stopAllScheduledEvents() {
+    public void stopAllEvents() {
         for (ScheduledEvent task : this.scheduledEvents.values()) {
             task.task().cancel();
         }
 
         this.scheduledEvents.clear();
+        this.activeEvents.clear();
     }
 
     public Set<Arena> getScheduledEvents() {

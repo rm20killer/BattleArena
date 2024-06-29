@@ -6,6 +6,7 @@ import org.battleplugins.arena.event.ArenaListener;
 import org.battleplugins.arena.event.player.ArenaDeathEvent;
 import org.battleplugins.arena.event.player.ArenaKillEvent;
 import org.battleplugins.arena.event.player.ArenaLifeDepleteEvent;
+import org.battleplugins.arena.event.player.ArenaLivesExhaustEvent;
 import org.battleplugins.arena.event.player.ArenaStatChangeEvent;
 import org.battleplugins.arena.stat.ArenaStats;
 import org.bukkit.event.EventPriority;
@@ -31,10 +32,19 @@ public class StatListener<T extends Competition<T>> implements ArenaListener, Co
     }
 
     @ArenaEventHandler(priority = EventPriority.LOWEST)
-    public void onLifeDeplete(ArenaStatChangeEvent<?> event) {
+    public void onStatChange(ArenaStatChangeEvent<?> event) {
         if (event.getStat() == ArenaStats.LIVES && event.getStatHolder() instanceof ArenaPlayer player) {
-            ArenaLifeDepleteEvent lifeDepleteEvent = new ArenaLifeDepleteEvent(this.competition.getArena(), player, (int) event.getNewValue());
-            this.competition.getArena().getEventManager().callEvent(lifeDepleteEvent);
+            int newValue = (int) event.getNewValue();
+            if (event.getOldValue() != null && (int) event.getOldValue() < newValue) {
+                return;
+            }
+
+            if (newValue == 0) {
+                this.competition.getArena().getEventManager().callEvent(new ArenaLivesExhaustEvent(this.competition.getArena(), player));
+                return;
+            }
+
+            this.competition.getArena().getEventManager().callEvent(new ArenaLifeDepleteEvent(this.competition.getArena(), player, newValue));
         }
     }
 

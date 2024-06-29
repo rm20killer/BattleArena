@@ -47,6 +47,7 @@ public final class Messages {
     public static final Message AN_ERROR_OCCURRED = error("command-an-error-occurred", "An error occurred while executing this command: {}!");
     public static final Message PLAYER_NOT_ONLINE = error("command-player-not-found", "The player <secondary>{}</secondary> could not be found!");
     public static final Message INVALID_TYPE = error("command-invalid-type", "The specified type <secondary>{}</secondary> was not a valid {}!");
+    public static final Message CLICK_TO_PREPARE = info("command-click-to-prepare", "Click to prepare: <secondary>{}</secondary>");
 
     // Arena messages
     public static final Message NO_OPEN_ARENAS = error("arena-no-open-arenas", "There are no open arenas!");

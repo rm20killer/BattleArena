@@ -3,6 +3,7 @@ package org.battleplugins.arena.command;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.apache.commons.lang3.StringUtils;
@@ -339,9 +340,19 @@ public class BaseCommandExecutor implements TabExecutor {
             }
 
             if (this.hasPermission(sender, this.getPermissionNode(wrapper.getCommand().permissionNode()))) {
+                ArenaCommand arenaCommand = wrapper.getCommand();
+                String command = "/" + this.parentCommand + " " + (arenaCommand.commands().length > 0 ? arenaCommand.commands()[0] : "");
+                if (arenaCommand.subCommands().length > 0) {
+                    command += " " + arenaCommand.subCommands()[0];
+                }
+
+                HoverEvent<Component> hoverEvent = HoverEvent.showText(Messages.CLICK_TO_PREPARE.toComponent(command));
+                ClickEvent clickEvent = ClickEvent.suggestCommand(command);
                 sender.sendMessage(
                         Component.text("/" + this.parentCommand + " " + wrapper.usage, Messages.PRIMARY_COLOR)
                                 .append(Component.text(wrapper.getCommand().description(), Messages.SECONDARY_COLOR))
+                                .clickEvent(clickEvent)
+                                .hoverEvent(hoverEvent)
                 );
             }
         }

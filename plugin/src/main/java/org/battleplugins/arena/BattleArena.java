@@ -20,6 +20,7 @@ import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.event.BattleArenaPostInitializeEvent;
 import org.battleplugins.arena.event.BattleArenaPreInitializeEvent;
 import org.battleplugins.arena.event.BattleArenaShutdownEvent;
+import org.battleplugins.arena.event.arena.ArenaCreateCompetitionEvent;
 import org.battleplugins.arena.event.player.ArenaLeaveEvent;
 import org.battleplugins.arena.messages.MessageLoader;
 import org.battleplugins.arena.module.ArenaModuleContainer;
@@ -228,8 +229,6 @@ public class BattleArena extends JavaPlugin implements Listener {
                 if (map.getType() == MapType.STATIC) {
                     Competition<?> competition = map.createCompetition(entry.getKey());
                     this.addCompetition(entry.getKey(), competition);
-
-                    // TODO: Call event in Arena.java
                 }
             }
         }
@@ -290,6 +289,8 @@ public class BattleArena extends JavaPlugin implements Listener {
 
     public void addCompetition(Arena arena, Competition<?> competition) {
         this.competitions.computeIfAbsent(arena, k -> new ArrayList<>()).add(competition);
+
+        this.getServer().getPluginManager().callEvent(new ArenaCreateCompetitionEvent(arena, competition));
     }
 
     @SuppressWarnings("unchecked")
@@ -507,8 +508,6 @@ public class BattleArena extends JavaPlugin implements Listener {
                     }
 
                     this.addCompetition(arena, competition);
-
-                    // TODO: Call event in Arena.java
                     return new CompetitionResult(competition, JoinResult.SUCCESS);
                 }
             }

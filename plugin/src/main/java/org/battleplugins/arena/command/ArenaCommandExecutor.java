@@ -211,7 +211,7 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
         }
 
         this.arena.getPlugin().removeArenaMap(this.arena, liveMap);
-        Messages.ARENA_REMOVED.send(player, this.arena.getName());
+        Messages.ARENA_REMOVED.send(player, map.getName());
     }
 
     @ArenaCommand(commands = "edit", description = "Edit an arena map.", permissionNode = "edit")

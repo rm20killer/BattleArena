@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public final class CompetitionPhaseType<C extends Competition<C>, T extends CompetitionPhase<C>> {
     private static final Map<String, CompetitionPhaseType<?, ?>> PHASE_TYPES = new HashMap<>();
@@ -57,6 +58,10 @@ public final class CompetitionPhaseType<C extends Competition<C>, T extends Comp
     @Override
     public int hashCode() {
         return Objects.hash(this.clazz);
+    }
+
+    public static Set<CompetitionPhaseType<?, ?>> values() {
+        return Set.copyOf(PHASE_TYPES.values());
     }
 
     public interface Provider<C extends Competition<C>, T extends CompetitionPhase<C>> {

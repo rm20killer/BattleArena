@@ -29,7 +29,6 @@ import org.battleplugins.arena.module.ModuleLoadException;
 import org.battleplugins.arena.team.ArenaTeams;
 import org.battleplugins.arena.util.CommandInjector;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -71,8 +70,7 @@ public class BattleArena extends JavaPlugin implements Listener {
     private final Map<Arena, List<Competition<?>>> competitions = new HashMap<>();
 
     private final Map<String, ArenaLoader> arenaLoaders = new HashMap<>();
-
-    private EventScheduler eventScheduler;
+    private final EventScheduler eventScheduler = new EventScheduler();
 
     private BattleArenaConfig config;
     private ArenaModuleLoader moduleLoader;
@@ -108,8 +106,18 @@ public class BattleArena extends JavaPlugin implements Listener {
         // Copy our default configs
         this.saveDefaultConfig();
 
-        Configuration config = YamlConfiguration.loadConfiguration(new File(this.getDataFolder(), "config.yml"));
-        this.config = ArenaConfigParser.newInstance(BattleArenaConfig.class, config);
+        File configFile = new File(this.getDataFolder(), "config.yml");
+        Configuration config = YamlConfiguration.loadConfiguration(configFile);
+        try {
+            this.config = ArenaConfigParser.newInstance(configFile.toPath(), BattleArenaConfig.class, config);
+        } catch (ParseException e) {
+            ParseException.handle(e);
+
+            this.error("Failed to load BattleArena configuration! Disabling plugin.");
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         this.debugMode = this.config.isDebugMode();
 
         if (Files.notExists(this.arenasPath)) {
@@ -131,8 +139,17 @@ public class BattleArena extends JavaPlugin implements Listener {
         }
 
         // Load teams
-        Configuration teamsConfig = YamlConfiguration.loadConfiguration(new File(this.getDataFolder(), "teams.yml"));
-        this.teams = ArenaConfigParser.newInstance(ArenaTeams.class, teamsConfig, this);
+        File teamsFile = new File(this.getDataFolder(), "teams.yml");
+        Configuration teamsConfig = YamlConfiguration.loadConfiguration(teamsFile);
+        try {
+            this.teams = ArenaConfigParser.newInstance(teamsFile.toPath(), ArenaTeams.class, teamsConfig, this);
+        } catch (ParseException e) {
+            ParseException.handle(e);
+
+            this.error("Failed to load teams configuration! Disabling plugin.");
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
         // Clear any remaining dynamic maps
         this.clearDynamicMaps();
@@ -145,8 +162,6 @@ public class BattleArena extends JavaPlugin implements Listener {
 
         // Register default arenas
         this.registerArena("Arena", Arena.class);
-
-        this.eventScheduler = new EventScheduler();
 
         // Create arena loaders
         try (Stream<Path> arenaPaths = Files.walk(this.arenasPath)) {
@@ -385,7 +400,7 @@ public class BattleArena extends JavaPlugin implements Listener {
 
                     try {
                         Configuration configuration = YamlConfiguration.loadConfiguration(Files.newBufferedReader(mapPath));
-                        LiveCompetitionMap<?> map = ArenaConfigParser.newInstance(arena.getCompetitionMapType(), configuration, this);
+                        LiveCompetitionMap<?> map = ArenaConfigParser.newInstance(mapPath, arena.getCompetitionMapType(), configuration, this);
                         if (map.getBounds() == null && map.getType() == MapType.DYNAMIC) {
                             // Cannot create dynamic map without bounds
                             this.warn("Map {} for arena {} is dynamic but does not have bounds!", map.getName(), arena.getName());
@@ -397,7 +412,7 @@ public class BattleArena extends JavaPlugin implements Listener {
                     } catch (IOException e) {
                         throw new RuntimeException("Error reading competition config", e);
                     } catch (ParseException e) {
-                        this.error("An error occurred when loading competition for arena {}: {}", arenaName, e.getMessage(), e);
+                        ParseException.handle(e);
                     }
                 });
             } catch (IOException e) {
@@ -619,12 +634,24 @@ public class BattleArena extends JavaPlugin implements Listener {
         this.debugMode = debugMode;
     }
 
+    public void info(String message) {
+        this.getSLF4JLogger().info(message);
+    }
+
     public void info(String message, Object... args) {
         this.getSLF4JLogger().info(message, args);
     }
 
+    public void error(String message) {
+        this.getSLF4JLogger().error(message);
+    }
+
     public void error(String message, Object... args) {
         this.getSLF4JLogger().error(message, args);
+    }
+
+    public void warn(String message) {
+        this.getSLF4JLogger().warn(message);
     }
 
     public void warn(String message, Object... args) {

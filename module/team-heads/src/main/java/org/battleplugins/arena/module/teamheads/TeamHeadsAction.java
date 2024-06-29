@@ -34,7 +34,7 @@ public class TeamHeadsAction extends EventAction {
 
         item = item.clone();
         item.editMeta(meta -> meta.displayName(
-                Component.text(team.getName() + " Team", TextColor.color(team.getColor().asRGB()))
+                Component.text(team.getName() + " Team", TextColor.color(team.getColor().getRGB()))
                         .decoration(TextDecoration.ITALIC, false))
         );
 

@@ -9,6 +9,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.apache.commons.lang3.StringUtils;
 import org.battleplugins.arena.BattleArena;
 import org.battleplugins.arena.config.ItemStackParser;
+import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.messages.Messages;
 import org.battleplugins.arena.util.PaginationCalculator;
 import org.bukkit.Bukkit;
@@ -434,7 +435,12 @@ public class BaseCommandExecutor implements TabExecutor {
                 };
             }
             case "material" -> {
-                return ItemStackParser.deserializeSingular(arg);
+                try {
+                    return ItemStackParser.deserializeSingular(arg);
+                } catch (ParseException e) {
+                    ParseException.handle(e);
+                    return null;
+                }
             }
             case "player" -> {
                 return Bukkit.getPlayer(arg);

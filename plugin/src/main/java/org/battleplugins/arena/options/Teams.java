@@ -2,6 +2,7 @@ package org.battleplugins.arena.options;
 
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.config.ArenaOption;
+import org.battleplugins.arena.config.DocumentationSource;
 import org.battleplugins.arena.config.PostProcessable;
 import org.battleplugins.arena.config.Scoped;
 import org.battleplugins.arena.team.ArenaTeam;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+@DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/teams")
 public class Teams implements PostProcessable {
 
     @Scoped

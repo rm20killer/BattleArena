@@ -27,7 +27,7 @@ record ArenaLoader(BattleArena battleArena, String mode, Configuration configura
                 return;
             }
 
-            Arena arena = ArenaConfigParser.newInstance(arenaType, this.configuration, this.battleArena);
+            Arena arena = ArenaConfigParser.newInstance(this.arenaPath, arenaType, this.configuration, this.battleArena);
             Bukkit.getPluginManager().registerEvents(arena, this.battleArena);
 
             this.battleArena.arenas.put(arena.getName(), arena);
@@ -45,7 +45,10 @@ record ArenaLoader(BattleArena battleArena, String mode, Configuration configura
 
             this.battleArena.info("Loaded arena: {}.", arena.getName());
         } catch (ParseException e) {
-            this.battleArena.error("An error occurred when loading arena {}: {}", arenaPath.getFileName(), e.getMessage(), e);
+            ParseException.handle(e
+                    .context("Arena", configuration.getString("name"))
+                    .context("Mode", this.mode)
+            );
         }
     }
 }

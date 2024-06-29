@@ -79,27 +79,21 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
                 this.arena.getPlugin()
                         .getOrCreateCompetition(this.arena, player, PlayerRole.PLAYING, map.getName())
                         .whenComplete((newResult, ex) -> {
-                            System.out.println("when complete " + newResult);
                             if (ex != null) {
-                                System.out.println("error");
                                 Messages.ARENA_ERROR.send(player, ex.getMessage());
                                 this.arena.getPlugin().error("An error occurred while joining the arena", ex);
                                 return;
                             }
 
                             if (newResult.competition() == null) {
-                                System.out.println("no competition");
                                 // No competition - something happened that stopped the
                                 // dynamic arena from being created. Not much we can do here,
                                 // but info will be in console in the event of an error
                                 if (newResult.result() != JoinResult.NOT_JOINABLE && newResult.result().getMessage() != null) {
-                                    System.out.println("no competition message");
                                     newResult.result().getMessage().send(player);
                                 } else if (result.result() != JoinResult.NOT_JOINABLE && result.result().getMessage() != null) {
-                                    System.out.println("no competition message 2");
-                                    result.result().getMessage().send(player);
+                                   result.result().getMessage().send(player);
                                 } else {
-                                    System.out.println("no competition message 3");
                                     Messages.ARENA_NOT_JOINABLE.send(player);
                                 }
 

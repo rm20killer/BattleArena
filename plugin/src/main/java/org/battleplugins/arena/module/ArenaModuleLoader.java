@@ -128,7 +128,7 @@ public class ArenaModuleLoader {
     }
 
     void disableModule(ModuleLoadException reason) {
-        this.plugin.info("Disabling module {} for reason {}!", reason.getModule().name(), reason.getMessage());
+        this.plugin.info("Disabling module {} for reason: {}", reason.getModule().name(), reason.getMessage());
         ArenaModuleContainer<?> module = this.modules.remove(reason.getModule().id());
         if (module != null && module.mainClass() instanceof ArenaModuleInitializer moduleInitializer) {
             HandlerList.unregisterAll(moduleInitializer);

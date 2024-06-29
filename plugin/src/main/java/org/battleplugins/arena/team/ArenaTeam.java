@@ -1,9 +1,12 @@
 package org.battleplugins.arena.team;
 
 import org.battleplugins.arena.config.ArenaOption;
-import org.bukkit.Color;
+import org.battleplugins.arena.config.DocumentationSource;
 import org.bukkit.inventory.ItemStack;
 
+import java.awt.Color;
+
+@DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/teams")
 public class ArenaTeam {
 
     @ArenaOption(name = "name", description = "The name of the team.", required = true)

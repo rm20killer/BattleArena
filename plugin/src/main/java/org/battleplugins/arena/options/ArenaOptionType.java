@@ -1,14 +1,17 @@
 package org.battleplugins.arena.options;
 
+import org.battleplugins.arena.config.DocumentationSource;
 import org.battleplugins.arena.options.types.BooleanArenaOption;
 import org.battleplugins.arena.options.types.EnumArenaOption;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
-public class ArenaOptionType<T extends ArenaOption> {
+@DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/option-reference")
+public final class ArenaOptionType<T extends ArenaOption> {
     private static final Map<String, ArenaOptionType<?>> OPTION_TYPES = new HashMap<>();
 
     public static final ArenaOptionType<BooleanArenaOption> BLOCK_BREAK = new ArenaOptionType<>("block-break", BooleanArenaOption::new);
@@ -20,12 +23,18 @@ public class ArenaOptionType<T extends ArenaOption> {
     public static final ArenaOptionType<EnumArenaOption<DamageOption>> DAMAGE_PLAYERS = new ArenaOptionType<>("damage-players", params -> new EnumArenaOption<>(params, DamageOption.class, "option"));
     public static final ArenaOptionType<EnumArenaOption<DamageOption>> DAMAGE_ENTITIES = new ArenaOptionType<>("damage-entities", params -> new EnumArenaOption<>(params, DamageOption.class, "option"));
 
+    private final String name;
     private final Function<Map<String, String>, T> factory;
 
     ArenaOptionType(String name, Function<Map<String, String>, T> factory) {
+        this.name = name;
         this.factory = factory;
 
         OPTION_TYPES.put(name, this);
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public T create(Map<String, String> params) {
@@ -39,5 +48,9 @@ public class ArenaOptionType<T extends ArenaOption> {
 
     public static <T extends ArenaOption> ArenaOptionType<T> create(String name, Function<Map<String, String>, T> factory) {
         return new ArenaOptionType<>(name, factory);
+    }
+
+    public static Set<ArenaOptionType<?>> values() {
+        return Set.copyOf(OPTION_TYPES.values());
     }
 }

@@ -181,7 +181,7 @@ public final class ArenaConfigSerializer {
         }
     }
 
-    private static List<ConfigurationSection> toMemorySections(List<?> list) {
+    private static List<ConfigurationSection> toMemorySections(List<?> list) throws ParseException {
         List<ConfigurationSection> sections = new LinkedList<>();
         for (Object object : list) {
             if (object.getClass().isPrimitive() || object.getClass().isEnum() || object.getClass() == String.class) {

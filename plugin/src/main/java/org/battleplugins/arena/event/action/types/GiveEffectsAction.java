@@ -1,6 +1,7 @@
 package org.battleplugins.arena.event.action.types;
 
 import org.battleplugins.arena.ArenaPlayer;
+import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.config.SingularValueParser;
 import org.battleplugins.arena.event.action.EventAction;
 import org.bukkit.potion.PotionEffectType;
@@ -16,7 +17,20 @@ public class GiveEffectsAction extends EventAction {
 
     @Override
     public void call(ArenaPlayer arenaPlayer) {
-        SingularValueParser.ArgumentBuffer buffer = SingularValueParser.parseUnnamed(this.get(EFFECTS_KEY), SingularValueParser.BraceStyle.SQUARE, ',');
+        SingularValueParser.ArgumentBuffer buffer;
+        try {
+            buffer = SingularValueParser.parseUnnamed(this.get(EFFECTS_KEY), SingularValueParser.BraceStyle.SQUARE, ',');
+        } catch (ParseException e) {
+            ParseException.handle(e
+                    .context("Action", "GiveEffectsAction")
+                    .context("Arena", arenaPlayer.getArena().getName())
+                    .context("Provided value", this.get(EFFECTS_KEY))
+                    .cause(ParseException.Cause.INVALID_VALUE)
+                    .userError()
+            );
+            return;
+        }
+
         if (!buffer.hasNext()) {
             return;
         }

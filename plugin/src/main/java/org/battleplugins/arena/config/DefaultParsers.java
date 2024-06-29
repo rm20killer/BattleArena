@@ -76,7 +76,11 @@ final class DefaultParsers {
             } else if (value.contains(",")) {
                 String[] split = value.split(",");
                 if (split.length != 3) {
-                    throw new ParseException("Color must have 3 values!");
+                    throw new ParseException("Color must have 3 values!")
+                            .context("Provided color", value)
+                            .context("Expected format", "r,g,b")
+                            .cause(ParseException.Cause.INVALID_VALUE)
+                            .userError();
                 }
 
                 return new Color(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]));
@@ -94,7 +98,7 @@ final class DefaultParsers {
         });
     }
 
-    private static <T> Function<Object, T> parseString(Function<String, T> parser) {
+    private static <T> ArenaConfigParser.Parser<T> parseString(Function<String, T> parser) {
         return configValue -> {
             if (!(configValue instanceof String value)) {
                 return null;

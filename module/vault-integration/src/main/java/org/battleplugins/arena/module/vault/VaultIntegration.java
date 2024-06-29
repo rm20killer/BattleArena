@@ -27,6 +27,8 @@ public class VaultIntegration implements ArenaModuleInitializer {
             event.getBattleArena().module(VaultIntegration.ID).ifPresent(container ->
                     container.disable("Vault is required for the Vault integration module to work!")
             );
+
+            return;
         }
 
         this.vaultContainer = new VaultContainer();

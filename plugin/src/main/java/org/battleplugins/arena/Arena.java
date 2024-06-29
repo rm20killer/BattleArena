@@ -8,6 +8,7 @@ import org.battleplugins.arena.competition.phase.CompetitionPhase;
 import org.battleplugins.arena.competition.phase.CompetitionPhaseType;
 import org.battleplugins.arena.competition.victory.VictoryConditionType;
 import org.battleplugins.arena.config.ArenaOption;
+import org.battleplugins.arena.config.DocumentationSource;
 import org.battleplugins.arena.config.Scoped;
 import org.battleplugins.arena.config.context.EventContextProvider;
 import org.battleplugins.arena.config.context.OptionContextProvider;
@@ -39,6 +40,7 @@ import java.util.Set;
  * The {@link Competition} is the location in which all the lifecycle and
  * active game actions will occur (i.e. game timer, score, etc.)
  */
+@DocumentationSource("https://docs.battleplugins.org/books/user-guide/chapter/configuration")
 public class Arena implements ArenaLike, ArenaListener {
 
     @Scoped

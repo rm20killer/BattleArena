@@ -5,18 +5,22 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class DurationParser implements Function<Object, Duration> {
+@DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/time-format")
+public final class DurationParser implements ArenaConfigParser.Parser<Duration> {
     private static final Pattern DURATION_PATTERN = Pattern.compile("(\\d+)([yYmMdDhHwWsS])");
 
     @Override
-    public Duration apply(Object object) {
+    public Duration parse(Object object) throws ParseException {
         if (object instanceof Number number) {
             return Duration.ofSeconds(number.longValue());
         }
 
         String value = object.toString();
         if (value.isBlank()) {
-            return Duration.ZERO;
+            throw new ParseException("Duration value was not provided!")
+                    .cause(ParseException.Cause.MISSING_VALUE)
+                    .type(this.getClass())
+                    .userError();
         }
 
         // Define a regular expression to match the duration format
@@ -50,8 +54,18 @@ public final class DurationParser implements Function<Object, Duration> {
                     totalSeconds += amount;
                     break;
                 default:
-                    throw new IllegalArgumentException("Invalid unit: " + unit);
+                    throw new ParseException("Invalid unit: " + unit)
+                            .cause(ParseException.Cause.INVALID_TYPE)
+                            .type(this.getClass())
+                            .userError();
             }
+        }
+
+        if (totalSeconds == 0) {
+            throw new ParseException("Failed to parse Duration from value " + object)
+                    .cause(ParseException.Cause.INVALID_VALUE)
+                    .type(this.getClass())
+                    .userError();
         }
 
         return Duration.ofSeconds(totalSeconds);

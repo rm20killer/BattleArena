@@ -10,6 +10,7 @@ import org.battleplugins.arena.competition.map.options.Bounds;
 import org.battleplugins.arena.competition.map.options.Spawns;
 import org.battleplugins.arena.competition.map.options.TeamSpawns;
 import org.battleplugins.arena.config.ArenaConfigSerializer;
+import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.editor.context.MapCreateContext;
 import org.battleplugins.arena.editor.stage.EnumTextInputStage;
 import org.battleplugins.arena.editor.stage.PositionInputStage;
@@ -90,8 +91,10 @@ public final class ArenaEditorWizards {
                     ArenaConfigSerializer.serialize(map, configuration);
 
                     configuration.save(mapPath.toFile());
-                } catch (IOException e) {
+                } catch (ParseException | IOException e) {
                     BattleArena.getInstance().error("Failed to create map file for arena {}", ctx.getArena().getName(), e);
+                    Messages.MAP_FAILED_TO_SAVE.send(ctx.getPlayer(), map.getName());
+                    return;
                 }
 
                 Messages.MAP_EDITED.send(ctx.getPlayer(), map.getName());

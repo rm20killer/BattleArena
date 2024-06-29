@@ -1,6 +1,7 @@
 package org.battleplugins.arena.module.classes;
 
 import org.battleplugins.arena.config.ArenaConfigParser;
+import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.event.BattleArenaPostInitializeEvent;
 import org.battleplugins.arena.event.action.EventActionType;
 import org.battleplugins.arena.event.arena.ArenaCreateExecutorEvent;
@@ -52,8 +53,14 @@ public class Classes implements ArenaModuleInitializer {
             }
         }
 
-        Configuration classesConfig = YamlConfiguration.loadConfiguration(new File(dataFolder.toFile(), "classes.yml"));
-        this.classes = ArenaConfigParser.newInstance(ArenaClasses.class, classesConfig, event.getBattleArena());
+        Configuration classesConfig = YamlConfiguration.loadConfiguration(classesPath.toFile());
+        try {
+            this.classes = ArenaConfigParser.newInstance(classesPath, ArenaClasses.class, classesConfig, event.getBattleArena());
+        } catch (ParseException e) {
+            ParseException.handle(e);
+
+            container.disable("Failed to parse classes.yml!");
+        }
     }
 
     @EventHandler

@@ -24,10 +24,11 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public final class ItemStackParser implements Function<Object, ItemStack> {
+@DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/item-syntax")
+public final class ItemStackParser implements ArenaConfigParser.Parser<ItemStack> {
 
     @Override
-    public ItemStack apply(Object object) {
+    public ItemStack parse(Object object) throws ParseException {
         if (object instanceof String string) {
             return deserializeSingular(string);
         }
@@ -36,27 +37,38 @@ public final class ItemStackParser implements Function<Object, ItemStack> {
             return deserializeNode(section);
         }
 
-        throw new ParseException("Invalid ItemStack for object: " + object);
+        throw new ParseException("Invalid ItemStack for object: " + object)
+                .cause(ParseException.Cause.INVALID_TYPE)
+                .type(this.getClass())
+                .userError();
     }
 
-    public static ItemStack deserializeSingular(String contents) {
+    public static ItemStack deserializeSingular(String contents) throws ParseException {
         ItemStack itemStack;
 
         SingularValueParser.ArgumentBuffer buffer = SingularValueParser.parseNamed(contents, SingularValueParser.BraceStyle.CURLY, ';');
         if (!buffer.hasNext()) {
-            throw new ParseException("No data found for ItemStack");
+            throw new ParseException("No data found for ItemStack")
+                    .cause(ParseException.Cause.INVALID_TYPE)
+                    .type(ItemStackParser.class)
+                    .userError();
         }
 
         SingularValueParser.Argument root = buffer.pop();
         if (root.key().equals("root")) {
             Material material = Material.matchMaterial(root.value());
             if (material == null) {
-                throw new ParseException("Invalid material " + root.value());
+                throw new ParseException("Invalid material " + root.value())
+                        .cause(ParseException.Cause.INVALID_VALUE)
+                        .type(ItemStackParser.class)
+                        .userError();
             }
 
             itemStack = new ItemStack(material);
         } else {
-            throw new ParseException("Invalid ItemStack root tag " + root.key());
+            throw new ParseException("Invalid ItemStack root tag " + root.key())
+                    .cause(ParseException.Cause.INTERNAL_ERROR)
+                    .type(ItemStackParser.class);
         }
 
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -142,15 +154,21 @@ public final class ItemStackParser implements Function<Object, ItemStack> {
         return itemStack;
     }
 
-    private static ItemStack deserializeNode(ConfigurationSection section) {
+    private static ItemStack deserializeNode(ConfigurationSection section) throws ParseException {
         String materialName = section.getString("item", section.getString("type", section.getString("material")));
         if (materialName == null) {
-            throw new ParseException("No material found for itemstack");
+            throw new ParseException("No material found for ItemStack")
+                    .cause(ParseException.Cause.INVALID_VALUE)
+                    .type(ItemStackParser.class)
+                    .userError();
         }
 
         Material material = Material.matchMaterial(materialName);
         if (material == null) {
-            throw new ParseException("Invalid material " + materialName);
+            throw new ParseException("Invalid material " + materialName)
+                    .cause(ParseException.Cause.INVALID_VALUE)
+                    .type(ItemStackParser.class)
+                    .userError();
         }
 
         ItemStack itemStack = new ItemStack(material);

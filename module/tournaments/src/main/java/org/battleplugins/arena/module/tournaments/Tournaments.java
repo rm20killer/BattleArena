@@ -3,6 +3,7 @@ package org.battleplugins.arena.module.tournaments;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.BattleArena;
 import org.battleplugins.arena.config.ArenaConfigParser;
+import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.event.BattleArenaPostInitializeEvent;
 import org.battleplugins.arena.module.ArenaModule;
 import org.battleplugins.arena.module.ArenaModuleContainer;
@@ -54,8 +55,14 @@ public class Tournaments implements ArenaModuleInitializer {
             }
         }
 
-        Configuration tournamentConfig = YamlConfiguration.loadConfiguration(new File(dataFolder.toFile(), "tournament-config.yml"));
-        this.config = ArenaConfigParser.newInstance(TournamentConfig.class, tournamentConfig);
+        Configuration tournamentConfig = YamlConfiguration.loadConfiguration(tournamentPath.toFile());
+        try {
+            this.config = ArenaConfigParser.newInstance(tournamentPath, TournamentConfig.class, tournamentConfig);
+        } catch (ParseException e) {
+            ParseException.handle(e);
+
+            container.disable("Failed to parse tournament-config.yml!");
+        }
     }
 
     public void createTournament(Arena arena) throws TournamentException {

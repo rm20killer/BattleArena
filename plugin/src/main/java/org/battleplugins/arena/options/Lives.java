@@ -1,7 +1,9 @@
 package org.battleplugins.arena.options;
 
 import org.battleplugins.arena.config.ArenaOption;
+import org.battleplugins.arena.config.DocumentationSource;
 
+@DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/lives")
 public class Lives {
 
     @ArenaOption(name = "enabled", description = "Whether or not lives are enabled.")

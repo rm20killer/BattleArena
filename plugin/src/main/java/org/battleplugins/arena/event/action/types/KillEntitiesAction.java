@@ -5,6 +5,7 @@ import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.competition.Competition;
 import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.competition.map.options.Bounds;
+import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.config.SingularValueParser;
 import org.battleplugins.arena.event.action.EventAction;
 import org.bukkit.entity.Entity;
@@ -40,7 +41,19 @@ public class KillEntitiesAction extends EventAction {
         List<String> excludedGroups = new ArrayList<>();
         String groupStr = this.get(EXCLUDED_GROUPS);
         if (groupStr != null) {
-            SingularValueParser.ArgumentBuffer buffer = SingularValueParser.parseUnnamed(groupStr, SingularValueParser.BraceStyle.SQUARE, ',');
+            SingularValueParser.ArgumentBuffer buffer;
+            try {
+                buffer = SingularValueParser.parseUnnamed(groupStr, SingularValueParser.BraceStyle.SQUARE, ',');
+            } catch (ParseException e) {
+                ParseException.handle(e
+                        .context("Action", "KillEntitiesAction")
+                        .context("Arena", arena.getName())
+                        .context("Provided value", this.get(EXCLUDED_GROUPS))
+                        .cause(ParseException.Cause.INVALID_VALUE)
+                        .userError()
+                );
+                return;
+            }
             while (buffer.hasNext()) {
                 SingularValueParser.Argument argument = buffer.pop();
                 excludedGroups.add(argument.value());

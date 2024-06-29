@@ -1,5 +1,6 @@
 package org.battleplugins.arena.event;
 
+import org.battleplugins.arena.config.DocumentationSource;
 import org.battleplugins.arena.event.arena.ArenaDrawEvent;
 import org.battleplugins.arena.event.arena.ArenaLoseEvent;
 import org.battleplugins.arena.event.arena.ArenaPhaseCompleteEvent;
@@ -17,7 +18,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+@DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/event-reference")
 public final class ArenaEventType<T extends ArenaEvent> {
     private static final Map<String, ArenaEventType<?>> EVENT_TYPES = new HashMap<>();
 
@@ -35,12 +38,18 @@ public final class ArenaEventType<T extends ArenaEvent> {
     public static final ArenaEventType<ArenaStatChangeEvent> ON_STAT_CHANGE = new ArenaEventType<>("on-stat-change", ArenaStatChangeEvent.class);
     public static final ArenaEventType<ArenaVictoryEvent> ON_VICTORY = new ArenaEventType<>("on-victory", ArenaVictoryEvent.class);
 
+    private final String name;
     private final Class<T> clazz;
 
     ArenaEventType(String name, Class<T> clazz) {
+        this.name = name;
         this.clazz = clazz;
 
         EVENT_TYPES.put(name, this);
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public Class<T> getEventType() {
@@ -54,5 +63,9 @@ public final class ArenaEventType<T extends ArenaEvent> {
 
     public static <E extends ArenaEvent> ArenaEventType<E> create(String name, Class<E> clazz) {
         return new ArenaEventType<>(name, clazz);
+    }
+
+    public static Set<ArenaEventType<?>> values() {
+        return Set.copyOf(EVENT_TYPES.values());
     }
 }

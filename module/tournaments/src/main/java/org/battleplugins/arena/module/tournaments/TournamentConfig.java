@@ -1,10 +1,12 @@
 package org.battleplugins.arena.module.tournaments;
 
 import org.battleplugins.arena.config.ArenaOption;
+import org.battleplugins.arena.config.DocumentationSource;
 
 import java.time.Duration;
 import java.util.List;
 
+@DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/tournaments")
 public class TournamentConfig {
 
     @ArenaOption(name = "broadcast-tournament", description = "Whether to broadcast when tournaments start to all players on the server.", required = true)

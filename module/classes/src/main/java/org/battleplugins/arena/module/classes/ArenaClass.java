@@ -2,6 +2,7 @@ package org.battleplugins.arena.module.classes;
 
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.config.ArenaOption;
+import org.battleplugins.arena.config.DocumentationSource;
 import org.battleplugins.arena.config.PostProcessable;
 import org.battleplugins.arena.config.Scoped;
 import org.bukkit.entity.Player;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+@DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/classes")
 public class ArenaClass implements PostProcessable {
 
     @Scoped

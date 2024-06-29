@@ -37,8 +37,10 @@ public final class SingularValueParser {
         for (String argument : contents.split(Character.toString(separator))) {
             String[] optionSplit = argument.split("=");
             if (optionSplit.length != 2) {
-                throw new ParseException("Invalid argument length! Expected arguments in the form of " +
-                        "<key>=<value>, but got " + argument);
+                throw new ParseException("Invalid argument length! Expected arguments in the form of <key>=<value>, but got " + argument)
+                        .cause(ParseException.Cause.INVALID_VALUE)
+                        .context("Provided argument", argument)
+                        .userError();
             }
 
             buffer.push(optionSplit[0], optionSplit[1]);

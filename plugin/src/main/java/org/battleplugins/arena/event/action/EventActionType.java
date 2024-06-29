@@ -1,5 +1,6 @@
 package org.battleplugins.arena.event.action;
 
+import org.battleplugins.arena.config.DocumentationSource;
 import org.battleplugins.arena.event.action.types.BroadcastAction;
 import org.battleplugins.arena.event.action.types.ChangeGamemodeAction;
 import org.battleplugins.arena.event.action.types.ChangeRoleAction;
@@ -24,8 +25,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
+@DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/action-reference")
 public final class EventActionType<T extends EventAction> {
     private static final Map<String, EventActionType<?>> ACTION_TYPES = new HashMap<>();
 
@@ -50,14 +53,20 @@ public final class EventActionType<T extends EventAction> {
     public static final EventActionType<TeardownAction> TEARDOWN = new EventActionType<>("teardown", TeardownAction.class, TeardownAction::new);
     public static final EventActionType<TeleportAction> TELEPORT = new EventActionType<>("teleport", TeleportAction.class, TeleportAction::new);
 
+    private final String name;
     private final Class<T> clazz;
     private final Function<Map<String, String>, T> factory;
 
     EventActionType(String name, Class<T> clazz, Function<Map<String, String>, T> factory) {
+        this.name = name;
         this.clazz = clazz;
         this.factory = factory;
 
         ACTION_TYPES.put(name, this);
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public Class<T> getActionType() {
@@ -75,5 +84,9 @@ public final class EventActionType<T extends EventAction> {
 
     public static <T extends EventAction> EventActionType<T> create(String name, Class<T> clazz, Function<Map<String, String>, T> factory) {
         return new EventActionType<>(name, clazz, factory);
+    }
+
+    public static Set<EventActionType<?>> values() {
+        return Set.copyOf(ACTION_TYPES.values());
     }
 }

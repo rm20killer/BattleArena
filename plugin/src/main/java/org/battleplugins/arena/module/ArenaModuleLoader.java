@@ -23,13 +23,15 @@ import java.util.zip.ZipFile;
 
 public class ArenaModuleLoader {
     private final BattleArena plugin;
+    private final ClassLoader classLoader;
     private final Path modulePath;
 
     private final Map<String, ArenaModuleContainer<?>> modules = new HashMap<>();
     private final Set<ModuleLoadException> failedModules = new HashSet<>();
 
-    public ArenaModuleLoader(BattleArena plugin, Path modulePath) {
+    public ArenaModuleLoader(BattleArena plugin, ClassLoader classLoader, Path modulePath) {
         this.plugin = plugin;
+        this.classLoader = classLoader;
         this.modulePath = modulePath;
     }
 
@@ -44,7 +46,7 @@ public class ArenaModuleLoader {
                         try (ZipFile zipFile = new ZipFile(path.toFile());
                              URLClassLoader classLoader = new URLClassLoader(
                                      new URL[] { path.toUri().toURL() },
-                                     this.plugin.getPluginClassLoader()
+                                     this.classLoader
                              )) {
 
                             AtomicReference<ArenaModule> arenaModuleRef = new AtomicReference<>();

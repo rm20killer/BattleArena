@@ -80,6 +80,8 @@ public class BattleArena extends JavaPlugin implements Listener {
     private Path arenasPath;
     private Path modulesPath;
 
+    private boolean debugMode;
+
     @Override
     public void onLoad() {
         instance = this;
@@ -88,7 +90,7 @@ public class BattleArena extends JavaPlugin implements Listener {
         this.arenasPath = dataFolder.resolve("arenas");
         this.modulesPath = dataFolder.resolve("modules");
 
-        this.moduleLoader = new ArenaModuleLoader(this, this.modulesPath);
+        this.moduleLoader = new ArenaModuleLoader(this, this.getClassLoader(), this.modulesPath);
         try {
             this.moduleLoader.loadModules();
         } catch (IOException e) {
@@ -107,9 +109,15 @@ public class BattleArena extends JavaPlugin implements Listener {
 
         Configuration config = YamlConfiguration.loadConfiguration(new File(this.getDataFolder(), "config.yml"));
         this.config = ArenaConfigParser.newInstance(BattleArenaConfig.class, config);
+        this.debugMode = this.config.isDebugMode();
 
         if (Files.notExists(this.arenasPath)) {
             this.saveResource("arenas/arena.yml", false);
+            this.saveResource("arenas/battlegrounds.yml", false);
+            this.saveResource("arenas/colosseum.yml", false);
+            this.saveResource("arenas/deathmatch.yml", false);
+            this.saveResource("arenas/ffa.yml", false);
+            this.saveResource("arenas/skirmish.yml", false);
         }
 
         Path dataFolder = this.getDataFolder().toPath();
@@ -155,6 +163,7 @@ public class BattleArena extends JavaPlugin implements Listener {
                     }
 
                     String mode = configuration.getString("mode", name);
+                    List<String> aliases = configuration.getStringList("aliases");
                     ArenaLoader arenaLoader = new ArenaLoader(this, mode, configuration, arenaPath);
                     this.arenaLoaders.put(name, arenaLoader);
 
@@ -162,7 +171,7 @@ public class BattleArena extends JavaPlugin implements Listener {
                     // add our plugin commands here, but populating the executor
                     // can happen at any time. This also means that Arenas can specify
                     // their own executors if they so please.
-                    CommandInjector.inject(name, name.toLowerCase(Locale.ROOT));
+                    CommandInjector.inject(name, name.toLowerCase(Locale.ROOT), aliases.toArray(String[]::new));
                 } catch (IOException e) {
                     throw new RuntimeException("Error reading arena config", e);
                 }
@@ -269,6 +278,14 @@ public class BattleArena extends JavaPlugin implements Listener {
 
         // If the map is removed, also remove the competition if applicable
         this.competitions.computeIfAbsent(arena, k -> new ArrayList<>()).removeIf(competition -> competition.getMap() == map);
+
+        // Now remove the map from the file system
+        Path mapPath = arena.getMapsPath().resolve(map.getName().toLowerCase(Locale.ROOT) + ".yml");
+        try {
+            Files.deleteIfExists(mapPath);
+        } catch (IOException e) {
+            this.error("Failed to delete map file for map {} in arena {}!", map.getName(), arena.getName(), e);
+        }
     }
 
     public void addCompetition(Arena arena, Competition<?> competition) {
@@ -439,21 +456,22 @@ public class BattleArena extends JavaPlugin implements Listener {
                 return result;
             }
 
+            CompetitionResult invalidResult = new CompetitionResult(null, !result.result().canJoin() ? result.result() : JoinResult.NOT_JOINABLE);
             if (arena.getType() == CompetitionType.EVENT) {
                 // Cannot create non-requested dynamic competitions for events
-                return result;
+                return invalidResult;
             }
 
             List<LiveCompetitionMap<?>> maps = this.arenaMaps.get(arena);
             if (maps == null) {
                 // No maps, return
-                return result;
+                return invalidResult;
             }
 
             // Ensure we have WorldEdit installed
             if (this.getServer().getPluginManager().getPlugin("WorldEdit") == null) {
                 this.error("WorldEdit is required to create dynamic competitions! Not proceeding with creating a new dynamic competition.");
-                return result;
+                return invalidResult;
             }
 
             // Check if we have exceeded the maximum number of dynamic maps
@@ -465,7 +483,7 @@ public class BattleArena extends JavaPlugin implements Listener {
 
             if (dynamicMaps >= this.config.getMaxDynamicMaps() && this.config.getMaxDynamicMaps() != -1) {
                 this.warn("Exceeded maximum number of dynamic maps for arena {}! Not proceeding with creating a new dynamic competition.", arena.getName());
-                return result;
+                return invalidResult;
             }
 
             // Create a new competition if possible
@@ -496,7 +514,7 @@ public class BattleArena extends JavaPlugin implements Listener {
             }
 
             // No open competitions found or unable to create a new one
-            return null;
+            return invalidResult;
         }, Bukkit.getScheduler().getMainThreadExecutor(this));
     }
 
@@ -551,8 +569,8 @@ public class BattleArena extends JavaPlugin implements Listener {
         return this.moduleLoader.getFailedModules();
     }
 
-    public void registerExecutor(String name, BaseCommandExecutor executor) {
-        PluginCommand command = CommandInjector.inject(name, name.toLowerCase(Locale.ROOT));
+    public void registerExecutor(String name, BaseCommandExecutor executor, String... aliases) {
+        PluginCommand command = CommandInjector.inject(name, name.toLowerCase(Locale.ROOT), aliases);
         command.setExecutor(executor);
     }
 
@@ -594,12 +612,12 @@ public class BattleArena extends JavaPlugin implements Listener {
         }
     }
 
-    public boolean hasPermission(CommandSender sender, String permission) {
-        return sender.isOp() || sender.hasPermission(permission);
+    public boolean isDebugMode() {
+        return this.debugMode;
     }
 
-    public ClassLoader getPluginClassLoader() {
-        return super.getClassLoader();
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
     }
 
     public void info(String message, Object... args) {
@@ -612,6 +630,12 @@ public class BattleArena extends JavaPlugin implements Listener {
 
     public void warn(String message, Object... args) {
         this.getSLF4JLogger().warn(message, args);
+    }
+
+    public void debug(String message, Object... args) {
+        if (this.debugMode) {
+            this.getSLF4JLogger().info("[DEBUG] " + message, args);
+        }
     }
 
     public static BattleArena getInstance() {

@@ -63,6 +63,7 @@ public final class Messages {
     public static final Message ARENA_KICKED_PLAYER = error("arena-kicked-player", "You have been kicked from the arena!");
     public static final Message ARENA_SPECTATE = info("arena-spectate", "You are now spectating <secondary>{}</secondary>!");
     public static final Message ARENA_LEFT = info("arena-left", "You have left <secondary>{}</secondary>!");
+    public static final Message ARENA_REMOVED = success("arena-removed", "The arena <secondary>{}</secondary> has been removed!");
     public static final Message NOT_EVENT = error("arena-not-event", "The specified arena is not an event!");
     public static final Message MANUAL_EVENT_MESSAGE = info("arena-manual-event-message", "%prefix% A {} event is starting! Run <secondary>/{} join</secondary> to join!");
     public static final Message ADVANCED_PHASE = info("arena-advanced-phase", "Advanced to the next phase: <secondary>{}</secondary>!");
@@ -111,6 +112,7 @@ public final class Messages {
     public static final Message ENABLED = message("util-enabled", "enabled", NamedTextColor.GREEN);
     public static final Message DISABLED = message("util-disabled", "disabled", NamedTextColor.RED);
 
+    public static final Message DEBUG_MODE_SET_TO = success("util-debug-mode-set-to", "Debug mode set to <secondary>{}</secondary>!");
     public static final Message CLICK_TO_SELECT = info("util-click-to-select", "Click to select!");
     public static final Message INVALID_INPUT = error("util-invalid-input", "Invalid input! Valid options: <secondary>{}</secondary>");
     public static final Message INVALID_INVENTORY_CANCELLING = error("util-invalid-inventory-cancelling", "Interacted with inventory that was not own... cancelling item selection!");

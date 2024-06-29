@@ -16,7 +16,7 @@ public final class ArenaStats {
     }
 
     public static <T extends ArenaStat<?>> T register(T stat) {
-        STATS.put(stat.getName(), stat);
+        STATS.put(stat.getKey(), stat);
         return stat;
     }
 

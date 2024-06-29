@@ -12,7 +12,6 @@ import org.battleplugins.arena.messages.Messages;
 import org.battleplugins.arena.util.PaginationCalculator;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -163,7 +162,7 @@ public class BaseCommandExecutor implements TabExecutor {
                 return CommandResult.NO_PERMISSIONS;
             }
 
-            if (!arenaCommand.permissionNode().isEmpty() && !BattleArena.getInstance().hasPermission(sender, this.getPermissionNode(arenaCommand.permissionNode()))) {
+            if (!arenaCommand.permissionNode().isEmpty() && !this.hasPermission(sender, this.getPermissionNode(arenaCommand.permissionNode()))) {
                 return CommandResult.NO_PERMISSIONS;
             }
 
@@ -191,7 +190,7 @@ public class BaseCommandExecutor implements TabExecutor {
             }
 
             return CommandResult.SUCCESS;
-        } catch (ArenaCommandException e) {
+        } catch (Exception e) {
             BattleArena.getInstance().error("An error occurred while executing command", e);
             return CommandResult.COMMAND_ERROR;
         }
@@ -267,7 +266,7 @@ public class BaseCommandExecutor implements TabExecutor {
                 return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
                         .thenApply(result -> this.invokeCommand(method, wrapper, completedParams));
             }
-        } catch (ArenaCommandException e) {
+        } catch (Exception e) {
             BattleArena.getInstance().error("An error occurred while executing command", e);
             return CompletableFuture.completedFuture(CommandResult.COMMAND_ERROR);
         }
@@ -339,7 +338,7 @@ public class BaseCommandExecutor implements TabExecutor {
                 continue;
             }
 
-            if (BattleArena.getInstance().hasPermission(sender, this.getPermissionNode(wrapper.getCommand().permissionNode()))) {
+            if (this.hasPermission(sender, this.getPermissionNode(wrapper.getCommand().permissionNode()))) {
                 sender.sendMessage(
                         Component.text("/" + this.parentCommand + " " + wrapper.usage, Messages.PRIMARY_COLOR)
                                 .append(Component.text(wrapper.getCommand().description(), Messages.SECONDARY_COLOR))
@@ -370,7 +369,6 @@ public class BaseCommandExecutor implements TabExecutor {
             rootComponent.append(Component.text("      "));
         }
 
-        sender.sendMessage(Component.text());
         sender.sendMessage(PaginationCalculator.center(rootComponent.build(), Component.space()));
     }
 
@@ -428,18 +426,10 @@ public class BaseCommandExecutor implements TabExecutor {
                 return ItemStackParser.deserializeSingular(arg);
             }
             case "player" -> {
-                Player player = Bukkit.getPlayer(arg);
-                if (player == null) {
-                    throw new ArenaCommandException("offline-player");
-                }
-                return player;
+                return Bukkit.getPlayer(arg);
             }
             case "offlineplayer" -> {
-                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(arg);
-                if (offlinePlayer == null) {
-                    throw new ArenaCommandException("player-invalid");
-                }
-                return offlinePlayer;
+                return Bukkit.getOfflinePlayer(arg);
             }
             case "world" -> {
                 return Bukkit.getWorld(arg);
@@ -623,7 +613,7 @@ public class BaseCommandExecutor implements TabExecutor {
                     CommandWrapper wrapper = this.commandMethods.get(cmd).iterator().next();
                     ArenaCommand arenaCommand = wrapper.getCommand();
 
-                    if (!arenaCommand.permissionNode().isEmpty() && !BattleArena.getInstance().hasPermission(sender, this.getPermissionNode(arenaCommand.permissionNode()))) {
+                    if (!arenaCommand.permissionNode().isEmpty() && !this.hasPermission(sender, this.getPermissionNode(arenaCommand.permissionNode()))) {
                         continue;
                     }
 
@@ -653,7 +643,7 @@ public class BaseCommandExecutor implements TabExecutor {
                 Set<CommandWrapper> wrappers = this.commandMethods.get(args[0]);
                 for (CommandWrapper wrapper : wrappers) {
                     ArenaCommand arenaCommand = wrapper.getCommand();
-                    if (!arenaCommand.permissionNode().isEmpty() && !BattleArena.getInstance().hasPermission(sender, this.getPermissionNode(arenaCommand.permissionNode()))) {
+                    if (!arenaCommand.permissionNode().isEmpty() && !this.hasPermission(sender, this.getPermissionNode(arenaCommand.permissionNode()))) {
                         continue;
                     }
 
@@ -685,8 +675,12 @@ public class BaseCommandExecutor implements TabExecutor {
         return completions;
     }
 
-    private String getPermissionNode(String node) {
+    protected String getPermissionNode(String node) {
         return "battlearena.command." + (this.permissionSubNode == null ? "" : node + ".") + node;
+    }
+
+    protected boolean hasPermission(CommandSender sender, String permission) {
+        return sender.isOp() || sender.hasPermission(permission);
     }
 
     public enum CommandResult {

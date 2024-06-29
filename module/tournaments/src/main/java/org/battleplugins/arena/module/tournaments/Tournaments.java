@@ -32,7 +32,7 @@ public class Tournaments implements ArenaModuleInitializer {
 
     public Tournaments() {
         // Register the tournament command
-        BattleArena.getInstance().registerExecutor("tournament", new TournamentCommandExecutor("tournament", this));
+        BattleArena.getInstance().registerExecutor("tournament", new TournamentCommandExecutor("tournament", this), "tourney");
     }
 
     @EventHandler

@@ -47,6 +47,9 @@ public class Arena implements ArenaLike, ArenaListener {
     @ArenaOption(name = "name", description = "The name of the game.", required = true)
     private String name;
 
+    @ArenaOption(name = "aliases", description = "Aliases for command arguments.")
+    private List<String> aliases;
+
     @ArenaOption(name = "type", description = "The competition type", required = true)
     private CompetitionType<?> type;
 
@@ -126,7 +129,7 @@ public class Arena implements ArenaLike, ArenaListener {
     }
 
     public final Set<CompetitionPhaseType<?, ?>> getPhases() {
-        return this.phases.keySet();
+        return Set.copyOf(this.phases.keySet());
     }
 
     public final Path getMapsPath() {
@@ -139,6 +142,10 @@ public class Arena implements ArenaLike, ArenaListener {
 
     public final String getName() {
         return this.name;
+    }
+
+    public List<String> getAliases() {
+        return this.aliases == null ? List.of() : List.copyOf(this.aliases);
     }
 
     public final CompetitionType<?> getType() {

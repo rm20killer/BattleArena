@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 
 public class CompetitionListener<T extends Competition<T>> implements ArenaListener, CompetitionLike<T> {
 
@@ -71,11 +72,7 @@ public class CompetitionListener<T extends Competition<T>> implements ArenaListe
     }
 
     @ArenaEventHandler(priority = EventPriority.HIGHEST)
-    public void onRespawn(PlayerDeathEvent event, ArenaPlayer player) {
-        if (event.isCancelled()) {
-            return;
-        }
-
+    public void onRespawn(PlayerRespawnEvent event, ArenaPlayer player) {
         // Call the respawn event
         this.competition.getArena().getEventManager().callEvent(new ArenaRespawnEvent(player));
     }

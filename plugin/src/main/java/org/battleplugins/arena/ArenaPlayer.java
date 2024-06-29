@@ -66,6 +66,10 @@ public class ArenaPlayer implements StatHolder {
         this.role = role;
     }
 
+    public Optional<ArenaTeam> team() {
+        return Optional.ofNullable(this.getTeam());
+    }
+
     @Nullable
     public ArenaTeam getTeam() {
         return this.team;

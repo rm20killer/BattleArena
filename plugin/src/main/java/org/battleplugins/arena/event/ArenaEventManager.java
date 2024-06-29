@@ -256,7 +256,7 @@ public class ArenaEventManager {
                         }
                     }
                 }
-            }, BattleArena.getInstance());
+            }, BattleArena.getInstance(), eventHandler.ignoreCancelled());
         }
     }
 

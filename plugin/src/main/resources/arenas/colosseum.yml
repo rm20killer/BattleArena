@@ -1,4 +1,5 @@
 name: Colosseum
+aliases: [col]
 mode: Arena
 type: Match
 team-options:
@@ -12,7 +13,7 @@ victory-conditions:
   teams-alive:
     amount: 1
   time-limit:
-    time-limit: 300
+    time-limit: 5m
 events:
   on-join:
     - store{types=all}
@@ -23,11 +24,12 @@ events:
     - store{types=all}
     - change-gamemode{gamemode=spectator}
     - flight{enabled=true}
-    - teleport{location=waitroom}
+    - teleport{location=spectator}
   on-leave:
     - clear-effects
     - restore{types=all}
   on-death:
+    - clear-inventory
     - respawn
     - delay{ticks=1}
     - teleport{location=waitroom}
@@ -50,7 +52,7 @@ phases:
     allow-spectate: true
     revert-phase: true
     next-phase: ingame
-    countdown-time: 5
+    countdown-time: 5s
     options:
       - damage-players{option=never}
     events:
@@ -68,7 +70,7 @@ phases:
     allow-join: false
     allow-spectate: false
     next-phase: waiting
-    duration: 5
+    duration: 5s
     events:
       on-complete:
         - leave

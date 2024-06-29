@@ -27,7 +27,7 @@ public class HighestStatCondition<T extends LiveCompetition<T>> extends VictoryC
     @ArenaOption(name = "team-stats", description = "Whether to check team stats instead of player stats.")
     private boolean teamStats = false;
 
-    private ArenaStat<?> stat;
+    private ArenaStat<Number> stat;
 
     @ArenaEventHandler
     public void onStatChange(ArenaStatChangeEvent<Number> event) {
@@ -64,9 +64,10 @@ public class HighestStatCondition<T extends LiveCompetition<T>> extends VictoryC
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void onStart() {
-        ArenaStat<?> stat = ArenaStats.get(this.statName);
+        ArenaStat<Number> stat = (ArenaStat<Number>) ArenaStats.get(this.statName);
         if (stat == null) {
             throw new IllegalArgumentException("Invalid stat name: " + this.statName);
         }
@@ -78,16 +79,17 @@ public class HighestStatCondition<T extends LiveCompetition<T>> extends VictoryC
     public Set<ArenaPlayer> identifyPotentialVictors() {
         return this.competition.getPlayers().stream()
                 .sorted((player1, player2) ->
-                        (int) player2.getStat(this.stat) - (int) player1.getStat(this.stat)
+                        player2.stat(this.stat).orElse(0).intValue() - player1.stat(this.stat).orElse(0).intValue()
                 )
                 // No need to check win after here, since it will be done earlier if they should win
-                .filter(player -> (int) player.getStat(this.stat) > 0)
+                .filter(player -> (int) player.stat(this.stat).orElse(0) > 0)
+                .limit(1) // Limit number of victors to 1
                 .flatMap(player -> {
                     // Still need to check if the player is on a team, since we grant
-                    // the victory based on whether the team one. If the player is to
+                    // the victory based on whether the team won. If the player is to
                     // win individually, their team should just contain them, or be empty.
                     ArenaTeam team = player.getTeam();
-                    if (team == null) {
+                    if (team == null || this.getCompetition().getArena().getTeams().isNonTeamGame()) {
                         return Stream.of(player);
                     }
 

@@ -69,6 +69,11 @@ public class ArenaLeaveEvent extends BukkitArenaPlayerEvent {
          * The player left the arena due to being kicked by
          * an administrator.
          */
-        KICKED
+        KICKED,
+        /**
+         * The competition was forcefully removed from the
+         * arena.
+         */
+        REMOVED
     }
 }

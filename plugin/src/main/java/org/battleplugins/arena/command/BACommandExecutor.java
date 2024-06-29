@@ -156,4 +156,10 @@ public class BACommandExecutor extends BaseCommandExecutor {
                 Messages.MANUAL_EVENT_MESSAGE.toComponent(arena.getName(), arena.getName().toLowerCase(Locale.ROOT))
         ));
     }
+
+    @ArenaCommand(commands = "debug", description = "Toggles debug mode.", permissionNode = "debug")
+    public void debug(Player player) {
+        BattleArena.getInstance().setDebugMode(!BattleArena.getInstance().isDebugMode());
+        Messages.DEBUG_MODE_SET_TO.send(player, Boolean.toString(BattleArena.getInstance().isDebugMode()));
+    }
 }

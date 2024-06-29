@@ -8,20 +8,23 @@ import java.util.Map;
 
 public class BattleArenaConfig {
 
-    @ArenaOption(name = "config-version", required = true, description = "The version of the config.")
+    @ArenaOption(name = "config-version", description = "The version of the config.", required = true)
     private String configVersion;
 
-    @ArenaOption(name = "backup-inventories", required = true, description = "Whether player inventories should be backed up when joining competitions.")
+    @ArenaOption(name = "backup-inventories", description = "Whether player inventories should be backed up when joining competitions.", required = true)
     private boolean backupInventories;
 
-    @ArenaOption(name = "max-backups", required = true, description = "The maximum number of backups to save for each player.")
+    @ArenaOption(name = "max-backups", description = "The maximum number of backups to save for each player.", required = true)
     private int maxBackups;
 
-    @ArenaOption(name = "max-dynamic-maps", required = true, description = "The maximum number of dynamic maps an Arena can have allocated at once.")
+    @ArenaOption(name = "max-dynamic-maps", description = "The maximum number of dynamic maps an Arena can have allocated at once.", required = true)
     private int maxDynamicMaps;
 
-    @ArenaOption(name = "events", required = true, description = "The configured events.")
+    @ArenaOption(name = "events", description = "The configured events.", required = true)
     private Map<String, List<EventOptions>> events;
+    
+    @ArenaOption(name = "debug-mode", description = "Whether debug mode is enabled.")
+    private boolean debugMode;
 
     public String getConfigVersion() {
         return this.configVersion;
@@ -41,5 +44,9 @@ public class BattleArenaConfig {
 
     public Map<String, List<EventOptions>> getEvents() {
         return this.events;
+    }
+
+    public boolean isDebugMode() {
+        return this.debugMode;
     }
 }

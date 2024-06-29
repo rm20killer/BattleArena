@@ -37,10 +37,12 @@ public class VictoryCondition<T extends LiveCompetition<T>> implements Competiti
     // Internal methods (cannot be overridden by extending plugins)
 
     public final void start() {
+        this.competition.getArena().getPlugin().debug("Starting victory condition: {}", this.getClass().getSimpleName());
         this.onStart();
     }
 
     public final void end() {
+        this.competition.getArena().getPlugin().debug("Ending victory condition: {}", this.getClass().getSimpleName());
         this.onEnd();
     }
 

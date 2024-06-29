@@ -25,7 +25,7 @@ public final class TournamentMessages {
     public static final Message TOURNAMENT_TEAM_AMOUNT = error("tournament-team-amount", "The maximum team amount must be set to 2 in order for a tournament to commence.");
     public static final Message TOURNAMENT_ARENA_NOT_EMPTY = error("tournament-arena-not-empty", "All arenas of this type must be empty in order for a tournament to commence.");
     public static final Message TOURNAMENT_NOT_ENOUGH_ARENAS = error("tournament-not-enough-arenas", "There are not enough arenas to host the tournament!");
-    public static final Message TOURNAMENT_CANNOT_JOIN_ARENA = error("tournament-cannot-join-arena", "This arena is currently not joinable to an ongoing tournament!");
+    public static final Message TOURNAMENT_CANNOT_JOIN_ARENA = error("tournament-cannot-join-arena", "This arena is currently not joinable due to an ongoing tournament!");
     public static final Message TOURNAMENT_CANNOT_JOIN_ARENA_IN_TOURNAMENT = error("tournament-cannot-join-arena-in-tournament", "You cannot join an arena while in a tournament!");
     public static final Message TOURNAMENT_CANNOT_JOIN_TOURNAMENT_IN_ARENA = error("tournament-cannot-join-tournament-in-arena", "You cannot join a tournament while in an arena!");
     public static final Message TOURNAMENT_BEGINNING_BROADCAST = info("tournament-beginning-broadcast", """

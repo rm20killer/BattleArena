@@ -12,6 +12,11 @@ events:
   on-join:
     - store{types=location}
     - teleport{location=waitroom}
+  on-spectate:
+    - store{types=location}
+    - change-gamemode{gamemode=spectator}
+    - flight{enabled=true}
+    - teleport{location=spectator}
   on-leave:
     - restore{types=location}
   on-kill:

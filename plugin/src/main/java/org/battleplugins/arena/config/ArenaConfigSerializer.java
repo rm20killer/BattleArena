@@ -59,7 +59,8 @@ public final class ArenaConfigSerializer {
                 }
             } else if (type.isEnum()) {
                 try {
-                    configuration.set(name, field.get(instance));
+                    Enum<?> enumValue = (Enum<?>) field.get(instance);
+                    configuration.set(name, enumValue.name().toLowerCase(Locale.ROOT));
                 } catch (Exception e) {
                     throw new ParseException("Failed to serialize enum field " + field.getName() + " in class " + instance.getClass().getName(), e);
                 }

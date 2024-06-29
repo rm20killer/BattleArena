@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 public class CountdownPhase<T extends LiveCompetition<T>> extends LiveCompetitionPhase<T> {
@@ -20,17 +21,17 @@ public class CountdownPhase<T extends LiveCompetition<T>> extends LiveCompetitio
     private boolean revertPhase = true;
 
     @ArenaOption(name = "countdown-time", description = "The time to countdown for the competition to start.", required = true)
-    private int countdownTime;
+    private Duration countdownTime;
 
     @ArenaOption(name = "sound", description = "The sound to play when a countdown number is broadcasted.")
     private String sound;
 
-    private int countdown;
+    private long countdown;
     private BukkitTask countdownTask;
 
     @Override
     public void onStart() {
-        this.countdown = this.countdownTime;
+        this.countdown = this.countdownTime.toSeconds();
         this.countdownTask = Bukkit.getScheduler().runTaskTimer(this.competition.getArena().getPlugin(), () -> {
             if (this.countdown == 0) {
                 this.advanceToNextPhase();

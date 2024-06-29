@@ -5,12 +5,13 @@ import org.battleplugins.arena.competition.victory.VictoryCondition;
 import org.battleplugins.arena.config.ArenaOption;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.time.Duration;
 import java.util.Set;
 
 public class TimeLimitCondition<T extends LiveCompetition<T>> extends VictoryCondition<T> {
 
     @ArenaOption(name = "time-limit", description = "How long this condition will run for.", required = true)
-    private int amount;
+    private Duration timeLimit;
 
     private BukkitTask task;
 
@@ -22,7 +23,7 @@ public class TimeLimitCondition<T extends LiveCompetition<T>> extends VictoryCon
 
         this.task = this.competition.getArena().getPlugin().getServer().getScheduler().runTaskLater(this.competition.getArena().getPlugin(), () -> {
             this.advanceToNextPhase(Set.of());
-        }, this.amount * 20L);
+        }, this.timeLimit.toMillis() / 50L);
     }
 
     @Override

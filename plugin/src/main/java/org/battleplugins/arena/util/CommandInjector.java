@@ -7,21 +7,27 @@ import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 public class CommandInjector {
 
-    public static PluginCommand inject(String arenaName, String commandName) {
+    public static PluginCommand inject(String arenaName, String commandName, String... aliases) {
+        return inject(arenaName, commandName, "The main command for the " + arenaName + " arena!", aliases);
+    }
+
+    public static PluginCommand inject(String headerName, String commandName, String description, String... aliases) {
         try {
             Constructor<PluginCommand> constructor = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
             constructor.setAccessible(true);
 
             PluginCommand pluginCommand = constructor.newInstance(commandName, BattleArena.getInstance());
-            pluginCommand.setDescription("The main command for the " + arenaName + " arena!");
+            pluginCommand.setAliases(List.of(aliases));
+            pluginCommand.setDescription(description);
 
             Bukkit.getCommandMap().register(commandName, "battlearena", pluginCommand);
             return pluginCommand;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new RuntimeException("Failed to construct PluginCommand for Arena " + arenaName, e);
+            throw new RuntimeException("Failed to construct PluginCommand " + headerName, e);
         }
     }
 }

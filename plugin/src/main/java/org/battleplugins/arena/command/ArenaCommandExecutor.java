@@ -2,7 +2,6 @@ package org.battleplugins.arena.command;
 
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaPlayer;
-import org.battleplugins.arena.BattleArena;
 import org.battleplugins.arena.competition.Competition;
 import org.battleplugins.arena.competition.JoinResult;
 import org.battleplugins.arena.competition.LiveCompetition;
@@ -24,6 +23,7 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class ArenaCommandExecutor extends BaseCommandExecutor {
     protected final Arena arena;
@@ -79,21 +79,27 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
                 this.arena.getPlugin()
                         .getOrCreateCompetition(this.arena, player, PlayerRole.PLAYING, map.getName())
                         .whenComplete((newResult, ex) -> {
+                            System.out.println("when complete " + newResult);
                             if (ex != null) {
+                                System.out.println("error");
                                 Messages.ARENA_ERROR.send(player, ex.getMessage());
                                 this.arena.getPlugin().error("An error occurred while joining the arena", ex);
                                 return;
                             }
 
                             if (newResult.competition() == null) {
+                                System.out.println("no competition");
                                 // No competition - something happened that stopped the
                                 // dynamic arena from being created. Not much we can do here,
                                 // but info will be in console in the event of an error
                                 if (newResult.result() != JoinResult.NOT_JOINABLE && newResult.result().getMessage() != null) {
+                                    System.out.println("no competition message");
                                     newResult.result().getMessage().send(player);
                                 } else if (result.result() != JoinResult.NOT_JOINABLE && result.result().getMessage() != null) {
+                                    System.out.println("no competition message 2");
                                     result.result().getMessage().send(player);
                                 } else {
+                                    System.out.println("no competition message 3");
                                     Messages.ARENA_NOT_JOINABLE.send(player);
                                 }
 
@@ -186,6 +192,27 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
     public void create(Player player) {
         ArenaEditorWizards.MAP_CREATION.openWizard(player, this.arena);
     }
+    
+    @ArenaCommand(commands = { "remove", "delete" }, description = "Removes an arena.", permissionNode = "remove")
+    public void remove(Player player, CompetitionMap<?> map) {
+        if (!(map instanceof LiveCompetitionMap<?> liveMap)) {
+            Messages.NO_ARENA_WITH_NAME.send(player);
+            return;
+        }
+
+        List<Competition<?>> activeCompetitions = this.arena.getPlugin().getCompetitions(this.arena, map.getName());
+        for (Competition<?> activeCompetition : activeCompetitions) {
+            // Empty out the competition
+            if (activeCompetition instanceof LiveCompetition<?> competition) {
+                for (ArenaPlayer arenaPlayer : Set.copyOf(competition.getPlayers())) {
+                    competition.leave(arenaPlayer.getPlayer(), ArenaLeaveEvent.Cause.REMOVED);
+                }
+            }
+        }
+
+        this.arena.getPlugin().removeArenaMap(this.arena, liveMap);
+        Messages.ARENA_REMOVED.send(player, this.arena.getName());
+    }
 
     @ArenaCommand(commands = "edit", description = "Edit an arena map.", permissionNode = "edit")
     public void map(Player player, CompetitionMap<?> map, MapOption option) {
@@ -222,7 +249,7 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
     protected Object onVerifyArgument(CommandSender sender, String arg, Class<?> parameter) {
         switch (parameter.getSimpleName().toLowerCase()) {
             case "competition" -> {
-                List<Competition<?>> openCompetitions = BattleArena.getInstance().getCompetitions(this.arena, arg);
+                List<Competition<?>> openCompetitions = this.arena.getPlugin().getCompetitions(this.arena, arg);
                 if (openCompetitions.isEmpty()) {
                     return null;
                 }
@@ -230,7 +257,7 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
                 return openCompetitions.get(0);
             }
             case "competitionmap" -> {
-                return BattleArena.getInstance().getMap(this.arena, arg);
+                return this.arena.getPlugin().getMap(this.arena, arg);
             }
         }
 
@@ -252,12 +279,12 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
     @Override
     protected List<String> onVerifyTabComplete(String arg, Class<?> parameter) {
         if (parameter.getSimpleName().equalsIgnoreCase("competition")) {
-            return BattleArena.getInstance().getCompetitions(this.arena)
+            return this.arena.getPlugin().getCompetitions(this.arena)
                     .stream()
                     .map(competition -> competition.getMap().getName())
                     .toList();
         } else if (parameter.getSimpleName().equalsIgnoreCase("competitionmap")) {
-            return BattleArena.getInstance().getMaps(this.arena)
+            return this.arena.getPlugin().getMaps(this.arena)
                     .stream()
                     .map(CompetitionMap::getName)
                     .distinct()

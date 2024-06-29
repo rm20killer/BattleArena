@@ -119,7 +119,7 @@ public final class ArenaConfigParser {
 
         // First, let's check if our parameter is a primitive
         if (type.isPrimitive()) {
-            populatePrimitive(name, type, field, instance, configuration);
+            populatePrimitive(name, arenaOption.required(), type, field, instance, configuration);
         } else if (type == String.class) {
             try {
                 field.set(instance, configuration.getString(name));
@@ -194,7 +194,14 @@ public final class ArenaConfigParser {
         CONTEXT_PROVIDERS.put(clazz, provider);
     }
 
-    private static void populatePrimitive(String name, Class<?> type, Field field, Object instance, ConfigurationSection configuration) throws ParseException {
+    private static void populatePrimitive(String name, boolean required, Class<?> type, Field field, Object instance, ConfigurationSection configuration) throws ParseException {
+        if (!required && !configuration.contains(name)) {
+            // Don't bother setting anything if the config does
+            // not contain the field. Primitives may have default values
+            // inside the Java code, so we don't want to override them.
+            return;
+        }
+
         if (type == boolean.class) {
             try {
                 field.set(instance, configuration.getBoolean(name));

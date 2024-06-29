@@ -5,7 +5,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DurationParser implements Function<Object, Duration> {
+public final class DurationParser implements Function<Object, Duration> {
     private static final Pattern DURATION_PATTERN = Pattern.compile("(\\d+)([yYmMdDhHwWsS])");
 
     @Override

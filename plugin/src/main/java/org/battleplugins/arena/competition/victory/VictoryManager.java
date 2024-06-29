@@ -32,6 +32,8 @@ public class VictoryManager<T extends Competition<T>> implements ArenaListener, 
 
             arena.getEventManager().registerEvents(condition);
             this.victoryConditions.put(type, condition);
+
+            arena.getPlugin().debug("Registered victory condition: {} in competition: {}", condition.getClass().getSimpleName(), competition.getClass().getSimpleName());
         }
 
         arena.getEventManager().registerEvents(this);

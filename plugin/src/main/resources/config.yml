@@ -19,7 +19,7 @@ max-dynamic-maps: 5
 
 # Event configurations
 events:
-  Deathmatch:
+  FFA:
     - type: scheduled # Type of event
-      interval: 20m # Interval until start
-      message: "<gold>[</gold><yellow>BattleArena</yellow><gold>]</gold> <yellow>A Deathmatch event is starting! Run <gold>/deathmatch join</gold> to join!</yellow>"
+      interval: 30m # Interval until start
+      message: "<gold>[</gold><yellow>BattleArena</yellow><gold>]</gold> <yellow>A Free for All event is starting! Run <gold>/ffa join</gold> to join!</yellow>"

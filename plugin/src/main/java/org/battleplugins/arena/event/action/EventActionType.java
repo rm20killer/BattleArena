@@ -2,7 +2,9 @@ package org.battleplugins.arena.event.action;
 
 import org.battleplugins.arena.event.action.types.BroadcastAction;
 import org.battleplugins.arena.event.action.types.ChangeGamemodeAction;
+import org.battleplugins.arena.event.action.types.ChangeRoleAction;
 import org.battleplugins.arena.event.action.types.ClearEffectsAction;
+import org.battleplugins.arena.event.action.types.ClearInventoryAction;
 import org.battleplugins.arena.event.action.types.DelayAction;
 import org.battleplugins.arena.event.action.types.FlightAction;
 import org.battleplugins.arena.event.action.types.GiveEffectsAction;
@@ -29,6 +31,8 @@ public final class EventActionType<T extends EventAction> {
 
     public static final EventActionType<BroadcastAction> BROADCAST = new EventActionType<>("broadcast", BroadcastAction.class, BroadcastAction::new);
     public static final EventActionType<ChangeGamemodeAction> CHANGE_GAMEMODE = new EventActionType<>("change-gamemode", ChangeGamemodeAction.class, ChangeGamemodeAction::new);
+    public static final EventActionType<ChangeRoleAction> CHANGE_ROLE = new EventActionType<>("change-role", ChangeRoleAction.class, ChangeRoleAction::new);
+    public static final EventActionType<ClearInventoryAction> CLEAR_INVENTORY = new EventActionType<>("clear-inventory", ClearInventoryAction.class, ClearInventoryAction::new);
     public static final EventActionType<ClearEffectsAction> CLEAR_EFFECTS = new EventActionType<>("clear-effects", ClearEffectsAction.class, ClearEffectsAction::new);
     public static final EventActionType<DelayAction> DELAY = new EventActionType<>("delay", DelayAction.class, DelayAction::new);
     public static final EventActionType<FlightAction> FLIGHT = new EventActionType<>("flight", FlightAction.class, FlightAction::new);

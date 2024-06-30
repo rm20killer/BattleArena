@@ -84,7 +84,7 @@ public final class ArenaEditorWizards {
 
                 ctx.saveTo(map);
 
-                Path mapPath = ctx.getArena().getMapsPath().resolve(map.getName().toLowerCase(Locale.ROOT) + ".yml");
+                Path mapPath = ctx.getArena().getMapPath().resolve(map.getName().toLowerCase(Locale.ROOT) + ".yml");
 
                 try {
                     FileConfiguration configuration = YamlConfiguration.loadConfiguration(Files.newBufferedReader(mapPath));
@@ -137,7 +137,7 @@ public final class ArenaEditorWizards {
                     BattleArena.getInstance().addCompetition(ctx.getArena(), competition);
                 }
 
-                Path mapsPath = ctx.getArena().getMapsPath();
+                Path mapsPath = ctx.getArena().getMapPath();
                 if (Files.notExists(mapsPath)) {
                     try {
                         Files.createDirectories(mapsPath);

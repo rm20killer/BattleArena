@@ -435,7 +435,7 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         }
 
         // Now remove the map from the file system
-        Path mapPath = arena.getMapsPath().resolve(map.getName().toLowerCase(Locale.ROOT) + ".yml");
+        Path mapPath = arena.getMapPath().resolve(map.getName().toLowerCase(Locale.ROOT) + ".yml");
         try {
             Files.deleteIfExists(mapPath);
         } catch (IOException e) {

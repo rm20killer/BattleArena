@@ -38,7 +38,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public abstract class LiveCompetition<T extends Competition<T>> implements ArenaLike, Competition<T> {
     private final Arena arena;
-    private final LiveCompetitionMap<T> map;
+    private final LiveCompetitionMap map;
 
     private final Map<Player, ArenaPlayer> players = new HashMap<>();
     private final Map<PlayerRole, Set<ArenaPlayer>> playersByRole = new HashMap<>();
@@ -51,7 +51,7 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
     private final OptionsListener<T> optionsListener;
     private final StatListener<T> statListener;
 
-    public LiveCompetition(Arena arena, LiveCompetitionMap<T> map) {
+    public LiveCompetition(Arena arena, LiveCompetitionMap map) {
         this.arena = arena;
         this.map = map;
 
@@ -144,7 +144,7 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
     }
 
     @Override
-    public final LiveCompetitionMap<T> getMap() {
+    public final LiveCompetitionMap getMap() {
         return this.map;
     }
 

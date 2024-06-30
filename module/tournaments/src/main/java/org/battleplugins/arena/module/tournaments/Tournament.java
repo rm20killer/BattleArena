@@ -254,7 +254,7 @@ public class Tournament {
             // Check to see if any of the open competitions are dynamic and allocate as needed
             int requiredCompetitions = mapsNeeded - openCompetitions.size();
 
-            List<LiveCompetitionMap<?>> dynamicMaps = this.arena.getPlugin().getMaps(this.arena)
+            List<LiveCompetitionMap> dynamicMaps = this.arena.getPlugin().getMaps(this.arena)
                     .stream()
                     .filter(map -> map.getType() == MapType.DYNAMIC)
                     .toList();
@@ -265,7 +265,7 @@ public class Tournament {
 
             for (int i = 0; i < requiredCompetitions; i++) {
                 // Now just walk through the dynamic maps and allocate them
-                LiveCompetitionMap<?> map = dynamicMaps.get(i % dynamicMaps.size());
+                LiveCompetitionMap map = dynamicMaps.get(i % dynamicMaps.size());
 
                 Competition<?> competition = map.createDynamicCompetition(this.arena);
                 this.arena.getPlugin().addCompetition(this.arena, competition);

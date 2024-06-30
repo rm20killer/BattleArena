@@ -40,7 +40,7 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
 
     @ArenaCommand(commands = { "join", "j" }, description = "Join an arena.", permissionNode = "join")
     public void join(Player player) {
-        List<LiveCompetitionMap<?>> maps = this.arena.getPlugin().getMaps(this.arena);
+        List<LiveCompetitionMap> maps = this.arena.getPlugin().getMaps(this.arena);
         if (maps.isEmpty()) {
             Messages.NO_OPEN_ARENAS.send(player);
             return;
@@ -50,7 +50,7 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
     }
 
     @ArenaCommand(commands = { "join", "j" }, description = "Join an arena.", permissionNode = "join")
-    public void join(Player player, @Argument(name = "map") CompetitionMap<?> map) {
+    public void join(Player player, @Argument(name = "map") CompetitionMap map) {
         if (ArenaPlayer.getArenaPlayer(player) != null) {
             Messages.ALREADY_IN_ARENA.send(player);
             return;
@@ -188,8 +188,8 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
     }
     
     @ArenaCommand(commands = { "remove", "delete" }, description = "Removes an arena.", permissionNode = "remove")
-    public void remove(Player player, CompetitionMap<?> map) {
-        if (!(map instanceof LiveCompetitionMap<?> liveMap)) {
+    public void remove(Player player, CompetitionMap map) {
+        if (!(map instanceof LiveCompetitionMap liveMap)) {
             Messages.NO_ARENA_WITH_NAME.send(player);
             return;
         }
@@ -209,8 +209,8 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
     }
 
     @ArenaCommand(commands = "edit", description = "Edit an arena map.", permissionNode = "edit")
-    public void map(Player player, CompetitionMap<?> map, MapOption option) {
-        if (!(map instanceof LiveCompetitionMap<?> liveMap)) {
+    public void map(Player player, CompetitionMap map, MapOption option) {
+        if (!(map instanceof LiveCompetitionMap liveMap)) {
             Messages.NO_ARENA_WITH_NAME.send(player);
             return;
         }

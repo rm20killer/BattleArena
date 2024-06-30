@@ -4,6 +4,7 @@ import org.battleplugins.arena.command.ArenaCommandExecutor;
 import org.battleplugins.arena.competition.Competition;
 import org.battleplugins.arena.competition.CompetitionType;
 import org.battleplugins.arena.competition.map.LiveCompetitionMap;
+import org.battleplugins.arena.competition.map.MapFactory;
 import org.battleplugins.arena.competition.phase.CompetitionPhase;
 import org.battleplugins.arena.competition.phase.CompetitionPhaseType;
 import org.battleplugins.arena.competition.victory.VictoryConditionType;
@@ -116,12 +117,16 @@ public class Arena implements ArenaLike, ArenaListener {
     }
 
     /**
-     * Returns the {@link LiveCompetitionMap} type for this arena.
+     * Returns the {@link MapFactory} for this arena.
+     * <p>
+     * This factory controls the creation of maps for this
+     * arena, and can be overridden to provide custom map
+     * creation logic.
      *
-     * @return the {@link LiveCompetitionMap} type for this arena
+     * @return the map factory for this arena
      */
-    public Class<? extends LiveCompetitionMap> getCompetitionMapType() {
-        return LiveCompetitionMap.class;
+    public MapFactory getMapFactory() {
+        return LiveCompetitionMap.getFactory();
     }
 
     /**

@@ -58,14 +58,14 @@ public class EventScheduler {
         }
 
         // Create the competition
-        List<LiveCompetitionMap<?>> maps = arena.getPlugin().getMaps(arena);
+        List<LiveCompetitionMap> maps = arena.getPlugin().getMaps(arena);
         if (maps.isEmpty()) {
             arena.getPlugin().warn("No maps found for arena {}, failed to start event!", arena.getName());
             return;
         }
 
         // Get a random map
-        LiveCompetitionMap<?> map = maps.get(ThreadLocalRandom.current().nextInt(maps.size()));
+        LiveCompetitionMap map = maps.get(ThreadLocalRandom.current().nextInt(maps.size()));
         Competition<?> competition = map.getType() == MapType.DYNAMIC ? map.createDynamicCompetition(arena) : map.createCompetition(arena);
 
         // Create the competition

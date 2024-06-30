@@ -65,7 +65,7 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
     final Map<String, Class<? extends Arena>> arenaTypes = new HashMap<>();
     final Map<String, Arena> arenas = new HashMap<>();
 
-    private final Map<Arena, List<LiveCompetitionMap<?>>> arenaMaps = new HashMap<>();
+    private final Map<Arena, List<LiveCompetitionMap>> arenaMaps = new HashMap<>();
     private final Map<String, ArenaLoader> arenaLoaders = new HashMap<>();
 
     private final CompetitionManager competitionManager = new CompetitionManager(this);
@@ -257,12 +257,12 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         this.loadArenaMaps();
 
         // Initialize matches
-        for (Map.Entry<Arena, List<LiveCompetitionMap<?>>> entry : this.arenaMaps.entrySet()) {
+        for (Map.Entry<Arena, List<LiveCompetitionMap>> entry : this.arenaMaps.entrySet()) {
             if (entry.getKey().getType() != CompetitionType.MATCH) {
                 continue;
             }
 
-            for (LiveCompetitionMap<?> map : entry.getValue()) {
+            for (LiveCompetitionMap map : entry.getValue()) {
                 if (map.getType() == MapType.STATIC) {
                     Competition<?> competition = map.createCompetition(entry.getKey());
                     this.addCompetition(entry.getKey(), competition);
@@ -368,8 +368,8 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
      * @param arena the arena to get the maps for
      * @return all the available maps for the given arena
      */
-    public List<LiveCompetitionMap<?>> getMaps(Arena arena) {
-        List<LiveCompetitionMap<?>> maps = this.arenaMaps.get(arena);
+    public List<LiveCompetitionMap> getMaps(Arena arena) {
+        List<LiveCompetitionMap> maps = this.arenaMaps.get(arena);
         if (maps == null) {
             return List.of();
         }
@@ -384,7 +384,7 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
      * @param name the name of the map
      * @return the map from the given arena and name
      */
-    public Optional<LiveCompetitionMap<?>> map(Arena arena, String name) {
+    public Optional<LiveCompetitionMap> map(Arena arena, String name) {
         return Optional.ofNullable(this.getMap(arena, name));
     }
 
@@ -396,8 +396,8 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
      * @return the map from the given arena and name, or null if not found
      */
     @Nullable
-    public LiveCompetitionMap<?> getMap(Arena arena, String name) {
-        List<LiveCompetitionMap<?>> maps = this.arenaMaps.get(arena);
+    public LiveCompetitionMap getMap(Arena arena, String name) {
+        List<LiveCompetitionMap> maps = this.arenaMaps.get(arena);
         if (maps == null) {
             return null;
         }
@@ -414,7 +414,7 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
      * @param arena the arena to add the map to
      * @param map the map to add
      */
-    public void addArenaMap(Arena arena, LiveCompetitionMap<?> map) {
+    public void addArenaMap(Arena arena, LiveCompetitionMap map) {
         this.arenaMaps.computeIfAbsent(arena, k -> new ArrayList<>()).add(map);
     }
 
@@ -424,7 +424,7 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
      * @param arena the arena to remove the map from
      * @param map the map to remove
      */
-    public void removeArenaMap(Arena arena, LiveCompetitionMap<?> map) {
+    public void removeArenaMap(Arena arena, LiveCompetitionMap map) {
         this.arenaMaps.computeIfAbsent(arena, k -> new ArrayList<>()).remove(map);
 
         // If the map is removed, also remove the competition if applicable
@@ -679,7 +679,7 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
 
                     try {
                         Configuration configuration = YamlConfiguration.loadConfiguration(Files.newBufferedReader(mapPath));
-                        LiveCompetitionMap<?> map = ArenaConfigParser.newInstance(mapPath, arena.getCompetitionMapType(), configuration, this);
+                        LiveCompetitionMap map = ArenaConfigParser.newInstance(mapPath, arena.getMapFactory().getMapClass(), configuration, this);
                         if (map.getBounds() == null && map.getType() == MapType.DYNAMIC) {
                             // Cannot create dynamic map without bounds
                             this.warn("Map {} for arena {} is dynamic but does not have bounds!", map.getName(), arena.getName());

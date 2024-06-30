@@ -62,7 +62,7 @@ public class CompetitionManager {
                 return invalidResult;
             }
 
-            List<LiveCompetitionMap<?>> maps = this.plugin.getMaps(arena);
+            List<LiveCompetitionMap> maps = this.plugin.getMaps(arena);
             if (maps == null) {
                 // No maps, return
                 return invalidResult;
@@ -94,7 +94,7 @@ public class CompetitionManager {
                 Collections.shuffle(maps);
             }
 
-            for (LiveCompetitionMap<?> map : maps) {
+            for (LiveCompetitionMap map : maps) {
                 if (map.getType() != MapType.DYNAMIC) {
                     continue;
                 }
@@ -185,7 +185,7 @@ public class CompetitionManager {
         }
 
         competitions.remove(competition);
-        if (competition.getMap().getType() == MapType.DYNAMIC && competition.getMap() instanceof LiveCompetitionMap<?> map) {
+        if (competition.getMap().getType() == MapType.DYNAMIC && competition.getMap() instanceof LiveCompetitionMap map) {
             this.clearDynamicMap(map);
         }
     }
@@ -198,7 +198,7 @@ public class CompetitionManager {
         }
     }
 
-    private void clearDynamicMap(LiveCompetitionMap<?> map) {
+    private void clearDynamicMap(LiveCompetitionMap map) {
         if (map.getType() != MapType.DYNAMIC) {
             return;
         }

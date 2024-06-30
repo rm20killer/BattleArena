@@ -9,7 +9,7 @@ import org.battleplugins.arena.competition.map.LiveCompetitionMap;
  */
 public class LiveMatch extends LiveCompetition<Match> implements Match {
 
-    public LiveMatch(Arena arena, LiveCompetitionMap<Match> map) {
+    public LiveMatch(Arena arena, LiveCompetitionMap map) {
         super(arena, map);
     }
 }

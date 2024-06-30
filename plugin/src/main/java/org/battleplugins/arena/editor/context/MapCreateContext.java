@@ -105,7 +105,7 @@ public class MapCreateContext extends EditorContext<MapCreateContext> {
         return missingTeams;
     }
 
-    public void reconstructFrom(LiveCompetitionMap<?> map) {
+    public void reconstructFrom(LiveCompetitionMap map) {
         this.reconstructed = true;
 
         Bounds bounds = map.getBounds();
@@ -132,7 +132,7 @@ public class MapCreateContext extends EditorContext<MapCreateContext> {
         spawns.getTeamSpawns().forEach((team, teamSpawns) -> this.spawns.put(team, teamSpawns.getSpawns()));
     }
 
-    public void saveTo(LiveCompetitionMap<?> map) {
+    public void saveTo(LiveCompetitionMap map) {
         Bounds bounds = new Bounds(
                 this.min.blockX(),
                 this.min.blockY(),

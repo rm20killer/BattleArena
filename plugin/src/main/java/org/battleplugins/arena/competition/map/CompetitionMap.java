@@ -1,12 +1,9 @@
 package org.battleplugins.arena.competition.map;
 
-import org.battleplugins.arena.competition.Competition;
-import org.battleplugins.arena.competition.CompetitionType;
-
 /**
  * A map for a competition.
  */
-public interface CompetitionMap<T extends Competition<T>> {
+public interface CompetitionMap {
 
     /**
      * Gets the name of the map.
@@ -14,13 +11,6 @@ public interface CompetitionMap<T extends Competition<T>> {
      * @return the name of the map
      */
     String getName();
-
-    /**
-     * Gets the competition this map is for.
-     *
-     * @return the competition this map is for
-     */
-    CompetitionType<T> getCompetitionType();
 
     /**
      * Gets the type of map.

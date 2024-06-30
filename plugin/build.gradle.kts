@@ -1,5 +1,3 @@
-import xyz.jpenilla.runpaper.task.RunServer
-
 plugins {
     id("maven-publish")
     id("xyz.jpenilla.run-paper") version "2.3.0"

@@ -34,7 +34,7 @@ public interface Competition<T extends Competition<T>> extends CompetitionLike<T
      *
      * @return the map for this competition
      */
-    CompetitionMap<T> getMap();
+    CompetitionMap getMap();
 
     /**
      * Gets the current phase of the competition.

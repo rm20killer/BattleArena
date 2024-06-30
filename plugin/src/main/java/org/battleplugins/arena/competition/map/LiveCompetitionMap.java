@@ -4,7 +4,6 @@ import net.kyori.adventure.util.TriState;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaLike;
 import org.battleplugins.arena.competition.Competition;
-import org.battleplugins.arena.competition.CompetitionType;
 import org.battleplugins.arena.competition.map.options.Bounds;
 import org.battleplugins.arena.competition.map.options.Spawns;
 import org.battleplugins.arena.config.ArenaOption;
@@ -22,10 +21,10 @@ import java.util.UUID;
 
 /**
  * Represents a map for a competition which is live on this server.
- *
- * @param <T> the type of competition this map is for
  */
-public class LiveCompetitionMap<T extends Competition<T>> implements ArenaLike, CompetitionMap<T>, PostProcessable {
+public class LiveCompetitionMap implements ArenaLike, CompetitionMap, PostProcessable {
+    private static final MapFactory FACTORY = MapFactory.create(LiveCompetitionMap.class, LiveCompetitionMap::new);
+
     @ArenaOption(name = "name", description = "The name of the map.", required = true)
     private String name;
 
@@ -88,11 +87,6 @@ public class LiveCompetitionMap<T extends Competition<T>> implements ArenaLike, 
     @Override
     public final Arena getArena() {
         return this.arena;
-    }
-
-    @Override
-    public final CompetitionType<T> getCompetitionType() {
-        return (CompetitionType<T>) this.arena.getType();
     }
 
     /**
@@ -186,8 +180,8 @@ public class LiveCompetitionMap<T extends Competition<T>> implements ArenaLike, 
      * @param arena the arena to create the competition for
      * @return the created competition
      */
-    public T createCompetition(Arena arena) {
-        return this.getCompetitionType().create(arena, this);
+    public Competition<?> createCompetition(Arena arena) {
+        return arena.getType().create(arena, this);
     }
 
     /**
@@ -200,7 +194,7 @@ public class LiveCompetitionMap<T extends Competition<T>> implements ArenaLike, 
      * @return the created dynamic competition
      */
     @Nullable
-    public final T createDynamicCompetition(Arena arena) {
+    public final Competition<?> createDynamicCompetition(Arena arena) {
         if (this.type != MapType.DYNAMIC) {
             throw new IllegalStateException("Cannot create dynamic competition for non-dynamic map!");
         }
@@ -222,9 +216,18 @@ public class LiveCompetitionMap<T extends Competition<T>> implements ArenaLike, 
             return null; // Failed to copy
         }
 
-        LiveCompetitionMap<T> copy = new LiveCompetitionMap<>(this.name, arena, this.type, worldName, this.bounds, this.spawns);
+        LiveCompetitionMap copy = arena.getMapFactory().create(this.name, arena, this.type, worldName, this.bounds, this.spawns);
         copy.mapWorld = world;
 
         return copy.createCompetition(arena);
+    }
+
+    /**
+     * Gets the default factory for creating {@link LiveCompetitionMap live maps}.
+     *
+     * @return the factory for creating maps
+     */
+    public static MapFactory getFactory() {
+        return FACTORY;
     }
 }

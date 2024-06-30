@@ -75,7 +75,7 @@ public final class ArenaEditorWizards {
                     }
             ))
             .onEditComplete(ctx -> {
-                LiveCompetitionMap<?> map = BattleArena.getInstance().getMap(ctx.getArena(), ctx.getMapName());
+                LiveCompetitionMap map = BattleArena.getInstance().getMap(ctx.getArena(), ctx.getMapName());
                 if (map == null) {
                     // Should not get here but *just* incase
                     Messages.NO_ARENA_WITH_NAME.send(ctx.getPlayer());
@@ -128,11 +128,11 @@ public final class ArenaEditorWizards {
                 ctx.getSpawns().forEach((team, spawns) -> teamSpawns.put(team, new TeamSpawns(spawns)));
                 Spawns spawns = new Spawns(ctx.getWaitroomSpawn(), ctx.getSpectatorSpawn(), teamSpawns);
 
-                LiveCompetitionMap<?> map = new LiveCompetitionMap<>(ctx.getMapName(), ctx.getArena(), ctx.getMapType(), ctx.getPlayer().getWorld().getName(), bounds, spawns);
+                LiveCompetitionMap map = ctx.getArena().getMapFactory().create(ctx.getMapName(), ctx.getArena(), ctx.getMapType(), ctx.getPlayer().getWorld().getName(), bounds, spawns);
                 BattleArena.getInstance().addArenaMap(ctx.getArena(), map);
 
                 // If our competition is a match, create it
-                if (map.getCompetitionType() == CompetitionType.MATCH && map.getType() == MapType.STATIC) {
+                if (ctx.getArena().getType() == CompetitionType.MATCH && map.getType() == MapType.STATIC) {
                     Competition<?> competition = map.createCompetition(ctx.getArena());
                     BattleArena.getInstance().addCompetition(ctx.getArena(), competition);
                 }

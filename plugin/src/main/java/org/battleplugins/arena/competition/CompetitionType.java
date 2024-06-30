@@ -37,7 +37,7 @@ public final class CompetitionType<T extends Competition<T>> {
         return this.clazz;
     }
 
-    public T create(Arena arena, LiveCompetitionMap<T> map) {
+    public T create(Arena arena, LiveCompetitionMap map) {
         return this.factory.create(arena, map);
     }
 
@@ -65,6 +65,6 @@ public final class CompetitionType<T extends Competition<T>> {
 
     public interface CompetitionFactory<T extends Competition<T>> {
 
-        T create(Arena arena, LiveCompetitionMap<T> map);
+        T create(Arena arena, LiveCompetitionMap map);
     }
 }

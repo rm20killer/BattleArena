@@ -54,7 +54,7 @@ public class Arena implements ArenaLike, ArenaListener {
     private List<String> aliases;
 
     @ArenaOption(name = "type", description = "The competition type", required = true)
-    private CompetitionType<?> type;
+    private CompetitionType type;
 
     @ArenaOption(name = "team-options", description = "The options for teams.", required = true)
     private Teams teams;
@@ -209,7 +209,7 @@ public class Arena implements ArenaLike, ArenaListener {
      *
      * @return the competition type for this arena
      */
-    public final CompetitionType<?> getType() {
+    public final CompetitionType getType() {
         return this.type;
     }
 

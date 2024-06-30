@@ -27,7 +27,7 @@ public interface Competition<T extends Competition<T>> extends CompetitionLike<T
      *
      * @return the type of competition
      */
-    CompetitionType<T> getType();
+    CompetitionType getType();
 
     /**
      * Gets the map for this competition.

@@ -4,6 +4,8 @@ import net.kyori.adventure.util.TriState;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaLike;
 import org.battleplugins.arena.competition.Competition;
+import org.battleplugins.arena.competition.CompetitionType;
+import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.competition.map.options.Bounds;
 import org.battleplugins.arena.competition.map.options.Spawns;
 import org.battleplugins.arena.config.ArenaOption;
@@ -173,7 +175,6 @@ public class LiveCompetitionMap implements ArenaLike, CompetitionMap, PostProces
         this.spawns = spawns;
     }
 
-
     /**
      * Creates a new competition for this map.
      *
@@ -181,7 +182,7 @@ public class LiveCompetitionMap implements ArenaLike, CompetitionMap, PostProces
      * @return the created competition
      */
     public Competition<?> createCompetition(Arena arena) {
-        return arena.getType().create(arena, this);
+        return new LiveCompetition<>(arena, arena.getType(), this);
     }
 
     /**

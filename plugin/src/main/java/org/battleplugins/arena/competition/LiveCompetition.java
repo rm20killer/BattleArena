@@ -36,8 +36,9 @@ import java.util.concurrent.CompletableFuture;
  * A {@link Competition} that is occurring on the same server
  * that this plugin is running on.
  */
-public abstract class LiveCompetition<T extends Competition<T>> implements ArenaLike, Competition<T> {
+public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Competition<T> {
     private final Arena arena;
+    private final CompetitionType type;
     private final LiveCompetitionMap map;
 
     private final Map<Player, ArenaPlayer> players = new HashMap<>();
@@ -51,8 +52,9 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
     private final OptionsListener<T> optionsListener;
     private final StatListener<T> statListener;
 
-    public LiveCompetition(Arena arena, LiveCompetitionMap map) {
+    public LiveCompetition(Arena arena, CompetitionType type, LiveCompetitionMap map) {
         this.arena = arena;
+        this.type = type;
         this.map = map;
 
         this.phaseManager = new PhaseManager<>(arena, (T) this);
@@ -141,6 +143,11 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
     @Override
     public final Arena getArena() {
         return this.arena;
+    }
+
+    @Override
+    public CompetitionType getType() {
+        return this.type;
     }
 
     @Override

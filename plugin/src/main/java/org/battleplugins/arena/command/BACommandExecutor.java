@@ -3,6 +3,7 @@ package org.battleplugins.arena.command;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.event.ClickEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.BattleArena;
 import org.battleplugins.arena.competition.CompetitionType;
@@ -13,6 +14,7 @@ import org.battleplugins.arena.util.InventoryBackup;
 import org.battleplugins.arena.util.OptionSelector;
 import org.battleplugins.arena.util.UnitUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.time.Duration;
@@ -180,5 +182,9 @@ public class BACommandExecutor extends BaseCommandExecutor {
 
         long end = System.currentTimeMillis();
         Messages.RELOAD_COMPLETE.send(player, UnitUtil.toUnitString(player, end - start, TimeUnit.MILLISECONDS));
+    }
+
+    public void sendHeader(CommandSender sender) {
+        Messages.HEADER.sendCentered(sender, "BattleArena");
     }
 }

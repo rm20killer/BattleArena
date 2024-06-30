@@ -10,6 +10,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+/**
+ * Represents an option in an arena.
+ *
+ * @param <T> the type of option
+ */
 @DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/option-reference")
 public final class ArenaOptionType<T extends ArenaOption> {
     private static final Map<String, ArenaOptionType<?>> OPTION_TYPES = new HashMap<>();

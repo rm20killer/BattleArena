@@ -9,10 +9,12 @@ import org.bukkit.entity.Player;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Represents a competition. Competitions are a representation of an
+ * Represents a competition.
+ * <p>
+ * Competitions are a representation of an
  * active {@link Arena}. Where an Arena will contain all the actual
  * game logic, a Competition will contain all the logic for the live
- * competition itself (such as the game timer, score, etc).
+ * competition itself (such as the game timer, score, etc.).
  * <p>
  * Competitions are also responsible for handling the lifecycle of
  * an Arena. This includes starting, stopping, and resetting the
@@ -52,9 +54,9 @@ public interface Competition<T extends Competition<T>> extends CompetitionLike<T
      * Adds the player to the competition.
      *
      * @param player the player to join
-     * @param type the type of join
+     * @param role the role of the player
      */
-    void join(Player player, PlayerRole type);
+    void join(Player player, PlayerRole role);
 
     /**
      * Removes the player from the competition.

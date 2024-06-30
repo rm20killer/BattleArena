@@ -10,7 +10,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
+/**
+ * Represents a competition type.
+ *
+ * @param <T> the type of competition
+ */
 public final class CompetitionType<T extends Competition<T>> {
     private static final Map<String, CompetitionType<?>> COMPETITION_TYPES = new HashMap<>();
 
@@ -44,7 +50,20 @@ public final class CompetitionType<T extends Competition<T>> {
         return new CompetitionType<>(name, clazz, factory);
     }
 
-    interface CompetitionFactory<T extends Competition<T>> {
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        CompetitionType<?> that = (CompetitionType<?>) object;
+        return Objects.equals(this.clazz, that.clazz);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.clazz);
+    }
+
+    public interface CompetitionFactory<T extends Competition<T>> {
 
         T create(Arena arena, LiveCompetitionMap<T> map);
     }

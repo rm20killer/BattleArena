@@ -6,6 +6,13 @@ import org.battleplugins.arena.event.arena.ArenaPhaseStartEvent;
 import org.battleplugins.arena.options.ArenaOptionType;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
+
+/**
+ * Represents a live competition phase.
+ *
+ * @param <T> the type of competition
+ */
 public abstract class LiveCompetitionPhase<T extends LiveCompetition<T>> extends CompetitionPhase<T> {
 
     public void setPhase(CompetitionPhaseType<T, CompetitionPhase<T>> phase) {
@@ -40,6 +47,9 @@ public abstract class LiveCompetitionPhase<T extends LiveCompetition<T>> extends
         super.complete();
     }
 
+    /**
+     * Advances to the next phase.
+     */
     protected void advanceToNextPhase() {
         if (this.nextPhase == null) {
             this.competition.getArena().getPlugin().warn("No next phase found for {}! Not advancing to next phase.", this.getClass().getSimpleName());
@@ -55,6 +65,24 @@ public abstract class LiveCompetitionPhase<T extends LiveCompetition<T>> extends
         this.setPhase(this.nextPhase);
     }
 
+    /**
+     * Gets the {@link org.battleplugins.arena.options.ArenaOption} of the specified type.
+     *
+     * @param type the type of option
+     * @param <E> the type of option
+     * @return the option of the specified type
+     */
+    public final <E extends org.battleplugins.arena.options.ArenaOption> Optional<E> option(ArenaOptionType<E> type) {
+        return Optional.ofNullable(this.getOption(type));
+    }
+
+    /**
+     * Gets the {@link org.battleplugins.arena.options.ArenaOption} of the specified type.
+     *
+     * @param type the type of option
+     * @param <E> the type of option
+     * @return the option of the specified type, or null if it does not exist
+     */
     @Nullable
     public <E extends org.battleplugins.arena.options.ArenaOption> E getOption(ArenaOptionType<E> type) {
         if (this.options == null) {

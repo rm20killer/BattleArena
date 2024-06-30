@@ -68,15 +68,7 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
         this.phaseManager.setPhase(initialPhase);
     }
 
-    protected void onDestroy() {
-        this.arena.getEventManager().unregisterEvents(this.competitionListener);
-        this.arena.getEventManager().unregisterEvents(this.optionsListener);
-        this.arena.getEventManager().unregisterEvents(this.statListener);
-    }
-
-    private ArenaPlayer createPlayer(Player player) {
-        return new ArenaPlayer(player, this.arena, this);
-    }
+    // API methods
 
     @Override
     public CompletableFuture<JoinResult> canJoin(Player player, PlayerRole role) {
@@ -124,20 +116,65 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
         return CompletableFuture.completedFuture(event.getResult());
     }
 
-    @Override
-    public void join(Player player, PlayerRole type) {
-        this.join(player, type, null);
+    /**
+     * Finds a suitable team for the player to join and
+     * joins them to that team, if applicable.
+     *
+     * @param player the player to find a team for
+     */
+    public void findAndJoinTeamIfApplicable(ArenaPlayer player) {
+        Teams teams = this.arena.getTeams();
+
+        // If the team selection is none, then we can just put
+        // the player on the default team
+        if (teams.isNonTeamGame()) {
+            this.teamManager.joinTeam(player, ArenaTeams.DEFAULT);
+        }
+
+        if (teams.getTeamSelection() == TeamSelection.RANDOM) {
+            this.teamManager.joinTeam(player, this.teamManager.findSuitableTeam());
+        }
     }
 
-    public void join(Player player, PlayerRole type, @Nullable ArenaTeam team) {
+    // Internal methods (cannot be overridden by extending plugins)
+
+    @Override
+    public final Arena getArena() {
+        return this.arena;
+    }
+
+    @Override
+    public final LiveCompetitionMap<T> getMap() {
+        return this.map;
+    }
+
+    @Override
+    public final CompetitionPhaseType<T, ?> getPhase() {
+        return this.phaseManager.getCurrentPhase().getType();
+    }
+
+    @Override
+    public final void join(Player player, PlayerRole role) {
+        this.join(player, role, null);
+    }
+
+    /**
+     * Makes the player join the competition with the specified {@link PlayerRole}
+     * and {@link ArenaTeam}.
+     *
+     * @param player the player to join
+     * @param role the role of the player
+     * @param team the team to join
+     */
+    public final void join(Player player, PlayerRole role, @Nullable ArenaTeam team) {
         if (this.arena.getPlugin().isInArena(player)) {
             throw new IllegalStateException("Player is already in an arena!");
         }
 
         ArenaPlayer arenaPlayer = this.createPlayer(player);
-        arenaPlayer.setRole(type);
+        arenaPlayer.setRole(role);
 
-        this.join(arenaPlayer, null);
+        this.join(arenaPlayer, team);
     }
 
     private void join(ArenaPlayer player, @Nullable ArenaTeam team) {
@@ -162,7 +199,7 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
     }
 
     @Override
-    public void leave(Player player, ArenaLeaveEvent.Cause cause) {
+    public final void leave(Player player, ArenaLeaveEvent.Cause cause) {
         ArenaPlayer arenaPlayer = this.players.get(player);
         if (arenaPlayer == null) {
             return;
@@ -171,7 +208,13 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
         this.leave(arenaPlayer, cause);
     }
 
-    public void leave(ArenaPlayer player, ArenaLeaveEvent.Cause cause) {
+    /**
+     * Makes the {@link ArenaPlayer} leave the competition with the specified {@link ArenaLeaveEvent.Cause}.
+     *
+     * @param player the player to leave
+     * @param cause the cause of the player leaving
+     */
+    public final void leave(ArenaPlayer player, ArenaLeaveEvent.Cause cause) {
         this.players.remove(player.getPlayer());
         this.playersByRole.get(player.getRole()).remove(player);
 
@@ -183,65 +226,86 @@ public abstract class LiveCompetition<T extends Competition<T>> implements Arena
         player.remove();
     }
 
-    public void findAndJoinTeamIfApplicable(ArenaPlayer player) {
-        Teams teams = this.arena.getTeams();
-
-        // If the team selection is none, then we can just put
-        // the player on the default team
-        if (teams.isNonTeamGame()) {
-            this.teamManager.joinTeam(player, ArenaTeams.DEFAULT);
-        }
-
-        if (teams.getTeamSelection() == TeamSelection.RANDOM) {
-            this.teamManager.joinTeam(player, this.teamManager.findSuitableTeam());
-        }
-    }
-
-    @Override
-    public Arena getArena() {
-        return this.arena;
-    }
-
-    @Override
-    public LiveCompetitionMap<T> getMap() {
-        return this.map;
-    }
-
-    @Override
-    public CompetitionPhaseType<T, ?> getPhase() {
-        return this.phaseManager.getCurrentPhase().getType();
-    }
-
-    public Set<ArenaPlayer> getPlayers() {
+    /**
+     * Gets all the {@link ArenaPlayer players} in the competition.
+     *
+     * @return all players in the competition
+     */
+    public final Set<ArenaPlayer> getPlayers() {
         return Collections.unmodifiableSet(this.playersByRole.getOrDefault(PlayerRole.PLAYING, Set.of()));
     }
 
-    public Set<ArenaPlayer> getSpectators() {
+    /**
+     * Gets all the {@link ArenaPlayer spectators} in the competition.
+     *
+     * @return all spectators in the competition
+     */
+    public final Set<ArenaPlayer> getSpectators() {
         return Collections.unmodifiableSet(this.playersByRole.getOrDefault(PlayerRole.SPECTATING, Set.of()));
     }
 
-    public PhaseManager<T> getPhaseManager() {
+    /**
+     * Gets the {@link PhaseManager} responsible for managing the phases of the competition.
+     *
+     * @return the phase manager
+     */
+    public final PhaseManager<T> getPhaseManager() {
         return this.phaseManager;
     }
 
-    public TeamManager getTeamManager() {
+    /**
+     * Gets the {@link TeamManager} responsible for managing the teams of the competition.
+     *
+     * @return the team manager
+     */
+    public final TeamManager getTeamManager() {
         return this.teamManager;
     }
 
-    public VictoryManager<T> getVictoryManager() {
+    /**
+     * Gets the {@link VictoryManager} responsible for managing the victory conditions
+     * of the competition.
+     *
+     * @return the victory manager
+     */
+    public final VictoryManager<T> getVictoryManager() {
         return this.victoryManager;
     }
 
-    public <E extends org.battleplugins.arena.options.ArenaOption> Optional<E> option(ArenaOptionType<E> type) {
+    /**
+     * Gets the {@link org.battleplugins.arena.options.ArenaOption} of the specified type.
+     *
+     * @param type the type of option
+     * @param <E> the type of option
+     * @return the option of the specified type
+     */
+    public final <E extends org.battleplugins.arena.options.ArenaOption> Optional<E> option(ArenaOptionType<E> type) {
         return Optional.ofNullable(this.getOption(type));
     }
 
+    /**
+     * Gets the {@link org.battleplugins.arena.options.ArenaOption} of the specified type.
+     *
+     * @param type the type of option
+     * @param <E> the type of option
+     * @return the option of the specified type, or null if it does not exist
+     */
     @Nullable
-    public <E extends org.battleplugins.arena.options.ArenaOption> E getOption(ArenaOptionType<E> type) {
+    public final <E extends org.battleplugins.arena.options.ArenaOption> E getOption(ArenaOptionType<E> type) {
         if (this.getPhaseManager().getCurrentPhase() instanceof LiveCompetitionPhase<?> livePhase) {
             return livePhase.getOption(type);
         }
 
         return this.arena.getOption(type);
+    }
+
+    protected final void onDestroy() {
+        this.arena.getEventManager().unregisterEvents(this.competitionListener);
+        this.arena.getEventManager().unregisterEvents(this.optionsListener);
+        this.arena.getEventManager().unregisterEvents(this.statListener);
+    }
+
+    private ArenaPlayer createPlayer(Player player) {
+        return new ArenaPlayer(player, this.arena, this);
     }
 }

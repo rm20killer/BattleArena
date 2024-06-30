@@ -17,7 +17,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
-public class CompetitionListener<T extends Competition<T>> implements ArenaListener, CompetitionLike<T> {
+class CompetitionListener<T extends Competition<T>> implements ArenaListener, CompetitionLike<T> {
 
     private final LiveCompetition<T> competition;
 

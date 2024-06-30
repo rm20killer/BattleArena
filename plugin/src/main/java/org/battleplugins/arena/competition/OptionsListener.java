@@ -16,7 +16,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-public class OptionsListener<T extends Competition<T>> implements ArenaListener, CompetitionLike<T> {
+class OptionsListener<T extends Competition<T>> implements ArenaListener, CompetitionLike<T> {
     private final LiveCompetition<T> competition;
 
     public OptionsListener(LiveCompetition<T> competition) {

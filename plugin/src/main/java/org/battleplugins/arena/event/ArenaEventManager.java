@@ -37,6 +37,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+/**
+ * Manages events for an {@link Arena}.
+ */
 public class ArenaEventManager {
     private static final Map<Class<? extends Event>, Function<Event, Player>> PLAYER_EVENT_RESOLVERS = new PolymorphicHashMap<>() {
         {
@@ -76,14 +79,35 @@ public class ArenaEventManager {
         this.arena = arena;
     }
 
+    /**
+     * Registers a custom resolver for a specific event class.
+     * <p>
+     * Custom resolvers allow you to resolve the {@link LiveCompetition} for an event
+     * that may not be directly associated with an {@link Arena}.
+     *
+     * @param eventClass the event class
+     * @param resolver the resolver for the event class
+     */
     public void registerArenaResolver(Class<? extends Event> eventClass, Function<Event, LiveCompetition<?>> resolver) {
         this.arenaEventResolvers.put(eventClass, resolver);
     }
 
+    /**
+     * Gets the {@link Arena} this event manager is managing events for.
+     *
+     * @return the arena this event manager is managing events for
+     */
     public Arena getArena() {
         return this.arena;
     }
 
+    /**
+     * Calls an event and processes any actions associated with the event.
+     *
+     * @param event the event to call
+     * @param <T> the type of event
+     * @return the event after processing
+     */
     public <T extends Event & ArenaEvent> T callEvent(T event) {
         Bukkit.getPluginManager().callEvent(event);
         if (event.getEventTrigger() != null) {
@@ -161,6 +185,11 @@ public class ArenaEventManager {
         }
     }
 
+    /**
+     * Registers an {@link ArenaListener} to listen for events.
+     *
+     * @param listener the listener to register
+     */
     public void registerEvents(ArenaListener listener) {
         this.trackedListeners.add(listener);
 
@@ -263,11 +292,19 @@ public class ArenaEventManager {
         }
     }
 
+    /**
+     * Unregisters an {@link ArenaListener} from listening for events.
+     *
+     * @param listener the listener to unregister
+     */
     public void unregisterEvents(ArenaListener listener) {
         HandlerList.unregisterAll(listener);
         this.trackedListeners.remove(listener);
     }
 
+    /**
+     * Unregisters all listeners from listening for events.
+     */
     public void unregisterAll() {
         for (ArenaListener listener : this.trackedListeners) {
             HandlerList.unregisterAll(listener);

@@ -15,6 +15,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Manages the victory conditions of a competition.
+ *
+ * @param <T> the type of competition
+ */
 public class VictoryManager<T extends Competition<T>> implements ArenaListener, CompetitionLike<T> {
     private final Map<VictoryConditionType<?, ?>, VictoryCondition<?>> victoryConditions = new HashMap<>();
 
@@ -41,6 +46,11 @@ public class VictoryManager<T extends Competition<T>> implements ArenaListener, 
         arena.getEventManager().registerEvents(this);
     }
 
+    /**
+     * Identifies the potential victors of the competition.
+     *
+     * @return the potential victors of the competition
+     */
     public Set<ArenaPlayer> identifyPotentialVictors() {
         Set<ArenaPlayer> victors = new HashSet<>();
         int conditionsWithVictors = 0;
@@ -67,6 +77,11 @@ public class VictoryManager<T extends Competition<T>> implements ArenaListener, 
         return victors;
     }
 
+    /**
+     * Ends the victory manager.
+     *
+     * @param closed whether the victory manager is closed
+     */
     public void end(boolean closed) {
         this.closed = closed;
 
@@ -92,11 +107,21 @@ public class VictoryManager<T extends Competition<T>> implements ArenaListener, 
         }
     }
 
+    /**
+     * Returns the {@link LiveCompetition} this team manager is managing.
+     *
+     * @return the competition this team manager is managing
+     */
     @Override
     public T getCompetition() {
         return this.competition;
     }
 
+    /**
+     * Returns whether the victory manager is closed.
+     *
+     * @return whether the victory manager is closed
+     */
     public final boolean isClosed() {
         return this.closed;
     }

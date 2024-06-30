@@ -25,9 +25,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
+/**
+ * Represents an event action type in an arena.
+ *
+ * @param <T> the type of event action
+ */
 @DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/action-reference")
 public final class EventActionType<T extends EventAction> {
     private static final Map<String, EventActionType<?>> ACTION_TYPES = new HashMap<>();
@@ -84,6 +90,19 @@ public final class EventActionType<T extends EventAction> {
 
     public static <T extends EventAction> EventActionType<T> create(String name, Class<T> clazz, Function<Map<String, String>, T> factory) {
         return new EventActionType<>(name, clazz, factory);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        EventActionType<?> that = (EventActionType<?>) object;
+        return Objects.equals(this.clazz, that.clazz);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.clazz);
     }
 
     public static Set<EventActionType<?>> values() {

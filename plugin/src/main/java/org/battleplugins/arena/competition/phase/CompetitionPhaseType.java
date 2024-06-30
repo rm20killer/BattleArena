@@ -12,6 +12,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Represents a type of competition phase.
+ *
+ * @param <C> the type of competition
+ * @param <T> the type of competition phase
+ */
 public final class CompetitionPhaseType<C extends Competition<C>, T extends CompetitionPhase<C>> {
     private static final Map<String, CompetitionPhaseType<?, ?>> PHASE_TYPES = new HashMap<>();
 

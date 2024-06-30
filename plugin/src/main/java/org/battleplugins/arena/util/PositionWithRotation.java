@@ -4,6 +4,9 @@ import org.battleplugins.arena.config.ArenaOption;
 import org.bukkit.Location;
 import org.bukkit.World;
 
+/**
+ * Represents a position with a rotation.
+ */
 public class PositionWithRotation {
     @ArenaOption(name = "x", description = "The X position of the spawn.", required = true)
     private double x;

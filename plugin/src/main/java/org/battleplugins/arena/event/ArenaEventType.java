@@ -19,8 +19,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Represents an event type in an arena.
+ *
+ * @param <T> the type of event
+ */
 @DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/event-reference")
 public final class ArenaEventType<T extends ArenaEvent> {
     private static final Map<String, ArenaEventType<?>> EVENT_TYPES = new HashMap<>();
@@ -65,6 +71,19 @@ public final class ArenaEventType<T extends ArenaEvent> {
 
     public static <E extends ArenaEvent> ArenaEventType<E> create(String name, Class<E> clazz) {
         return new ArenaEventType<>(name, clazz);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        ArenaEventType<?> that = (ArenaEventType<?>) object;
+        return Objects.equals(this.clazz, that.clazz);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.clazz);
     }
 
     public static Set<ArenaEventType<?>> values() {

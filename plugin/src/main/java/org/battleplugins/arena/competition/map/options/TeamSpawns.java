@@ -6,6 +6,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+/**
+ * Represents the spawn options for a team.
+ */
 public class TeamSpawns {
 
     @ArenaOption(name = "spawns", description = "The spawns for this team.")

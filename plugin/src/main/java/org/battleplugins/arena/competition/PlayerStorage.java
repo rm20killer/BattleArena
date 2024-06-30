@@ -18,6 +18,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * Represents the storage of a player for data which may need to
+ * be restored after the end of a competition.
+ */
 public class PlayerStorage {
     private final ArenaPlayer player;
     
@@ -46,7 +50,12 @@ public class PlayerStorage {
     public PlayerStorage(ArenaPlayer player) {
         this.player = player;
     }
-    
+
+    /**
+     * Stores the player's data from on the given {@link Type types}.
+     *
+     * @param toStore the types to store
+     */
     public void store(Set<Type> toStore) {
         if (this.stored) {
             return;
@@ -59,8 +68,8 @@ public class PlayerStorage {
         this.stored = true;
         this.clearState(toStore);
     }
-    
-    public void storeAll() {
+
+    private void storeAll() {
         this.storeInventory();
         this.storeGameMode();
         this.storeHealth();
@@ -70,24 +79,24 @@ public class PlayerStorage {
         this.storeEffects();
         this.storeLocation();
     }
-    
-    public void storeInventory() {
+
+    private void storeInventory() {
         this.inventory = this.player.getPlayer().getInventory().getContents();
         if (BattleArena.getInstance().getMainConfig().isBackupInventories()) {
             InventoryBackup.save(new InventoryBackup(this.player.getPlayer().getUniqueId(), this.inventory.clone()));
         }
     }
 
-    public void storeGameMode() {
+    private void storeGameMode() {
         this.gameMode = this.player.getPlayer().getGameMode();
     }
-    
-    public void storeHealth() {
+
+    private void storeHealth() {
         this.health = this.player.getPlayer().getHealth();
         this.hunger = this.player.getPlayer().getFoodLevel();
     }
-    
-    public void storeAttributes() {
+
+    private void storeAttributes() {
         for (Attribute attribute : Attribute.values()) {
             AttributeInstance instance = this.player.getPlayer().getAttribute(attribute);
             if (instance == null) {
@@ -100,31 +109,36 @@ public class PlayerStorage {
         this.walkSpeed = this.player.getPlayer().getWalkSpeed();
         this.flySpeed = this.player.getPlayer().getFlySpeed();
     }
-    
-    public void storeExperience() {
+
+    private void storeExperience() {
         this.exp = this.player.getPlayer().getTotalExperience();
         this.expLevels = this.player.getPlayer().getLevel();
     }
 
-    public void storeFlight() {
+    private void storeFlight() {
         this.flight = this.player.getPlayer().isFlying();
         this.allowFlight = this.player.getPlayer().getAllowFlight();
     }
-    
-    public void storeEffects() {
+
+    private void storeEffects() {
         this.effects.addAll(this.player.getPlayer().getActivePotionEffects());
     }
-    
-    public void storeLocation() {
+
+    private void storeLocation() {
         this.lastLocation = this.player.getPlayer().getLocation().clone();
     }
-    
-    public void restore(Set<Type> toStore) {
+
+    /**
+     * Restores the player's data from on the given {@link Type types}.
+     *
+     * @param toRestore the types to restore
+     */
+    public void restore(Set<Type> toRestore) {
         if (!this.stored) {
             return;
         }
         
-        for (Type type : toStore) {
+        for (Type type : toRestore) {
             type.restore(this);
         }
         
@@ -140,8 +154,8 @@ public class PlayerStorage {
         
         this.stored = false;
     }
-    
-    public void restoreAll() {
+
+    private void restoreAll() {
         this.restoreInventory();
         this.restoreGameMode();
         this.restoreHealth();
@@ -151,21 +165,21 @@ public class PlayerStorage {
         this.restoreEffects();
         this.restoreLocation();
     }
-    
-    public void restoreInventory() {
+
+    private void restoreInventory() {
         this.player.getPlayer().getInventory().setContents(this.inventory);
     }
 
-    public void restoreGameMode() {
+    private void restoreGameMode() {
         this.player.getPlayer().setGameMode(this.gameMode);
     }
-    
-    public void restoreHealth() {
+
+    private void restoreHealth() {
         this.player.getPlayer().setHealth(this.health);
         this.player.getPlayer().setFoodLevel(this.hunger);
     }
-    
-    public void restoreAttributes() {
+
+    private void restoreAttributes() {
         for (Map.Entry<Attribute, Double> entry : this.attributes.entrySet()) {
             AttributeInstance instance = this.player.getPlayer().getAttribute(entry.getKey());
             if (instance == null) {
@@ -179,32 +193,37 @@ public class PlayerStorage {
         this.player.getPlayer().setFlySpeed(this.flySpeed);
     }
 
-    public void restoreFlight() {
+    private void restoreFlight() {
         this.player.getPlayer().setAllowFlight(this.allowFlight);
         this.player.getPlayer().setFlying(this.flight);
     }
 
-    public void restoreExperience() {
+    private void restoreExperience() {
         this.player.getPlayer().setTotalExperience(this.exp);
         this.player.getPlayer().setLevel(this.expLevels);
     }
-    
-    public void restoreEffects() {
+
+    private void restoreEffects() {
         for (PotionEffect effect : this.effects) {
             this.player.getPlayer().addPotionEffect(effect);
         }
     }
     
-    public void restoreLocation() {
+    private void restoreLocation() {
         this.player.getPlayer().teleport(this.lastLocation);
     }
 
+    /**
+     * Returns the last stored location of the player.
+     *
+     * @return the last stored location of the player
+     */
     @Nullable
     public Location getLastLocation() {
         return this.lastLocation;
     }
 
-    public void clearState(Set<Type> toStore) {
+    private void clearState(Set<Type> toStore) {
         boolean all = toStore.contains(Type.ALL);
         if (all || toStore.contains(Type.INVENTORY)) {
             this.player.getPlayer().getInventory().clear();
@@ -245,7 +264,10 @@ public class PlayerStorage {
             }
         }
     }
-    
+
+    /**
+     * The different types of data that can be stored/restored.
+     */
     public enum Type {
         ALL(PlayerStorage::storeAll, PlayerStorage::restoreAll),
         INVENTORY(PlayerStorage::storeInventory, PlayerStorage::restoreInventory),

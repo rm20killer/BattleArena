@@ -11,6 +11,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Represents a victory condition type.
+ *
+ * @param <C> the type of competition
+ * @param <T> the type of victory condition
+ */
 @DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/victory-conditions-reference")
 public final class VictoryConditionType<C extends LiveCompetition<C>, T extends VictoryCondition<C>> {
     private static final Map<String, VictoryConditionType<?, ?>> VICTORY_TYPES = new HashMap<>();

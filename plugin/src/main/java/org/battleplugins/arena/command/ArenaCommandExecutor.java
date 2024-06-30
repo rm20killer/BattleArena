@@ -89,10 +89,10 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
                                 // No competition - something happened that stopped the
                                 // dynamic arena from being created. Not much we can do here,
                                 // but info will be in console in the event of an error
-                                if (newResult.result() != JoinResult.NOT_JOINABLE && newResult.result().getMessage() != null) {
-                                    newResult.result().getMessage().send(player);
-                                } else if (result.result() != JoinResult.NOT_JOINABLE && result.result().getMessage() != null) {
-                                   result.result().getMessage().send(player);
+                                if (newResult.result() != JoinResult.NOT_JOINABLE && newResult.result().message() != null) {
+                                    newResult.result().message().send(player);
+                                } else if (result.result() != JoinResult.NOT_JOINABLE && result.result().message() != null) {
+                                   result.result().message().send(player);
                                 } else {
                                     Messages.ARENA_NOT_JOINABLE.send(player);
                                 }
@@ -161,8 +161,8 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
 
                 Messages.ARENA_SPECTATE.send(player, competition.getMap().getName());
             } else {
-                if (result.getMessage() != null) {
-                    result.getMessage().send(player);
+                if (result.message() != null) {
+                    result.message().send(player);
                 } else {
                     Messages.ARENA_NOT_SPECTATABLE.send(player);
                 }

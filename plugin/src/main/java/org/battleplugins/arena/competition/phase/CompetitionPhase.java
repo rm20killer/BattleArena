@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Represents the phase of a competition.
@@ -51,8 +52,14 @@ public abstract class CompetitionPhase<T extends Competition<T>> implements Comp
 
     // API methods
 
+    /**
+     * Called when the phase starts.
+     */
     public abstract void onStart();
 
+    /**
+     * Called when the phase completes.
+     */
     public abstract void onComplete();
 
     // Internal methods (cannot be overridden by extending plugins)
@@ -71,32 +78,87 @@ public abstract class CompetitionPhase<T extends Competition<T>> implements Comp
         return this.competition;
     }
 
+    /**
+     * Gets whether players can join during this phase.
+     *
+     * @return whether players can join during this phase
+     */
     public final boolean canJoin() {
         return this.allowJoin;
     }
 
+    /**
+     * Gets whether players can spectate during this phase.
+     *
+     * @return whether players can spectate during this phase
+     */
     public final boolean canSpectate() {
         return this.allowSpectate;
     }
 
+    /**
+     * Gets the {@link EventAction actions} for this phase.
+     *
+     * @return the event actions for this phase
+     */
     public final Map<ArenaEventType<?>, List<EventAction>> getEventActions() {
-        return this.eventActions;
+        return Map.copyOf(this.eventActions);
     }
 
+    /**
+     * Gets the {@link CompetitionPhaseType} of this phase.
+     *
+     * @return the competition phase type of this phase
+     */
     public final CompetitionPhaseType<T, CompetitionPhase<T>> getType() {
         return this.type;
     }
 
+    /**
+     * Gets the next phase that succeeds this phase.
+     *
+     * @return the next phase that succeeds this phase
+     */
+    public final Optional<CompetitionPhaseType<T, CompetitionPhase<T>>> nextPhase() {
+        return Optional.ofNullable(this.nextPhase);
+    }
+
+    /**
+     * Gets the next phase that succeeds this phase.
+     *
+     * @return the next phase that succeeds this phase, or
+     *         null if there is no next phase
+     */
     @Nullable
     public final CompetitionPhaseType<T, CompetitionPhase<T>> getNextPhase() {
         return this.nextPhase;
     }
 
+    /**
+     * Gets the previous phase that precedes this phase.
+     *
+     * @return the previous phase that precedes this phase
+     */
+    public final Optional<CompetitionPhase<T>> previousPhase() {
+        return Optional.ofNullable(this.previousPhase);
+    }
+
+    /**
+     * Gets the previous phase that precedes this phase.
+     *
+     * @return the previous phase that precedes this phase, or
+     *         null if there is no previous phase
+     */
     @Nullable
     public final CompetitionPhase<T> getPreviousPhase() {
         return this.previousPhase;
     }
 
+    /**
+     * Sets the previous phase that precedes this phase.
+     *
+     * @param previousPhase the previous phase that precedes this phase
+     */
     protected final void setPreviousPhase(CompetitionPhase<T> previousPhase) {
         this.previousPhase = previousPhase;
     }

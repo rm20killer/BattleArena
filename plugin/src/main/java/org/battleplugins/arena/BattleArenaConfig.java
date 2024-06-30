@@ -6,6 +6,9 @@ import org.battleplugins.arena.config.ArenaOption;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Represents the BattleArena configuration.
+ */
 public class BattleArenaConfig {
 
     @ArenaOption(name = "config-version", description = "The version of the config.", required = true)

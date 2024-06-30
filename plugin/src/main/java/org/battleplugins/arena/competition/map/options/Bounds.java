@@ -5,6 +5,9 @@ import org.battleplugins.arena.config.ArenaOption;
 import org.bukkit.Location;
 import org.bukkit.util.BoundingBox;
 
+/**
+ * Represents the bounds of a map.
+ */
 public class Bounds {
     @ArenaOption(name = "min-x", description = "The minimum X coordinate of the map.", required = true)
     private int minX;

@@ -3,6 +3,7 @@ package org.battleplugins.arena.competition.event;
 import net.kyori.adventure.text.Component;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.competition.Competition;
+import org.battleplugins.arena.competition.CompetitionType;
 import org.battleplugins.arena.competition.map.LiveCompetitionMap;
 import org.battleplugins.arena.competition.map.MapType;
 import org.bukkit.Bukkit;
@@ -14,10 +15,21 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Represents an event scheduler for events, responsible
+ * for scheduling and starting events for arenas that are
+ * of type {@link CompetitionType#EVENT}.
+ */
 public class EventScheduler {
     private final Map<Arena, ScheduledEvent> scheduledEvents = new HashMap<>();
     private final Map<Arena, Competition<?>> activeEvents = new HashMap<>();
 
+    /**
+     * Schedules an event in the given {@link Arena}.
+     *
+     * @param arena the arena to schedule the event in
+     * @param options the options for the event
+     */
     public void scheduleEvent(Arena arena, EventOptions options) {
         ScheduledEvent scheduledEvent = this.scheduledEvents.get(arena);
         if (scheduledEvent != null) {
@@ -33,6 +45,12 @@ public class EventScheduler {
         this.scheduledEvents.put(arena, new ScheduledEvent(options, bukkitTask));
     }
 
+    /**
+     * Starts an event in the given {@link Arena}.
+     *
+     * @param arena the arena to start the event in
+     * @param options the options for the event
+     */
     public void startEvent(Arena arena, EventOptions options) {
         if (this.activeEvents.containsKey(arena)) {
             arena.getPlugin().warn("An event is already running in arena {}, failed to start!", arena.getName());
@@ -61,6 +79,11 @@ public class EventScheduler {
         }
     }
 
+    /**
+     * Stops an event in the given {@link Arena}.
+     *
+     * @param arena the arena to stop the event in
+     */
     public void stopEvent(Arena arena) {
         ScheduledEvent scheduledEvent = this.scheduledEvents.get(arena);
         if (scheduledEvent != null) {
@@ -76,6 +99,12 @@ public class EventScheduler {
         arena.getPlugin().removeCompetition(arena, competition);
     }
 
+    /**
+     * Called when an event has ended in the given {@link Arena}.
+     *
+     * @param arena the arena the event ended in
+     * @param competition the competition that ended
+     */
     public void eventEnded(Arena arena, Competition<?> competition) {
         Competition<?> activeCompetition = this.activeEvents.get(arena);
         if (activeCompetition == null || !activeCompetition.equals(competition)) {
@@ -101,6 +130,9 @@ public class EventScheduler {
         arena.getPlugin().info("Event in arena {} has ended. Rescheduling event at interval.", arena.getName());
     }
 
+    /**
+     * Stops all events in the scheduler.
+     */
     public void stopAllEvents() {
         for (ScheduledEvent task : this.scheduledEvents.values()) {
             task.task().cancel();
@@ -110,6 +142,11 @@ public class EventScheduler {
         this.activeEvents.clear();
     }
 
+    /**
+     * Gets all scheduled events in the scheduler.
+     *
+     * @return all scheduled events in the scheduler
+     */
     public Set<Arena> getScheduledEvents() {
         return Set.copyOf(this.scheduledEvents.keySet());
     }

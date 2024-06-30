@@ -289,6 +289,9 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         }
     }
 
+    /**
+     * Reloads the plugin.
+     */
     public void reload() {
         new BattleArenaReloadEvent(this).callEvent();
 
@@ -299,35 +302,72 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         new BattleArenaReloadedEvent(this).callEvent();
     }
 
+    /**
+     * Returns whether the given {@link Player} is in an {@link Arena}.
+     *
+     * @param player the player to check
+     * @return whether the player is in an arena
+     */
     public boolean isInArena(Player player) {
         return ArenaPlayer.getArenaPlayer(player) != null;
     }
 
+    /**
+     * Returns the {@link Arena} from the given name.
+     *
+     * @param name the name of the arena
+     * @return the arena from the given name
+     */
     public Optional<Arena> arena(String name) {
         return Optional.ofNullable(this.arenas.get(name));
     }
 
+    /**
+     * Returns the {@link Arena} from the given name.
+     *
+     * @param name the name of the arena
+     * @return the arena from the given name, or null if not found
+     */
     @Nullable
     public Arena getArena(String name) {
         return this.arenas.get(name);
     }
 
-    public <T extends Arena> void registerArena(String name, Class<T> arena) {
-        this.registerArena(name, arena, () -> {
+    /**
+     * Registers the given {@link Arena}.
+     *
+     * @param name the name of the arena
+     * @param arenaClass the arena type to register
+     */
+    public <T extends Arena> void registerArena(String name, Class<T> arenaClass) {
+        this.registerArena(name, arenaClass, () -> {
             try {
-                return arena.getConstructor().newInstance();
+                return arenaClass.getConstructor().newInstance();
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                throw new RuntimeException("Failed to instantiate arena " + arena.getName(), e);
+                throw new RuntimeException("Failed to instantiate arena " + arenaClass.getName(), e);
             }
         });
     }
 
+    /**
+     * Registers the given {@link Arena}.
+     *
+     * @param name the name of the arena
+     * @param arenaClass the arena type to register
+     * @param arenaFactory the factory to create the arena
+     */
     public <T extends Arena> void registerArena(String name, Class<T> arenaClass, Supplier<T> arenaFactory) {
         ArenaConfigParser.registerFactory(arenaClass, arenaFactory);
 
         this.arenaTypes.put(name, arenaClass);
     }
 
+    /**
+     * Returns all the available maps for the given {@link Arena}.
+     *
+     * @param arena the arena to get the maps for
+     * @return all the available maps for the given arena
+     */
     public List<LiveCompetitionMap<?>> getMaps(Arena arena) {
         List<LiveCompetitionMap<?>> maps = this.arenaMaps.get(arena);
         if (maps == null) {
@@ -337,10 +377,24 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         return List.copyOf(maps);
     }
 
+    /**
+     * Returns the map from the given {@link Arena} and map name.
+     *
+     * @param arena the arena to get the map from
+     * @param name the name of the map
+     * @return the map from the given arena and name
+     */
     public Optional<LiveCompetitionMap<?>> map(Arena arena, String name) {
         return Optional.ofNullable(this.getMap(arena, name));
     }
 
+    /**
+     * Returns the map from the given {@link Arena} and map name.
+     *
+     * @param arena the arena to get the map from
+     * @param name the name of the map
+     * @return the map from the given arena and name, or null if not found
+     */
     @Nullable
     public LiveCompetitionMap<?> getMap(Arena arena, String name) {
         List<LiveCompetitionMap<?>> maps = this.arenaMaps.get(arena);
@@ -354,10 +408,22 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
                 .orElse(null);
     }
 
+    /**
+     * Adds a new {@link LiveCompetitionMap} to the given {@link Arena}.
+     *
+     * @param arena the arena to add the map to
+     * @param map the map to add
+     */
     public void addArenaMap(Arena arena, LiveCompetitionMap<?> map) {
         this.arenaMaps.computeIfAbsent(arena, k -> new ArrayList<>()).add(map);
     }
 
+    /**
+     * Removes the given {@link LiveCompetitionMap} from the given {@link Arena}.
+     *
+     * @param arena the arena to remove the map from
+     * @param map the map to remove
+     */
     public void removeArenaMap(Arena arena, LiveCompetitionMap<?> map) {
         this.arenaMaps.computeIfAbsent(arena, k -> new ArrayList<>()).remove(map);
 
@@ -377,32 +443,73 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         }
     }
 
+    /**
+     * Returns all the {@link Competition}s for the given {@link Arena}.
+     *
+     * @param arena the arena to get the competitions for
+     * @return all the competitions for the given arena
+     */
     public List<Competition<?>> getCompetitions(Arena arena) {
         return this.competitionManager.getCompetitions(arena);
     }
 
+    /**
+     * Returns all the {@link Competition}s for the given {@link Arena} and
+     * specified map name.
+     *
+     * @param arena the arena to get the competitions for
+     * @param name the name of the competition
+     * @return all the competitions for the given arena and name
+     */
     public List<Competition<?>> getCompetitions(Arena arena, String name) {
         return this.competitionManager.getCompetitions(arena, name);
     }
 
+    /**
+     * Returns a currently active {@link Competition} for the given {@link Arena},
+     * {@link Player}, {@link PlayerRole} and map name. If no competition is found,
+     * a new one is created if applicable.
+     *
+     * @param arena the arena to get the competition for
+     * @param player the player to get the competition for
+     * @param role the role of the player
+     * @param name the name of the competition
+     * @return the competition result
+     */
     public CompletableFuture<CompetitionResult> getOrCreateCompetition(Arena arena, Player player, PlayerRole role, @Nullable String name) {
         return this.competitionManager.getOrCreateCompetition(arena, player, role, name);
     }
 
+    /**
+     * Finds a joinable {@link Competition} for the given {@link Player} and {@link PlayerRole}.
+     *
+     * @param competitions the competitions to find from
+     * @param player the player to find the competition for
+     * @param role the role of the player
+     * @return the competition result
+     */
     public CompletableFuture<CompetitionResult> findJoinableCompetition(List<Competition<?>> competitions, Player player, PlayerRole role) {
         return this.competitionManager.findJoinableCompetition(competitions, player, role);
     }
 
+    /**
+     * Adds a new {@link Competition} to the given {@link Arena}.
+     *
+     * @param arena the arena to add the competition to
+     * @param competition the competition to add
+     */
     public void addCompetition(Arena arena, Competition<?> competition) {
         this.competitionManager.addCompetition(arena, competition);
     }
 
+    /**
+     * Removes the given {@link Competition} from the specified {@link Arena}.
+     *
+     * @param arena the arena to remove the competition from
+     * @param competition the competition to remove
+     */
     public void removeCompetition(Arena arena, Competition<?> competition) {
         this.competitionManager.removeCompetition(arena, competition);
-    }
-
-    public Path getMapsPath() {
-        return this.getDataFolder().toPath().resolve("maps");
     }
 
     private void loadArenas() {
@@ -415,6 +522,135 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
                 this.error("An error occurred when loading arena {}: {}", value.arenaPath().getFileName(), e.getMessage(), e);
             }
         }
+    }
+
+    /**
+     * Returns the {@link EventScheduler}, which is responsible for scheduling events.
+     *
+     * @return the event scheduler
+     */
+    public EventScheduler getEventScheduler() {
+        return this.eventScheduler;
+    }
+
+    /**
+     * Returns an in-memory representation of the configuration.
+     *
+     * @return the BattleArena configuration
+     */
+    public BattleArenaConfig getMainConfig() {
+        return this.config;
+    }
+
+    /**
+     * Returns the teams for the plugin.
+     *
+     * @return the teams for the plugin
+     */
+    public ArenaTeams getTeams() {
+        return this.teams;
+    }
+
+    /**
+     * Returns the {@link ArenaModuleContainer} for the given module id.
+     *
+     * @param id the id of the module
+     * @return the module container for the given id
+     * @param <T> the type of the module
+     */
+    public <T> Optional<ArenaModuleContainer<T>> module(String id) {
+        return Optional.ofNullable(this.getModule(id));
+    }
+
+    /**
+     * Returns the {@link ArenaModuleContainer} for the given module id.
+     *
+     * @param id the id of the module
+     * @return the module container for the given id, or null if not found
+     * @param <T> the type of the module
+     */
+    @Nullable
+    public <T> ArenaModuleContainer<T> getModule(String id) {
+        return this.moduleLoader.getModule(id);
+    }
+
+    /**
+     * Returns all the modules for the plugin.
+     *
+     * @return all the modules for the plugin
+     */
+    public List<ArenaModuleContainer<?>> getModules() {
+        return this.moduleLoader.getModules();
+    }
+
+    /**
+     * Returns all the failed modules for the plugin.
+     *
+     * @return all the failed modules for the plugin
+     */
+    public Set<ModuleLoadException> getFailedModules() {
+        return this.moduleLoader.getFailedModules();
+    }
+
+    /**
+     * Registers a new command executor for the given command.
+     *
+     * @param commandName the name of the command
+     * @param executor the executor to register
+     * @param aliases the aliases for the command
+     */
+    public void registerExecutor(String commandName, BaseCommandExecutor executor, String... aliases) {
+        PluginCommand command = CommandInjector.inject(commandName, commandName.toLowerCase(Locale.ROOT), aliases);
+        command.setExecutor(executor);
+    }
+
+    /**
+     * Returns the path to the maps directory.
+     *
+     * @return the path to the maps directory
+     */
+    public Path getMapsPath() {
+        return this.getDataFolder().toPath().resolve("maps");
+    }
+
+    /**
+     * Returns the path to the backup directory for the given type.
+     *
+     * @param type the type of backup
+     * @return the path to the backup directory
+     */
+    public Path getBackupPath(String type) {
+        return this.getDataFolder().toPath().resolve("backups").resolve(type);
+    }
+
+    /**
+     * Returns whether the plugin is in debug mode.
+     *
+     * @return whether the plugin is in debug mode
+     */
+    @Override
+    public boolean isDebugMode() {
+        return this.debugMode;
+    }
+
+    /**
+     * Sets whether the plugin is in debug mode.
+     *
+     * @param debugMode whether the plugin is in debug mode
+     */
+    @Override
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
+    }
+
+    /**
+     * Gets the SLF4J logger for the plugin.
+     *
+     * @return the SLF4J logger for the plugin
+     */
+    @Override
+    public @NotNull Logger getSLF4JLogger() {
+        return super.getSLF4JLogger();
     }
 
     private void loadArenaMaps() {
@@ -464,44 +700,6 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         }
     }
 
-    public EventScheduler getEventScheduler() {
-        return this.eventScheduler;
-    }
-
-    public BattleArenaConfig getMainConfig() {
-        return this.config;
-    }
-
-    public ArenaTeams getTeams() {
-        return this.teams;
-    }
-
-    public <T> Optional<ArenaModuleContainer<T>> module(String id) {
-        return Optional.ofNullable(this.getModule(id));
-    }
-
-    @Nullable
-    public <T> ArenaModuleContainer<T> getModule(String id) {
-        return this.moduleLoader.getModule(id);
-    }
-
-    public List<ArenaModuleContainer<?>> getModules() {
-        return this.moduleLoader.getModules();
-    }
-
-    public Set<ModuleLoadException> getFailedModules() {
-        return this.moduleLoader.getFailedModules();
-    }
-
-    public void registerExecutor(String name, BaseCommandExecutor executor, String... aliases) {
-        PluginCommand command = CommandInjector.inject(name, name.toLowerCase(Locale.ROOT), aliases);
-        command.setExecutor(executor);
-    }
-
-    public Path getBackupPath(String type) {
-        return this.getDataFolder().toPath().resolve("backups").resolve(type);
-    }
-
     private void clearDynamicMaps() {
         for (File file : Bukkit.getWorldContainer().listFiles()) {
             if (file.isDirectory() && file.getName().startsWith("ba-dynamic")) {
@@ -518,21 +716,11 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         }
     }
 
-    @Override
-    public boolean isDebugMode() {
-        return this.debugMode;
-    }
-
-    @Override
-    public void setDebugMode(boolean debugMode) {
-        this.debugMode = debugMode;
-    }
-
-    @Override
-    public @NotNull Logger getSLF4JLogger() {
-        return super.getSLF4JLogger();
-    }
-
+    /**
+     * Returns the instance of the plugin.
+     *
+     * @return the instance of the plugin
+     */
     public static BattleArena getInstance() {
         return instance;
     }

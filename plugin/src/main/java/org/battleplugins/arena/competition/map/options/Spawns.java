@@ -6,6 +6,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
+/**
+ * Represents the spawn options for a map.
+ */
 public class Spawns {
     @ArenaOption(name = "waitroom", description = "The waitroom spawn.")
     private PositionWithRotation waitroomSpawn;

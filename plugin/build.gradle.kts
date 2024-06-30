@@ -17,6 +17,11 @@ dependencies {
     compileOnly(libs.worldedit)
 }
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 tasks {
     runServer {
         minecraftVersion("1.20.6")

@@ -3,9 +3,13 @@ package org.battleplugins.arena.event.action;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.competition.Competition;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
+/**
+ * Represents an action that occurs in an {@link Arena}.
+ */
 public abstract class EventAction {
     private final Map<String, String> params;
 
@@ -18,19 +22,56 @@ public abstract class EventAction {
         }
     }
 
+    /**
+     * Gets the parameter with the given key.
+     *
+     * @param key the key to get the parameter from
+     * @return the parameter with the given key
+     */
+    @Nullable
     public String get(String key) {
         return this.params.get(key);
     }
 
+    /**
+     * Gets the parameter with the given key or the default value if the key does not exist.
+     *
+     * @param key the key to get the parameter from
+     * @param defaultValue the default value to return if the key does not exist
+     * @return the parameter with the given key or the default value if the key does not exist
+     */
     public String getOrDefault(String key, String defaultValue) {
         return this.params.getOrDefault(key, defaultValue);
     }
 
+    /**
+     * Called before the action is processed.
+     * <p>
+     * This is run globally any time an action occurs, meaning this
+     * method is not bound to any specific player.
+     *
+     * @param arena the arena the action is occurring in
+     * @param competition the competition the action is occurring in
+     */
     public void preProcess(Arena arena, Competition<?> competition) {
     }
 
+    /**
+     * Called after the action is processed.
+     * <p>
+     * This is run globally any time an action occurs, meaning this
+     * method is not bound to any specific player.
+     *
+     * @param arena the arena the action is occurring in
+     * @param competition the competition the action is occurring in
+     */
     public void postProcess(Arena arena, Competition<?> competition) {
     }
 
+    /**
+     * Calls the action for the given {@link ArenaPlayer}.
+     *
+     * @param arenaPlayer the player to call the action for
+     */
     public abstract void call(ArenaPlayer arenaPlayer);
 }

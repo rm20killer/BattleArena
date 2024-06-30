@@ -5,6 +5,9 @@ import org.battleplugins.arena.config.ArenaOption;
 
 import java.time.Duration;
 
+/**
+ * Represents the options for an event.
+ */
 public class EventOptions {
     @ArenaOption(name = "type", required = true, description = "The type of event.")
     private EventType type;

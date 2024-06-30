@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Represents the team manager, which manages all the teams in the competition.
+ */
 public class TeamManager {
     private final LiveCompetition<?> competition;
 
@@ -24,15 +27,31 @@ public class TeamManager {
         this.competition = competition;
     }
 
+    /**
+     * Joins the given {@link ArenaPlayer} to the specified {@link ArenaTeam}.
+     *
+     * @param player the player to join
+     */
     public void joinTeam(ArenaPlayer player, ArenaTeam team) {
         this.teams.computeIfAbsent(team, e -> new HashSet<>()).add(player);
         player.setTeam(team);
     }
 
+    /**
+     * Removes the given {@link ArenaPlayer} from their current team.
+     *
+     * @param player the player to remove
+     */
     public void leaveTeam(ArenaPlayer player) {
         this.leaveTeam(player, player.getTeam());
     }
 
+    /**
+     * Removes the given {@link ArenaPlayer} from the specified {@link ArenaTeam}.
+     *
+     * @param player the player to remove
+     * @param team the team to remove the player from
+     */
     public void leaveTeam(ArenaPlayer player, ArenaTeam team) {
         Set<ArenaPlayer> players = this.teams.get(team);
         if (players == null) {
@@ -43,15 +62,33 @@ public class TeamManager {
         player.setTeam(null);
     }
 
+    /**
+     * Returns the number of players on the given {@link ArenaTeam}.
+     *
+     * @param team the team to get the number of players from
+     * @return the number of players on the team
+     */
     public int getNumberOfPlayersOnTeam(ArenaTeam team) {
         Set<ArenaPlayer> players = this.teams.get(team);
         return players == null ? 0 : players.size();
     }
 
+    /**
+     * Returns all the players on the given {@link ArenaTeam}.
+     *
+     * @param team the team to get the players from
+     * @return all the players on the team
+     */
     public Set<ArenaPlayer> getPlayersOnTeam(ArenaTeam team) {
         return this.teams.getOrDefault(team, Set.of());
     }
 
+    /**
+     * Finds a suitable team for the player to join.
+     *
+     * @return a suitable team for the player to join, or
+     *         null if no suitable team is found
+     */
     @Nullable
     public ArenaTeam findSuitableTeam() {
         Teams teams = this.competition.getArena().getTeams();
@@ -79,10 +116,21 @@ public class TeamManager {
         return null;
     }
 
+    /**
+     * Returns all the {@link ArenaTeam teams} in the competition.
+     *
+     * @return all the teams in the competition
+     */
     public Set<ArenaTeam> getTeams() {
         return Set.copyOf(this.teams.keySet());
     }
 
+    /**
+     * Returns the {@link StatHolder} for the given {@link ArenaTeam}.
+     *
+     * @param team the team to get the stats for
+     * @return the stats for the team
+     */
     public StatHolder getStats(ArenaTeam team) {
         return this.stats.computeIfAbsent(team, e -> new TeamStatHolder(this, team));
     }
@@ -93,6 +141,11 @@ public class TeamManager {
         return playersOnTeam + 1 <= teams.getTeamSize().getMax();
     }
 
+    /**
+     * Gets the {@link LiveCompetition} this team manager is managing.
+     *
+     * @return the competition this team manager is managing
+     */
     public LiveCompetition<?> getCompetition() {
         return this.competition;
     }

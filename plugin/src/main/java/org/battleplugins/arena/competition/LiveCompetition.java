@@ -306,7 +306,11 @@ public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Com
         return this.arena.getOption(type);
     }
 
-    protected final void onDestroy() {
+    protected final void destroy() {
+        this.onDestroy();
+    }
+
+    protected void onDestroy() {
         this.arena.getEventManager().unregisterEvents(this.competitionListener);
         this.arena.getEventManager().unregisterEvents(this.optionsListener);
         this.arena.getEventManager().unregisterEvents(this.statListener);

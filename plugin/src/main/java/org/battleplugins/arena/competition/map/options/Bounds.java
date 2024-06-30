@@ -70,6 +70,22 @@ public class Bounds {
         return this.maxZ;
     }
 
+    public int getWidth() {
+        return this.maxX - this.minX;
+    }
+
+    public int getHeight() {
+        return this.maxY - this.minY;
+    }
+
+    public int getLength() {
+        return this.maxZ - this.minZ;
+    }
+
+    public int getVolume() {
+        return this.getWidth() * this.getHeight() * this.getLength();
+    }
+
     public boolean isInside(Bounds bounds) {
         return this.isInside(bounds.getMinX(), bounds.getMinY(), bounds.getMinZ()) && this.isInside(bounds.getMaxX(), bounds.getMaxY(), bounds.getMaxZ());
     }

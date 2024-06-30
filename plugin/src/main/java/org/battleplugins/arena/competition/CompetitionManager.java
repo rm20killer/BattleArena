@@ -181,7 +181,7 @@ public class CompetitionManager {
                 }
             }
 
-            liveCompetition.onDestroy();
+            liveCompetition.destroy();
         }
 
         competitions.remove(competition);

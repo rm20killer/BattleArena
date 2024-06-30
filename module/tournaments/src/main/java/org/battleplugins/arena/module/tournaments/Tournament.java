@@ -3,9 +3,9 @@ package org.battleplugins.arena.module.tournaments;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.competition.Competition;
+import org.battleplugins.arena.competition.CompetitionType;
 import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.competition.PlayerRole;
-import org.battleplugins.arena.competition.event.Event;
 import org.battleplugins.arena.competition.map.LiveCompetitionMap;
 import org.battleplugins.arena.competition.map.MapType;
 import org.battleplugins.arena.module.tournaments.algorithm.SingleEliminationTournamentCalculator;
@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import static org.battleplugins.arena.module.tournaments.TournamentMessages.NEXT_ROUND_STARTING;
 import static org.battleplugins.arena.module.tournaments.TournamentMessages.NEXT_ROUND_STARTING_IN;
@@ -47,7 +46,7 @@ import static org.battleplugins.arena.module.tournaments.TournamentMessages.TOUR
  * in a series of matches until a winner is determined.
  * <p>
  * Tournaments are typically bracketed and have a set number of players.
- * They can also have multiple rounds. These act similar to an {@link Event}
+ * They can also have multiple rounds. These act similar to an {@link CompetitionType#EVENT}
  * but differ in the sense that they run on top of existing arenas.
  * <p>
  * This varies slightly from a conventional bracket tournament as it allows

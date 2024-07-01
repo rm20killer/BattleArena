@@ -84,7 +84,7 @@ public final class ArenaEditorWizards {
                 try {
                     map.save();
                 } catch (ParseException | IOException e) {
-                    BattleArena.getInstance().error("Failed to create map file for arena {}", ctx.getArena().getName(), e);
+                    BattleArena.getInstance().error("Failed to save map file for arena {}", ctx.getArena().getName(), e);
                     Messages.MAP_FAILED_TO_SAVE.send(ctx.getPlayer(), map.getName());
                     return;
                 }
@@ -94,25 +94,6 @@ public final class ArenaEditorWizards {
             .onCreationComplete(ctx -> {
                 Position min = ctx.getMin();
                 Position max = ctx.getMax();
-
-                // Sanitize min max
-                if (min.blockX() > max.blockX()) {
-                    int temp = min.blockX();
-                    min = Position.block(max.blockX(), min.blockY(), min.blockZ());
-                    max = Position.block(temp, max.blockY(), max.blockZ());
-                }
-
-                if (min.blockY() > max.blockY()) {
-                    int temp = min.blockY();
-                    min = Position.block(min.blockX(), max.blockY(), min.blockZ());
-                    max = Position.block(max.blockX(), temp, max.blockZ());
-                }
-
-                if (min.blockZ() > max.blockZ()) {
-                    int temp = min.blockZ();
-                    min = Position.block(min.blockX(), min.blockY(), max.blockZ());
-                    max = Position.block(max.blockX(), max.blockY(), temp);
-                }
 
                 Bounds bounds = new Bounds(min, max);
 

@@ -258,6 +258,7 @@ public class ArenaEventManager {
                         if (ArenaPlayerEvent.class.isAssignableFrom(eventClass)) {
                             try {
                                 method.invoke(eventListener, event, ((ArenaPlayerEvent) event).getArenaPlayer());
+                                return;
                             } catch (Exception e) {
                                 throw new EventException(e, "Error executing ArenaPlayerEvent: " + eventClass);
                             }

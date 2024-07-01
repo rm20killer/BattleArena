@@ -326,12 +326,6 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
                 throw new RuntimeException("Failed to instantiate arena " + arenaClass.getName(), e);
             }
         });
-
-        if (plugin != this) {
-            this.info("Registered arena {} from plugin {}.", name, plugin.getName());
-
-            this.loadArenaLoaders(plugin.getDataFolder().toPath().resolve("arenas"));
-        }
     }
 
     /**
@@ -346,6 +340,11 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         ArenaConfigParser.registerFactory(arenaClass, arenaFactory);
 
         this.arenaTypes.put(name, new ArenaType(plugin, arenaClass));
+        if (plugin != this) {
+            this.info("Registered arena {} from plugin {}.", name, plugin.getName());
+
+            this.loadArenaLoaders(plugin.getDataFolder().toPath().resolve("arenas"));
+        }
     }
 
     /**

@@ -14,6 +14,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 class OptionsListener<T extends Competition<T>> implements ArenaListener, CompetitionLike<T> {
@@ -28,11 +29,22 @@ class OptionsListener<T extends Competition<T>> implements ArenaListener, Compet
         if (!this.competition.option(ArenaOptionType.BLOCK_BREAK).map(BooleanArenaOption::isEnabled).orElse(true)) {
             event.setCancelled(true);
         }
+
+        if (!this.competition.option(ArenaOptionType.BLOCK_DROPS).map(BooleanArenaOption::isEnabled).orElse(true)) {
+            event.setDropItems(false);
+        }
     }
 
     @ArenaEventHandler(priority = EventPriority.LOWEST)
     public void onBlockPlace(BlockPlaceEvent event) {
         if (!this.competition.option(ArenaOptionType.BLOCK_PLACE).map(BooleanArenaOption::isEnabled).orElse(true)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @ArenaEventHandler(priority = EventPriority.LOWEST)
+    public void onDropItem(PlayerDropItemEvent event) {
+        if (!this.competition.option(ArenaOptionType.ITEM_DROPS).map(BooleanArenaOption::isEnabled).orElse(true)) {
             event.setCancelled(true);
         }
     }

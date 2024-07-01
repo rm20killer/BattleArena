@@ -102,6 +102,8 @@ public final class ArenaEditorWizards {
                 Spawns spawns = new Spawns(ctx.getWaitroomSpawn(), ctx.getSpectatorSpawn(), teamSpawns);
 
                 LiveCompetitionMap map = ctx.getArena().getMapFactory().create(ctx.getMapName(), ctx.getArena(), ctx.getMapType(), ctx.getPlayer().getWorld().getName(), bounds, spawns);
+                map.postProcess(); // Call post process to ensure all data is loaded
+
                 BattleArena.getInstance().addArenaMap(ctx.getArena(), map);
 
                 // If our competition is a match, create it

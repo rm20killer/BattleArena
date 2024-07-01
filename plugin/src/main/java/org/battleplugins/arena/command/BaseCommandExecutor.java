@@ -7,6 +7,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.battleplugins.arena.BattleArena;
 import org.battleplugins.arena.config.ItemStackParser;
 import org.battleplugins.arena.config.ParseException;
@@ -128,17 +129,15 @@ public class BaseCommandExecutor implements TabExecutor {
     }
 
     private void registerCommands() {
-        for (Method method : this.getClass().getDeclaredMethods()) {
-            if (method.isAnnotationPresent(ArenaCommand.class)) {
-                ArenaCommand arenaCommand = method.getAnnotation(ArenaCommand.class);
+        for (Method method : MethodUtils.getMethodsWithAnnotation(this.getClass(), ArenaCommand.class, true, true)) {
+            ArenaCommand arenaCommand = method.getAnnotation(ArenaCommand.class);
 
-                CommandWrapper wrapper = new CommandWrapper(this, method, this.getUsage(method));
-                for (String cmd : arenaCommand.commands()) {
-                    Set<CommandWrapper> wrappers = this.commandMethods.getOrDefault(cmd, new HashSet<>());
-                    wrappers.add(wrapper);
+            CommandWrapper wrapper = new CommandWrapper(this, method, this.getUsage(method));
+            for (String cmd : arenaCommand.commands()) {
+                Set<CommandWrapper> wrappers = this.commandMethods.getOrDefault(cmd, new HashSet<>());
+                wrappers.add(wrapper);
 
-                    this.commandMethods.put(cmd, wrappers);
-                }
+                this.commandMethods.put(cmd, wrappers);
             }
         }
     }
@@ -587,6 +586,11 @@ public class BaseCommandExecutor implements TabExecutor {
             return "<" + argument.name() + "> ";
         }
 
+        String usageString = this.onGetUsageString(parameter);
+        if (usageString != null) {
+            return usageString;
+        }
+
         return switch (parameter.getSimpleName().toLowerCase()) {
             case "string[]" -> "[string...] ";
             case "int", "double", "float" -> "<number> ";
@@ -594,8 +598,6 @@ public class BaseCommandExecutor implements TabExecutor {
             case "material" -> "<material> ";
             case "player", "offlineplayer" -> "<player> ";
             case "world" -> "<world> ";
-            case "arena" -> "<arena> ";
-            case "competition" -> "<map> "; // Best name for player-facing values
             default -> {
                 for (SubCommandExecutor subCommandExecutor : this.subCommandExecutors) {
                     String usage = subCommandExecutor.getUsageString(parameter);
@@ -617,6 +619,10 @@ public class BaseCommandExecutor implements TabExecutor {
                 yield "<string> ";
             }
         };
+    }
+
+    protected String onGetUsageString(Class<?> parameter) {
+        return null;
     }
 
     @NotNull

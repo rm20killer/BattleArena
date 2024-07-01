@@ -289,6 +289,16 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
     }
 
     @Override
+    protected String onGetUsageString(Class<?> parameter) {
+        return switch (parameter.getSimpleName().toLowerCase()) {
+            case "arena" -> "<arena> ";
+            case "competition" -> "<map> "; // Best name for player-facing values
+            case "competitionmap" -> "<map> ";
+            default -> super.onGetUsageString(parameter);
+        };
+    }
+
+    @Override
     public final void sendHeader(CommandSender sender) {
         Messages.HEADER.sendCentered(sender, this.arena.getName());
     }

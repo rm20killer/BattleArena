@@ -21,7 +21,9 @@ public final class ArenaOptionType<T extends ArenaOption> {
 
     public static final ArenaOptionType<BooleanArenaOption> BLOCK_BREAK = new ArenaOptionType<>("block-break", BooleanArenaOption::new);
     public static final ArenaOptionType<BooleanArenaOption> BLOCK_PLACE = new ArenaOptionType<>("block-place", BooleanArenaOption::new);
+    public static final ArenaOptionType<BooleanArenaOption> BLOCK_DROPS = new ArenaOptionType<>("block-drops", BooleanArenaOption::new);
     public static final ArenaOptionType<BooleanArenaOption> BLOCK_INTERACT = new ArenaOptionType<>("block-interact", BooleanArenaOption::new);
+    public static final ArenaOptionType<BooleanArenaOption> ITEM_DROPS = new ArenaOptionType<>("item-drops", BooleanArenaOption::new);
     public static final ArenaOptionType<BooleanArenaOption> KEEP_INVENTORY = new ArenaOptionType<>("keep-inventory", BooleanArenaOption::new);
     public static final ArenaOptionType<BooleanArenaOption> KEEP_EXPERIENCE = new ArenaOptionType<>("keep-experience", BooleanArenaOption::new);
 

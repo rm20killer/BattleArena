@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -233,7 +234,9 @@ public final class ArenaConfigParser {
                     // Unknown object! Let's try to parse it
                     ConfigurationSection configurationSection = configuration.getConfigurationSection(name);
                     if (configurationSection == null) {
-                        if (configuration.contains(name)) {
+                        if (configuration.get(name) instanceof Map<?, ?> map) {
+                            configurationSection = toMemorySection((Map<String, Object>) map);
+                        } else if (configuration.contains(name)) {
                             throw new ParseException("Invalid object " + name + " in configuration section " + configuration.getName())
                                     .cause(ParseException.Cause.INVALID_TYPE)
                                     .context("Option name", arenaOption.name())
@@ -512,6 +515,12 @@ public final class ArenaConfigParser {
         }
 
         return sections;
+    }
+
+    private static ConfigurationSection toMemorySection(Map<String, Object> map) {
+        MemoryConfiguration memoryConfig = new MemoryConfiguration();
+        memoryConfig.addDefaults(map);
+        return memoryConfig;
     }
 
     public interface Parser<T> {

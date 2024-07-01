@@ -10,12 +10,13 @@ import org.battleplugins.arena.event.arena.ArenaVictoryEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
 public class VictoryPhase<T extends LiveCompetition<T>> extends LiveCompetitionPhase<T> {
     @ArenaOption(name = "duration", description = "The number of seconds to remain in the victory condition.", required = true)
-    private int duration;
+    private Duration duration;
 
     private BukkitTask durationTask;
 
@@ -31,7 +32,7 @@ public class VictoryPhase<T extends LiveCompetition<T>> extends LiveCompetitionP
         this.durationTask = Bukkit.getScheduler().runTaskLater(
                 this.competition.getArena().getPlugin(),
                 this::advanceToNextPhase,
-                this.duration * 20L
+                this.duration.toMillis() / 50
         );
     }
 

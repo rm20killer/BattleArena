@@ -9,7 +9,6 @@ import org.battleplugins.arena.competition.map.MapType;
 import org.battleplugins.arena.competition.map.options.Bounds;
 import org.battleplugins.arena.competition.map.options.Spawns;
 import org.battleplugins.arena.competition.map.options.TeamSpawns;
-import org.battleplugins.arena.config.ArenaConfigSerializer;
 import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.editor.context.MapCreateContext;
 import org.battleplugins.arena.editor.stage.EnumTextInputStage;
@@ -21,8 +20,6 @@ import org.battleplugins.arena.editor.type.MapOption;
 import org.battleplugins.arena.messages.Messages;
 import org.battleplugins.arena.team.ArenaTeam;
 import org.battleplugins.arena.util.PositionWithRotation;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -84,13 +81,8 @@ public final class ArenaEditorWizards {
 
                 ctx.saveTo(map);
 
-                Path mapPath = ctx.getArena().getMapPath().resolve(map.getName().toLowerCase(Locale.ROOT) + ".yml");
-
                 try {
-                    FileConfiguration configuration = YamlConfiguration.loadConfiguration(Files.newBufferedReader(mapPath));
-                    ArenaConfigSerializer.serialize(map, configuration);
-
-                    configuration.save(mapPath.toFile());
+                    map.save();
                 } catch (ParseException | IOException e) {
                     BattleArena.getInstance().error("Failed to create map file for arena {}", ctx.getArena().getName(), e);
                     Messages.MAP_FAILED_TO_SAVE.send(ctx.getPlayer(), map.getName());
@@ -137,17 +129,7 @@ public final class ArenaEditorWizards {
                     BattleArena.getInstance().addCompetition(ctx.getArena(), competition);
                 }
 
-                Path mapsPath = ctx.getArena().getMapPath();
-                if (Files.notExists(mapsPath)) {
-                    try {
-                        Files.createDirectories(mapsPath);
-                    } catch (Exception e) {
-                        BattleArena.getInstance().error("Failed to create maps directory for arena {}", ctx.getArena().getName(), e);
-                        return;
-                    }
-                }
-
-                Path mapPath = mapsPath.resolve(map.getName().toLowerCase(Locale.ROOT) + ".yml");
+                Path mapPath = ctx.getArena().getMapPath().resolve(map.getName().toLowerCase(Locale.ROOT) + ".yml");
                 if (Files.exists(mapPath)) {
                     // Should not get here but *just* incase
                     Messages.MAP_EXISTS.send(ctx.getPlayer(), map.getName());
@@ -155,14 +137,11 @@ public final class ArenaEditorWizards {
                 }
 
                 try {
-                    Files.createFile(mapPath);
-
-                    FileConfiguration configuration = YamlConfiguration.loadConfiguration(Files.newBufferedReader(mapPath));
-                    ArenaConfigSerializer.serialize(map, configuration);
-
-                    configuration.save(mapPath.toFile());
-                } catch (Exception e) {
+                    map.save();
+                } catch (ParseException | IOException e) {
                     BattleArena.getInstance().error("Failed to create map file for arena {}", ctx.getArena().getName(), e);
+                    Messages.MAP_FAILED_TO_SAVE.send(ctx.getPlayer(), map.getName());
+                    return;
                 }
 
                 Messages.MAP_CREATED.send(ctx.getPlayer(), map.getName(), ctx.getArena().getName());

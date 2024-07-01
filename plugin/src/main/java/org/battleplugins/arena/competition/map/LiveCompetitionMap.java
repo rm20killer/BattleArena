@@ -4,11 +4,12 @@ import net.kyori.adventure.util.TriState;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaLike;
 import org.battleplugins.arena.competition.Competition;
-import org.battleplugins.arena.competition.CompetitionType;
 import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.competition.map.options.Bounds;
 import org.battleplugins.arena.competition.map.options.Spawns;
+import org.battleplugins.arena.config.ArenaConfigSerializer;
 import org.battleplugins.arena.config.ArenaOption;
+import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.config.PostProcessable;
 import org.battleplugins.arena.util.BlockUtil;
 import org.battleplugins.arena.util.VoidChunkGenerator;
@@ -16,8 +17,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -65,6 +72,33 @@ public class LiveCompetitionMap implements ArenaLike, CompetitionMap, PostProces
         if (this.mapWorld == null) {
             throw new IllegalStateException("World " + this.world + " for map " + this.name + " in arena " + this.arena.getName() + " does not exist!");
         }
+    }
+
+    /**
+     * Creates a new competition for this map.
+     *
+     * @param arena the arena to create the competition for
+     * @return the created competition
+     */
+    public Competition<?> createCompetition(Arena arena) {
+        return new LiveCompetition<>(arena, arena.getType(), this);
+    }
+
+    public void save() throws ParseException, IOException {
+        Path mapsPath = this.arena.getMapPath();
+        if (Files.notExists(mapsPath)) {
+            Files.createDirectories(mapsPath);
+        }
+
+        Path mapPath = mapsPath.resolve(this.getName().toLowerCase(Locale.ROOT) + ".yml");
+        if (Files.notExists(mapPath)) {
+            Files.createFile(mapPath);
+        }
+
+        FileConfiguration configuration = YamlConfiguration.loadConfiguration(Files.newBufferedReader(mapPath));
+        ArenaConfigSerializer.serialize(this, configuration);
+
+        configuration.save(mapPath.toFile());
     }
 
     @Override
@@ -173,16 +207,6 @@ public class LiveCompetitionMap implements ArenaLike, CompetitionMap, PostProces
      */
     public final void setSpawns(Spawns spawns) {
         this.spawns = spawns;
-    }
-
-    /**
-     * Creates a new competition for this map.
-     *
-     * @param arena the arena to create the competition for
-     * @return the created competition
-     */
-    public Competition<?> createCompetition(Arena arena) {
-        return new LiveCompetition<>(arena, arena.getType(), this);
     }
 
     /**

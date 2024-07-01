@@ -34,6 +34,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerLoadEvent;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -62,7 +63,7 @@ import java.util.stream.Stream;
 public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
     private static BattleArena instance;
 
-    final Map<String, Class<? extends Arena>> arenaTypes = new HashMap<>();
+    final Map<String, ArenaType> arenaTypes = new HashMap<>();
     final Map<String, Arena> arenas = new HashMap<>();
 
     private final Map<Arena, List<LiveCompetitionMap>> arenaMaps = new HashMap<>();
@@ -101,7 +102,13 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(this, this);
 
+        // Register default arenas
+        this.registerArena(this, "Arena", Arena.class);
+
         this.enable();
+
+        // Loads all arena loaders
+        this.loadArenaLoaders(this.arenasPath);
     }
 
     private void enable() {
@@ -162,42 +169,6 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         // Load messages
         MessageLoader.load(dataFolder.resolve("messages.yml"));
 
-        // Register default arenas
-        this.registerArena("Arena", Arena.class);
-
-        // Create arena loaders
-        try (Stream<Path> arenaPaths = Files.walk(this.arenasPath)) {
-            arenaPaths.forEach(arenaPath -> {
-                try {
-                    if (Files.isDirectory(arenaPath)) {
-                        return;
-                    }
-
-                    Configuration configuration = YamlConfiguration.loadConfiguration(Files.newBufferedReader(arenaPath));
-                    String name = configuration.getString("name");
-                    if (name == null) {
-                        this.info("Arena {} does not have a name!", arenaPath.getFileName());
-                        return;
-                    }
-
-                    String mode = configuration.getString("mode", name);
-                    List<String> aliases = configuration.getStringList("aliases");
-                    ArenaLoader arenaLoader = new ArenaLoader(this, mode, configuration, arenaPath);
-                    this.arenaLoaders.put(name, arenaLoader);
-
-                    // Because Bukkit locks its command map upon startup, we need to
-                    // add our plugin commands here, but populating the executor
-                    // can happen at any time. This also means that Arenas can specify
-                    // their own executors if they so please.
-                    CommandInjector.inject(name, name.toLowerCase(Locale.ROOT), aliases.toArray(String[]::new));
-                } catch (IOException e) {
-                    throw new RuntimeException("Error reading arena config", e);
-                }
-            });
-        } catch (IOException e) {
-            throw new RuntimeException("Error walking arenas path!", e);
-        }
-
         // Register base command
         PluginCommand command = this.getCommand("battlearena");
         if (command == null) {
@@ -224,7 +195,6 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         // Clear dynamic maps
         this.clearDynamicMaps();
 
-        this.arenaTypes.clear();
         for (Arena arena : this.arenas.values()) {
             arena.getEventManager().unregisterAll();
         }
@@ -297,6 +267,14 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
 
         this.disable();
         this.enable();
+
+        // Reload loaders - has to be done this way for third party
+        // plugins that add their own arena types
+        for (ArenaType type : this.arenaTypes.values()) {
+            Path arenasPath = type.plugin().getDataFolder().toPath().resolve("arenas");
+            this.loadArenaLoaders(arenasPath);
+        }
+
         this.postInitialize();
 
         new BattleArenaReloadedEvent(this).callEvent();
@@ -336,30 +314,38 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
     /**
      * Registers the given {@link Arena}.
      *
+     * @param plugin the plugin registering the arena
      * @param name the name of the arena
      * @param arenaClass the arena type to register
      */
-    public <T extends Arena> void registerArena(String name, Class<T> arenaClass) {
-        this.registerArena(name, arenaClass, () -> {
+    public <T extends Arena> void registerArena(Plugin plugin, String name, Class<T> arenaClass) {
+        this.registerArena(plugin, name, arenaClass, () -> {
             try {
                 return arenaClass.getConstructor().newInstance();
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 throw new RuntimeException("Failed to instantiate arena " + arenaClass.getName(), e);
             }
         });
+
+        if (plugin != this) {
+            this.info("Registered arena {} from plugin {}.", name, plugin.getName());
+
+            this.loadArenaLoaders(plugin.getDataFolder().toPath().resolve("arenas"));
+        }
     }
 
     /**
      * Registers the given {@link Arena}.
      *
+     * @param plugin the plugin registering the arena
      * @param name the name of the arena
      * @param arenaClass the arena type to register
      * @param arenaFactory the factory to create the arena
      */
-    public <T extends Arena> void registerArena(String name, Class<T> arenaClass, Supplier<T> arenaFactory) {
+    public <T extends Arena> void registerArena(Plugin plugin, String name, Class<T> arenaClass, Supplier<T> arenaFactory) {
         ArenaConfigParser.registerFactory(arenaClass, arenaFactory);
 
-        this.arenaTypes.put(name, arenaClass);
+        this.arenaTypes.put(name, new ArenaType(plugin, arenaClass));
     }
 
     /**
@@ -651,6 +637,45 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
     @Override
     public @NotNull Logger getSLF4JLogger() {
         return super.getSLF4JLogger();
+    }
+
+    private void loadArenaLoaders(Path path) {
+        if (Files.notExists(path)) {
+            return;
+        }
+
+        // Create arena loaders
+        try (Stream<Path> arenaPaths = Files.walk(path)) {
+            arenaPaths.forEach(arenaPath -> {
+                try {
+                    if (Files.isDirectory(arenaPath)) {
+                        return;
+                    }
+
+                    Configuration configuration = YamlConfiguration.loadConfiguration(Files.newBufferedReader(arenaPath));
+                    String name = configuration.getString("name");
+                    if (name == null) {
+                        this.info("Arena {} does not have a name!", arenaPath.getFileName());
+                        return;
+                    }
+
+                    String mode = configuration.getString("mode", name);
+                    List<String> aliases = configuration.getStringList("aliases");
+                    ArenaLoader arenaLoader = new ArenaLoader(this, mode, configuration, arenaPath);
+                    this.arenaLoaders.put(name, arenaLoader);
+
+                    // Because Bukkit locks its command map upon startup, we need to
+                    // add our plugin commands here, but populating the executor
+                    // can happen at any time. This also means that Arenas can specify
+                    // their own executors if they so please.
+                    CommandInjector.inject(name, name.toLowerCase(Locale.ROOT), aliases.toArray(String[]::new));
+                } catch (IOException e) {
+                    throw new RuntimeException("Error reading arena config", e);
+                }
+            });
+        } catch (IOException e) {
+            throw new RuntimeException("Error walking arenas path!", e);
+        }
     }
 
     private void loadArenaMaps() {

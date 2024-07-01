@@ -66,6 +66,10 @@ public class ArenaEditorWizard<E extends EditorContext<E>> {
     }
 
     public void openWizard(Player player, Arena arena) {
+        this.openWizard(player, arena, null);
+    }
+
+    public void openWizard(Player player, Arena arena, @Nullable Consumer<E> contextConsumer) {
         if (this.players.contains(player.getUniqueId())) {
             Messages.ERROR_ALREADY_IN_EDITOR.send(player);
             return;
@@ -98,6 +102,10 @@ public class ArenaEditorWizard<E extends EditorContext<E>> {
                 stage.enter(context);
             }
         });
+
+        if (contextConsumer != null) {
+            contextConsumer.accept(context);
+        }
 
         WizardStage<E> initialStage = iterator.next().getValue();
         initialStage.enter(context);

@@ -12,6 +12,8 @@ import org.battleplugins.arena.config.context.PhaseContextProvider;
 import org.battleplugins.arena.config.context.VictoryConditionContextProvider;
 import org.battleplugins.arena.util.IntRange;
 import org.battleplugins.arena.util.PositionWithRotation;
+import org.bukkit.Bukkit;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
@@ -96,6 +98,8 @@ final class DefaultParsers {
 
             return MiniMessage.miniMessage().deserialize(value);
         });
+
+        ArenaConfigParser.registerProvider(BlockData.class, parseString(Bukkit::createBlockData));
     }
 
     private static <T> ArenaConfigParser.Parser<T> parseString(Function<String, T> parser) {

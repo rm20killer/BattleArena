@@ -10,10 +10,10 @@ team-options:
 lives:
   enabled: false
 victory-conditions:
-  teams-alive:
-    amount: 1
   time-limit:
     time-limit: 2m
+  highest-stat:
+    stat-name: kills
 events:
   on-join:
     - store{types=all}

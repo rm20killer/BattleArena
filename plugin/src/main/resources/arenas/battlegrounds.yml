@@ -29,10 +29,9 @@ events:
     - clear-effects
     - restore{types=all}
   on-death:
-    - clear-inventory
     - respawn
-    - delay{ticks=1}
-    - teleport{location=waitroom}
+  on-respawn:
+    - teleport{location=team_spawn;random=true}
 options:
   - block-break{enabled=false}
   - block-place{enabled=false}

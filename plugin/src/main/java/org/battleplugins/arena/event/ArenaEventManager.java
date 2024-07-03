@@ -88,8 +88,9 @@ public class ArenaEventManager {
      * @param eventClass the event class
      * @param resolver the resolver for the event class
      */
-    public void registerArenaResolver(Class<? extends Event> eventClass, Function<Event, LiveCompetition<?>> resolver) {
-        this.arenaEventResolvers.put(eventClass, resolver);
+    @SuppressWarnings("unchecked")
+    public <E extends Event> void registerArenaResolver(Class<? extends E> eventClass, Function<E, LiveCompetition<?>> resolver) {
+        this.arenaEventResolvers.put(eventClass, (Function<Event, LiveCompetition<?>>) resolver);
     }
 
     /**
@@ -203,12 +204,14 @@ public class ArenaEventManager {
 
             ArenaEventHandler eventHandler = method.getAnnotation(ArenaEventHandler.class);
             if (method.getParameterCount() == 0) {
+                this.arena.getPlugin().warn("Event method {} in {} has no parameters. Not registering.", method.getName(), listener.getClass());
                 continue;
             }
 
             // The first argument should be an ArenaEvent or a Player event
             Class<?> eventClass = method.getParameterTypes()[0];
             if (!ArenaEvent.class.isAssignableFrom(eventClass) && PLAYER_EVENT_RESOLVERS.get(eventClass) == null && this.arenaEventResolvers.get(eventClass) == null) {
+                this.arena.getPlugin().warn("Event method {} ({}) in {} was not an ArenaEvent or a Player event. Custom resolvers can be added using the ArenaEventManager#registerArenaResolver.", method.getName(), eventClass.getSimpleName(), listener.getClass());
                 continue;
             }
 
@@ -321,15 +324,17 @@ public class ArenaEventManager {
         }
 
         Function<Event, Player> eventPlayerFunction = PLAYER_EVENT_RESOLVERS.get(event.getClass());
+
+        playerEventResolver:
         if (eventPlayerFunction != null) {
             Player player = eventPlayerFunction.apply(event);
             if (player == null) {
-                return null;
+                break playerEventResolver;
             }
 
             ArenaPlayer arenaPlayer = ArenaPlayer.getArenaPlayer(player);
             if (arenaPlayer == null) {
-                return null;
+                break playerEventResolver;
             }
 
             return Pair.of(arenaPlayer.getArena(), arenaPlayer.getCompetition());

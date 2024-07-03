@@ -102,7 +102,6 @@ public class Arena implements ArenaLike, ArenaListener {
 
     public Arena() {
         this.eventManager = new ArenaEventManager(this);
-        this.eventManager.registerEvents(this);
     }
 
     // API methods

@@ -151,7 +151,7 @@ public class InteractionInputs {
                         return;
                     }
 
-                    if (event.getInteractionPoint() == null) {
+                    if (event.getClickedBlock() == null) {
                         return;
                     }
 
@@ -163,7 +163,7 @@ public class InteractionInputs {
 
                     // Need to run a tick later so Bukkit can handle the event cancellation
                     Bukkit.getScheduler().runTaskLater(BattleArena.getInstance(), () -> {
-                        onPositionInteract(event.getInteractionPoint());
+                        onPositionInteract(event.getClickedBlock().getLocation());
                     }, 1);
 
                     event.setCancelled(true);

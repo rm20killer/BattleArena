@@ -23,11 +23,16 @@ record ArenaLoader(BattleArena battleArena, String mode, Configuration configura
         try {
             ArenaType arenaType = this.battleArena.arenaTypes.get(this.mode);
             if (arenaType == null) {
-                this.battleArena.info("Arena {} does not have a valid mode! Recognized modes: {}", this.arenaPath.getFileName(), this.battleArena.arenaTypes.keySet());
+                this.battleArena.info("Arena {} specified the mode as {}, which is not valid! Recognized modes: {}", this.arenaPath.getFileName(), this.mode, this.battleArena.arenaTypes.keySet());
                 return;
             }
 
             Arena arena = ArenaConfigParser.newInstance(this.arenaPath, arenaType.arenaClass(), this.configuration, this.battleArena);
+
+            // Need to call this here rather than in the Arena constructor
+            // so third party arenas can register their own event resolvers
+            arena.getEventManager().registerEvents(arena);
+
             Bukkit.getPluginManager().registerEvents(arena, this.battleArena);
 
             this.battleArena.arenas.put(arena.getName(), arena);

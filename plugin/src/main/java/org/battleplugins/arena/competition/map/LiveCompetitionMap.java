@@ -12,6 +12,7 @@ import org.battleplugins.arena.config.ArenaOption;
 import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.config.PostProcessable;
 import org.battleplugins.arena.util.BlockUtil;
+import org.battleplugins.arena.util.FieldUtil;
 import org.battleplugins.arena.util.VoidChunkGenerator;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -68,6 +69,10 @@ public class LiveCompetitionMap implements ArenaLike, CompetitionMap, PostProces
 
     @Override
     public void postProcess() {
+        if (this.mapWorld != null) {
+            return; // Map was already set in createDynamicCompetition
+        }
+
         this.mapWorld = Bukkit.getWorld(this.world);
         if (this.mapWorld == null) {
             throw new IllegalStateException("World " + this.world + " for map " + this.name + " in arena " + this.arena.getName() + " does not exist!");
@@ -242,7 +247,13 @@ public class LiveCompetitionMap implements ArenaLike, CompetitionMap, PostProces
         }
 
         LiveCompetitionMap copy = arena.getMapFactory().create(this.name, arena, this.type, worldName, this.bounds, this.spawns);
+        // Copy additional fields for custom maps
+        if (copy.getClass() != LiveCompetitionMap.class) {
+            FieldUtil.copyFields(this, copy);
+        }
+
         copy.mapWorld = world;
+        copy.postProcess();
 
         return copy.createCompetition(arena);
     }

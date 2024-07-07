@@ -3,6 +3,7 @@ package org.battleplugins.arena.module.classes;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.command.ArenaCommand;
+import org.battleplugins.arena.command.Argument;
 import org.battleplugins.arena.command.SubCommandExecutor;
 import org.battleplugins.arena.messages.Messages;
 import org.battleplugins.arena.options.types.BooleanArenaOption;
@@ -21,7 +22,7 @@ public class ClassesExecutor implements SubCommandExecutor {
     }
 
     @ArenaCommand(commands = "equip", description = "Equip a class.", permissionNode = "equip")
-    public void equip(Player player, ArenaClass arenaClass) {
+    public void equip(Player player, @Argument(name = "class") ArenaClass arenaClass) {
         // Should not get here, but just as an additional safeguard
         // *just in case*
         if (!this.arena.isModuleEnabled(Classes.ID)) {

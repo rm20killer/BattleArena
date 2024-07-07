@@ -10,6 +10,7 @@ import org.battleplugins.arena.event.action.types.DelayAction;
 import org.battleplugins.arena.event.action.types.FlightAction;
 import org.battleplugins.arena.event.action.types.GiveEffectsAction;
 import org.battleplugins.arena.event.action.types.HealthAction;
+import org.battleplugins.arena.event.action.types.JoinRandomTeamAction;
 import org.battleplugins.arena.event.action.types.KillEntitiesAction;
 import org.battleplugins.arena.event.action.types.LeaveAction;
 import org.battleplugins.arena.event.action.types.PlaySoundAction;
@@ -47,6 +48,7 @@ public final class EventActionType<T extends EventAction> {
     public static final EventActionType<FlightAction> FLIGHT = new EventActionType<>("flight", FlightAction.class, FlightAction::new);
     public static final EventActionType<GiveEffectsAction> GIVE_EFFECTS = new EventActionType<>("give-effects", GiveEffectsAction.class, GiveEffectsAction::new);
     public static final EventActionType<HealthAction> HEALTH = new EventActionType<>("health", HealthAction.class, HealthAction::new);
+    public static final EventActionType<JoinRandomTeamAction> JOIN_RANDOM_TEAM = new EventActionType<>("join-random-team", JoinRandomTeamAction.class, JoinRandomTeamAction::new);
     public static final EventActionType<KillEntitiesAction> KILL_ENTITIES = new EventActionType<>("kill-entities", KillEntitiesAction.class, KillEntitiesAction::new);
     public static final EventActionType<LeaveAction> LEAVE = new EventActionType<>("leave", LeaveAction.class, LeaveAction::new);
     public static final EventActionType<PlaySoundAction> PLAY_SOUND = new EventActionType<>("play-sound", PlaySoundAction.class, PlaySoundAction::new);

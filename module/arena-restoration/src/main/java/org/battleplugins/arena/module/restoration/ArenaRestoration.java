@@ -26,7 +26,7 @@ public class ArenaRestoration implements ArenaModuleInitializer {
     public static final EventActionType<RestoreArenaAction> RESTORE_ARENA_ACTION = EventActionType.create("restore-arena", RestoreArenaAction.class, RestoreArenaAction::new);
 
     public static final Message NO_BOUNDS = Messages.error("arena-restoration-no-bounds", "You must first set the map bounds before executing this command!");
-    public static final Message SCHEMATIC_CREATED = Messages.success("arena-restoration-schematic-created", "Schematic created for map {}.");
+    public static final Message SCHEMATIC_CREATED = Messages.success("arena-restoration-schematic-created", "Schematic created for map <secondary>{}</secondary>.");
     public static final Message FAILED_TO_CREATE_SCHEMATIC = Messages.error("arena-restoration-failed-to-create-schematic", "Failed to create schematic! Check the console for more information.");
 
     @EventHandler

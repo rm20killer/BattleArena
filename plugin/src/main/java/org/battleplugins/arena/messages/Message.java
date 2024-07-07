@@ -45,23 +45,17 @@ public class Message {
     }
 
     public void send(CommandSender sender, Component... replacements) {
-        String[] strReplacements = new String[replacements.length];
-        for (int i = 0; i < strReplacements.length; i++) {
-            Component replacement = replacements[i];
-            strReplacements[i] = PlainTextComponentSerializer.plainText().serialize(replacement);
-        }
-
-        sender.sendMessage(this.toComponent(strReplacements));
+        sender.sendMessage(this.toComponent(replacements.clone()));
     }
 
     public void send(CommandSender sender, Message... replacements) {
-        String[] strReplacements = new String[replacements.length];
-        for (int i = 0; i < strReplacements.length; i++) {
+        Component[] compReplacements = new Component[replacements.length];
+        for (int i = 0; i < compReplacements.length; i++) {
             Message replacement = replacements[i];
-            strReplacements[i] = replacement.asPlainText();
+            compReplacements[i] = replacement.toComponent();
         }
 
-        sender.sendMessage(this.toComponent(strReplacements));
+        sender.sendMessage(this.toComponent(compReplacements));
     }
 
     public Message withContext(Message... replacements) {
@@ -92,17 +86,23 @@ public class Message {
         return PlainTextComponentSerializer.plainText().serialize(this.toComponent());
     }
 
-    public String asPlainText(String... replacements) {
-        return PlainTextComponentSerializer.plainText().serialize(this.toComponent(replacements));
-    }
-
     public Component toComponent() {
         return this.text;
     }
 
     public Component toComponent(String... replacements) {
+        Component[] compReplacements = new Component[replacements.length];
+        for (int i = 0; i < compReplacements.length; i++) {
+            String replacement = replacements[i];
+            compReplacements[i] = Component.text(replacement);
+        }
+
+        return this.toComponent(compReplacements);
+    }
+
+    public Component toComponent(Component... replacements) {
         Component text = this.text;
-        for (String replacement : replacements) {
+        for (Component replacement : replacements) {
             text = text.replaceText(builder -> builder.matchLiteral("{}").once().replacement(replacement));
         }
 
@@ -110,13 +110,13 @@ public class Message {
     }
 
     public Component toComponent(Message... replacements) {
-        String[] strReplacements = new String[replacements.length];
-        for (int i = 0; i < strReplacements.length; i++) {
+        Component[] compReplacements = new Component[replacements.length];
+        for (int i = 0; i < compReplacements.length; i++) {
             Message replacement = replacements[i];
-            strReplacements[i] = replacement.asPlainText();
+            compReplacements[i] = replacement.toComponent();
         }
 
-        return this.toComponent(strReplacements);
+        return this.toComponent(compReplacements);
     }
 
     private Message attachContext() {

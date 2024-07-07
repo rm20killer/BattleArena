@@ -1,7 +1,6 @@
 package org.battleplugins.arena.util;
 
 import org.battleplugins.arena.BattleArena;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -14,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -49,6 +49,14 @@ public class InventoryBackup {
 
     public ItemStack[] getItems() {
         return this.items;
+    }
+
+    public Instant getTimestamp() {
+        return Instant.ofEpochMilli(this.timestamp);
+    }
+
+    public String getFormattedDate() {
+        return DATE_FORMAT.format(this.timestamp);
     }
 
     private void save() {

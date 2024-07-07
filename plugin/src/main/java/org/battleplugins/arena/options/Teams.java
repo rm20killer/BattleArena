@@ -31,6 +31,9 @@ public class Teams implements PostProcessable {
     @ArenaOption(name = "team-selection", description = "The team selection type.")
     private TeamSelection teamSelection = TeamSelection.RANDOM;
 
+    @ArenaOption(name = "shared-spawn-points", description = "Whether spawn points are shared between team members.")
+    private boolean sharedSpawnPoints = false;
+
     private final List<ArenaTeam> availableTeams = new ArrayList<>();
 
     @Override
@@ -91,6 +94,10 @@ public class Teams implements PostProcessable {
 
     public TeamSelection getTeamSelection() {
         return this.teamSelection;
+    }
+
+    public boolean isSharedSpawnPoints() {
+        return this.sharedSpawnPoints;
     }
 
     public List<ArenaTeam> getAvailableTeams() {

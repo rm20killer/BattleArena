@@ -69,6 +69,15 @@ public final class Messages {
     public static final Message MANUAL_EVENT_MESSAGE = info("arena-manual-event-message", "%prefix% A {} event is starting! Run <secondary>/{} join</secondary> to join!");
     public static final Message ADVANCED_PHASE = info("arena-advanced-phase", "Advanced to the next phase: <secondary>{}</secondary>!");
     public static final Message NO_PHASES = error("arena-no-phases", "There are no phases to advance to!");
+    public static final Message NO_TEAM_WITH_NAME = error("arena-no-team-with-name", "There is no team with the name <secondary>{}</secondary>!");
+    public static final Message TEAM_FULL = error("arena-team-full", "The team {} is full!");
+    public static final Message TEAM_JOINED = info("arena-team-joined", "You have joined the {} team!");
+    public static final Message TEAM_LEFT = info("arena-team-left", "You have left the {} team!");
+    public static final Message ALREADY_ON_THIS_TEAM = error("arena-already-on-this-team", "You are already on the {} team!");
+    public static final Message NOT_ON_TEAM = error("arena-not-on-team", "You are not on a team!");
+    public static final Message NO_TEAMS = error("arena-no-teams", "There are no teams in this arena!");
+    public static final Message CANNOT_JOIN_TEAM_SOLO = error("arena-cannot-join-team-solo", "You cannot join a team in a solo arena!");
+    public static final Message TEAM_SELECTION_NOT_AVAILABLE = error("arena-team-selection-not-available", "Team selection is not available at this time!");
 
     public static final Message ARENA_STARTS_IN = info("arena-starts-in", "{} will start in <secondary>{}</secondary>!");
     public static final Message ARENA_START_CANCELLED = error("arena-starts-cancelled", "Countdown cancelled as there is not enough players to start!");
@@ -129,7 +138,7 @@ public final class Messages {
     public static final Message BACKUP_NOT_FOUND = error("util-backup-not-found", "A backup at this index could not be found!");
     public static final Message BACKUP_RESTORED = success("util-backup-restored", "Successfully restored backup for player <secondary>{}</secondary>!");
     public static final Message BACKUP_CREATED = success("util-backup-created", "Successfully created backup for player <secondary>{}</secondary>!");
-    public static final Message BACKUP_NUMBER = message("util-backup-number", "Backup <secondary>#{}</secondary>");
+    public static final Message BACKUP_INFO = message("util-backup-info", "Backup <secondary>{}</secondary>");
     public static final Message MODULES = message("util-modules", "Modules");
     public static final Message MODULE = message("util-module", "<gray>-</gray> <secondary>{}:</secondary> {}");
     public static final Message STARTING_RELOAD = info("util-starting-reload", "Reloading BattleArena...");

@@ -3,7 +3,6 @@ package org.battleplugins.arena.command;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.event.ClickEvent;
-import org.apache.commons.lang3.StringUtils;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.BattleArena;
 import org.battleplugins.arena.competition.CompetitionType;
@@ -49,7 +48,7 @@ public class BACommandExecutor extends BaseCommandExecutor {
             Messages.HEADER.sendCentered(player, Messages.INVENTORY_BACKUPS);
 
             List<OptionSelector.Option> options = backups.stream().map(backup -> new OptionSelector.Option(
-                    Messages.BACKUP_NUMBER.withContext(Integer.toString(backups.indexOf(backup) + 1)),
+                    Messages.BACKUP_INFO.withContext(backup.getFormattedDate()),
                     "/ba restore " + target.getName() + " " + (backups.indexOf(backup) + 1)
             )).toList();
             OptionSelector.sendOptions(player, options, ClickEvent.Action.SUGGEST_COMMAND);
@@ -72,7 +71,6 @@ public class BACommandExecutor extends BaseCommandExecutor {
             Messages.BACKUP_NOT_FOUND.send(player);
             return;
         }
-
 
         backup.restore(target);
         Messages.BACKUP_RESTORED.send(player, target.getName());
@@ -147,7 +145,7 @@ public class BACommandExecutor extends BaseCommandExecutor {
         }
     }
 
-    @ArenaCommand(commands = "schedule", description = "Schedules an event to start automatically.", permissionNode = "schedule")
+    @ArenaCommand(commands = "schedule", description = "Schedules an event to start at the specified time.", permissionNode = "schedule")
     public void schedule(Player player, Arena arena, Duration interval) {
         if (arena.getType() != CompetitionType.EVENT) {
             Messages.NOT_EVENT.send(player);

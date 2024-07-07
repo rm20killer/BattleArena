@@ -11,6 +11,10 @@ public final class DurationParser implements ArenaConfigParser.Parser<Duration> 
 
     @Override
     public Duration parse(Object object) throws ParseException {
+        return parseDuration(object);
+    }
+
+    public static Duration parseDuration(Object object) throws ParseException {
         if (object instanceof Number number) {
             return Duration.ofSeconds(number.longValue());
         }
@@ -19,7 +23,7 @@ public final class DurationParser implements ArenaConfigParser.Parser<Duration> 
         if (value.isBlank()) {
             throw new ParseException("Duration value was not provided!")
                     .cause(ParseException.Cause.MISSING_VALUE)
-                    .type(this.getClass())
+                    .type(DurationParser.class)
                     .userError();
         }
 
@@ -56,7 +60,7 @@ public final class DurationParser implements ArenaConfigParser.Parser<Duration> 
                 default:
                     throw new ParseException("Invalid unit: " + unit)
                             .cause(ParseException.Cause.INVALID_TYPE)
-                            .type(this.getClass())
+                            .type(DurationParser.class)
                             .userError();
             }
         }
@@ -64,7 +68,7 @@ public final class DurationParser implements ArenaConfigParser.Parser<Duration> 
         if (totalSeconds == 0) {
             throw new ParseException("Failed to parse Duration from value " + object)
                     .cause(ParseException.Cause.INVALID_VALUE)
-                    .type(this.getClass())
+                    .type(DurationParser.class)
                     .userError();
         }
 

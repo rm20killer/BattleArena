@@ -8,7 +8,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.BattleArena;
+import org.battleplugins.arena.config.DurationParser;
 import org.battleplugins.arena.config.ItemStackParser;
 import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.messages.Messages;
@@ -20,6 +22,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -433,6 +436,14 @@ public class BaseCommandExecutor implements TabExecutor {
                     default -> null;
                 };
             }
+            case "duration" -> {
+                try {
+                    return DurationParser.parseDuration(arg);
+                } catch (ParseException e) {
+                    ParseException.handle(e);
+                    return null;
+                }
+            }
             case "material" -> {
                 try {
                     return ItemStackParser.deserializeSingular(arg);
@@ -521,6 +532,7 @@ public class BaseCommandExecutor implements TabExecutor {
                 // lol no way we're listing all offline players
                 Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
             case "world" -> Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toList());
+            case "arena" -> BattleArena.getInstance().getArenas().stream().map(Arena::getName).collect(Collectors.toList());
             default -> new ArrayList<>();
         };
 
@@ -594,10 +606,12 @@ public class BaseCommandExecutor implements TabExecutor {
         return switch (parameter.getSimpleName().toLowerCase()) {
             case "string[]" -> "[string...] ";
             case "int", "double", "float" -> "<number> ";
+            case "duration" -> "<duration> ";
             case "boolean" -> "<true|false> ";
             case "material" -> "<material> ";
             case "player", "offlineplayer" -> "<player> ";
             case "world" -> "<world> ";
+            case "arena" -> "<arena> ";
             default -> {
                 for (SubCommandExecutor subCommandExecutor : this.subCommandExecutors) {
                     String usage = subCommandExecutor.getUsageString(parameter);
@@ -632,6 +646,7 @@ public class BaseCommandExecutor implements TabExecutor {
 
         try {
             if (args.length == 1) {
+                List<String> commands = new ArrayList<>();
                 for (String cmd : this.commandMethods.keySet()) {
                     CommandWrapper wrapper = this.commandMethods.get(cmd).iterator().next();
                     ArenaCommand arenaCommand = wrapper.getCommand();
@@ -644,22 +659,10 @@ public class BaseCommandExecutor implements TabExecutor {
                         continue;
                     }
 
-                    completions.add(cmd);
+                    commands.add(cmd);
                 }
 
-                for (int i = 0; i < completions.size(); i++) {
-                    String completion = completions.get(i);
-                    if (!completion.toLowerCase().startsWith(args[0].toLowerCase())) {
-                        completions.remove(completion);
-                        i--;
-                    }
-                }
-            }
-
-            if (args.length == 2) {
-                if (!this.commandMethods.containsKey(args[0])) {
-                    return List.of();
-                }
+                StringUtil.copyPartialMatches(args[0], commands, completions);
             }
 
             if (args.length > 1) {
@@ -670,25 +673,27 @@ public class BaseCommandExecutor implements TabExecutor {
                         continue;
                     }
 
-                    Class<?>[] requestedParams = wrapper.method.getParameterTypes();
-                    if (requestedParams.length < args.length) {
+                    boolean hasSubCommand = arenaCommand.subCommands().length > 0;
+                    if (hasSubCommand && args.length == 2) {
+                        StringUtil.copyPartialMatches(args[1], Arrays.asList(arenaCommand.subCommands()), completions);
                         continue;
                     }
 
-                    Class<?> requestedParam = requestedParams[args.length - 1];
-                    if (arenaCommand.subCommands().length > 0 && Arrays.asList(arenaCommand.subCommands()).contains(args[1])) {
+                    Class<?>[] requestedParams = wrapper.method.getParameterTypes();
+                    if (requestedParams.length < (hasSubCommand ? args.length - 1 : args.length)) {
+                        continue;
+                    }
+
+                    Class<?> requestedParam;
+                    String token = args[args.length - 1];
+                    if (hasSubCommand && Arrays.asList(arenaCommand.subCommands()).contains(args[1])) {
                         requestedParam = requestedParams[args.length - 2];
+                    } else {
+                        requestedParam = requestedParams[args.length - 1];
                     }
 
-                    completions.addAll(this.verifyTabComplete(args[args.length - 1], requestedParam));
-                }
-
-                for (int i = 0; i < completions.size(); i++) {
-                    String completion = completions.get(i);
-                    if (!completion.toLowerCase().startsWith(args[args.length - 1].toLowerCase())) {
-                        completions.remove(completion);
-                        i--;
-                    }
+                    List<String> subCompletions = new ArrayList<>(this.verifyTabComplete(token, requestedParam));
+                    StringUtil.copyPartialMatches(token, subCompletions, completions);
                 }
             }
         } catch (Exception e) {

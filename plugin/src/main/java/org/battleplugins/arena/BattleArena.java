@@ -312,6 +312,15 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
     }
 
     /**
+     * Returns all the {@link Arena}s for the plugin.
+     *
+     * @return all the arenas for the plugin
+     */
+    public List<Arena> getArenas() {
+        return List.copyOf(this.arenas.values());
+    }
+
+    /**
      * Registers the given {@link Arena}.
      *
      * @param plugin the plugin registering the arena

@@ -1,5 +1,9 @@
 package org.battleplugins.arena.editor.stage;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.TextColor;
 import org.battleplugins.arena.editor.EditorContext;
 import org.battleplugins.arena.editor.WizardStage;
 import org.battleplugins.arena.messages.Message;
@@ -75,14 +79,15 @@ public class TeamSpawnInputStage<E extends EditorContext<E>> implements WizardSt
                 }
 
                 // Send list of valid teams
-                List<String> teamNames = context.getArena().getTeams().getAvailableTeams()
+                List<TextComponent> teamNames = context.getArena().getTeams().getAvailableTeams()
                         .stream()
-                        .map(ArenaTeam::getName)
+                        .map(team -> Component.text(team.getName(), TextColor.color(team.getTextColor())))
                         .toList();
 
-                Messages.VALID_TEAMS.send(player, String.join(", ", teamNames));
+                Component teamsList = Component.join(JoinConfiguration.commas(true), teamNames);
+                Messages.VALID_TEAMS.send(player, teamsList);
 
-                new InteractionInputs.ChatInput(player, Messages.INVALID_TEAM_VALID_TEAMS.withContext(String.join(", ", teamNames))) {
+                new InteractionInputs.ChatInput(player, Messages.INVALID_TEAM_VALID_TEAMS.withContext(teamsList)) {
 
                     @Override
                     public void onChatInput(String input) {

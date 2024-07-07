@@ -4,6 +4,7 @@ import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaLike;
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.competition.map.LiveCompetitionMap;
+import org.battleplugins.arena.competition.map.options.Spawns;
 import org.battleplugins.arena.competition.phase.CompetitionPhase;
 import org.battleplugins.arena.competition.phase.CompetitionPhaseType;
 import org.battleplugins.arena.competition.phase.LiveCompetitionPhase;
@@ -51,6 +52,8 @@ public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Com
     private final CompetitionListener<T> competitionListener;
     private final OptionsListener<T> optionsListener;
     private final StatListener<T> statListener;
+    
+    private final int maxPlayers;
 
     public LiveCompetition(Arena arena, CompetitionType type, LiveCompetitionMap map) {
         this.arena = arena;
@@ -68,6 +71,9 @@ public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Com
         // Set the initial phase
         CompetitionPhaseType<?, ?> initialPhase = arena.getInitialPhase();
         this.phaseManager.setPhase(initialPhase);
+
+        // Calculate max players
+        this.maxPlayers = this.calculateMaxPlayers();
     }
 
     // API methods
@@ -78,32 +84,33 @@ public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Com
 
         // Check if the player can join the competition in its current state
         if (role == PlayerRole.PLAYING) {
-            if (!currentPhase.canJoin()){
+            if (!currentPhase.canJoin()) {
                 return CompletableFuture.completedFuture(JoinResult.NOT_JOINABLE);
             }
 
             // See if the player will fit within the player limits
             Teams teams = this.arena.getTeams();
-            List<ArenaTeam> availableTeams = teams.getAvailableTeams();
-            IntRange teamSize = teams.getTeamSize();
 
-            for (ArenaTeam availableTeam : availableTeams) {
-                int playersOnTeam = this.teamManager.getNumberOfPlayersOnTeam(availableTeam);
-                if (playersOnTeam >= teamSize.getMax()) {
-                    if (teams.isNonTeamGame()) {
-                        // If the team selection is none and the default team is available, then
-                        // we can just put the player on the default team. But first, we need to
-                        // check to see if the default team is full
-                        int teamSizeMax = teamSize.getMax();
-                        int teamAmount = teams.getTeamAmount().getMax();
-                        if (teamAmount == Integer.MAX_VALUE || teamSizeMax == Integer.MAX_VALUE || playersOnTeam < teamAmount * teamSizeMax) {
-                            // Not full - allow them through
-                            return CompletableFuture.completedFuture(JoinResult.SUCCESS);
-                        } else {
-                            // No available teams - return false
-                            return CompletableFuture.completedFuture(JoinResult.ARENA_FULL);
-                        }
+            // If team selection involves the player picking their own
+            // team, or the game is not a team game, then we just need to check
+            // the overall maximum number of players this competition can have
+            if (teams.getTeamSelection() == TeamSelection.PICK || teams.isNonTeamGame()) {
+                // Player cannot join - arena is full
+                if ((this.getPlayers().size() + 1) > this.maxPlayers) {
+                    return CompletableFuture.completedFuture(JoinResult.ARENA_FULL);
+                }
+            } else {
+                List<ArenaTeam> availableTeams = teams.getAvailableTeams();
+                // Otherwise, we need to go through all teams and see if there is room for the player
+                for (ArenaTeam availableTeam : availableTeams) {
+                    // If we have less than the minimum amount of players on the team, then we can
+                    // assume that this team has room and break
+                    if (this.teamManager.canJoinTeam(availableTeam)) {
+                        break;
                     }
+
+                    // No available teams - return that the arena is full
+                    return CompletableFuture.completedFuture(JoinResult.ARENA_FULL);
                 }
             }
         }
@@ -131,6 +138,7 @@ public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Com
         // the player on the default team
         if (teams.isNonTeamGame()) {
             this.teamManager.joinTeam(player, ArenaTeams.DEFAULT);
+            return;
         }
 
         if (teams.getTeamSelection() == TeamSelection.RANDOM) {
@@ -250,6 +258,15 @@ public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Com
     public final Set<ArenaPlayer> getSpectators() {
         return Collections.unmodifiableSet(this.playersByRole.getOrDefault(PlayerRole.SPECTATING, Set.of()));
     }
+    
+    /**
+     * Gets the maximum amount of players that can join this competition.
+     *
+     * @return the maximum amount of players that can join this competition
+     */
+    public final int getMaxPlayers() {
+        return this.maxPlayers;
+    }
 
     /**
      * Gets the {@link PhaseManager} responsible for managing the phases of the competition.
@@ -318,5 +335,33 @@ public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Com
 
     private ArenaPlayer createPlayer(Player player) {
         return new ArenaPlayer(player, this.arena, this);
+    }
+
+    private int calculateMaxPlayers() {
+        Teams teams = this.arena.getTeams();
+        int teamAmount = teams.isNonTeamGame() ? teams.getTeamAmount().getMax() : teams.getAvailableTeams().size();
+        int teamSizeMax = teams.getTeamSize().getMax();
+        int maxPlayers;
+        if (teamSizeMax == Integer.MAX_VALUE) {
+            maxPlayers = Integer.MAX_VALUE;
+        } else {
+            maxPlayers = teamAmount * teamSizeMax;
+        }
+
+        Spawns spawns = this.map.getSpawns();
+
+        // If spawn points are not shared, that means we only have a limited
+        // amount of spawn points for each team. We need to check if the team
+        // is full based on the amount of spawn points available.
+        if (!teams.isSharedSpawnPoints() && spawns != null) {
+            maxPlayers = Math.min(maxPlayers, spawns.getSpawnPointCount());
+        }
+
+        // If we have zero spawns in any situation, this competition cannot hold any players
+        if (spawns == null || spawns.getSpawnPointCount() == 0) {
+            maxPlayers = 0;
+        }
+
+        return maxPlayers;
     }
 }

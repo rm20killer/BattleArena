@@ -42,4 +42,33 @@ public class Spawns {
     public final Map<String, TeamSpawns> getTeamSpawns() {
         return this.teamSpawns;
     }
+
+    public final int getSpawnPointCount() {
+        if (this.teamSpawns == null) {
+            return 0;
+        }
+
+        int count = 0;
+        for (TeamSpawns spawns : this.teamSpawns.values()) {
+            if (spawns.getSpawns() != null) {
+                count += spawns.getSpawns().size();
+            }
+        }
+
+        return count;
+    }
+
+    public final int getSpawnPointCount(String teamName) {
+        if (this.teamSpawns == null) {
+            return 0;
+        }
+
+        int count = 0;
+        TeamSpawns spawns = this.teamSpawns.get(teamName);
+        if (spawns != null && spawns.getSpawns() != null) {
+            count = spawns.getSpawns().size();
+        }
+
+        return count;
+    }
 }

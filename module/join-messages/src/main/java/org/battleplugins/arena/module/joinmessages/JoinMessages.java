@@ -44,7 +44,7 @@ public class JoinMessages implements ArenaModuleInitializer, ArenaListener {
                         player.getPlayer(),
                         event.getPlayer().getName(),
                         Integer.toString(competition.getPlayers().size()),
-                        Integer.toString(competition.getArena().getTeams().getTeamAmount().getMax())
+                        Integer.toString(competition.getMaxPlayers())
                 );
             } else {
                 PLAYER_JOINED_NO_LIMIT.send(player.getPlayer(), event.getPlayer().getName());
@@ -66,7 +66,7 @@ public class JoinMessages implements ArenaModuleInitializer, ArenaListener {
                         player.getPlayer(),
                         event.getPlayer().getName(),
                         Integer.toString(competition.getPlayers().size()),
-                        Integer.toString(competition.getArena().getTeams().getTeamAmount().getMax())
+                        Integer.toString(competition.getMaxPlayers())
                 );
             } else {
                 PLAYER_LEFT_NO_LIMIT.send(player.getPlayer(), event.getPlayer().getName());

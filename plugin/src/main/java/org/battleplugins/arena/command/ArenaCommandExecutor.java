@@ -1,5 +1,7 @@
 package org.battleplugins.arena.command;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.competition.Competition;
@@ -17,6 +19,10 @@ import org.battleplugins.arena.editor.context.MapCreateContext;
 import org.battleplugins.arena.editor.type.MapOption;
 import org.battleplugins.arena.event.player.ArenaLeaveEvent;
 import org.battleplugins.arena.messages.Messages;
+import org.battleplugins.arena.options.ArenaOptionType;
+import org.battleplugins.arena.options.TeamSelection;
+import org.battleplugins.arena.options.types.BooleanArenaOption;
+import org.battleplugins.arena.team.ArenaTeam;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -182,12 +188,12 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
         Messages.ARENA_LEFT.send(player, arenaPlayer.getCompetition().getMap().getName());
     }
 
-    @ArenaCommand(commands = "create", description = "Create a new arena.", permissionNode = "create")
+    @ArenaCommand(commands = "create", description = "Create a new map.", permissionNode = "create")
     public void create(Player player) {
         ArenaEditorWizards.MAP_CREATION.openWizard(player, this.arena);
     }
     
-    @ArenaCommand(commands = { "remove", "delete" }, description = "Removes an arena.", permissionNode = "remove")
+    @ArenaCommand(commands = { "remove", "delete" }, description = "Removes a map.", permissionNode = "remove")
     public void remove(Player player, CompetitionMap map) {
         if (!(map instanceof LiveCompetitionMap liveMap)) {
             Messages.NO_ARENA_WITH_NAME.send(player);
@@ -209,7 +215,7 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
     }
 
     @ArenaCommand(commands = "edit", description = "Edit an arena map.", permissionNode = "edit")
-    public void map(Player player, CompetitionMap map, MapOption option) {
+    public void map(Player player, CompetitionMap map, @Argument(name = "map option") MapOption option) {
         if (!(map instanceof LiveCompetitionMap liveMap)) {
             Messages.NO_ARENA_WITH_NAME.send(player);
             return;
@@ -239,6 +245,106 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
         }
     }
 
+    @ArenaCommand(commands = "team", subCommands = { "join", "j" }, description = "Joins a team.", permissionNode = "team.join")
+    public void joinTeam(Player player, ArenaTeam team) {
+        ArenaPlayer arenaPlayer = ArenaPlayer.getArenaPlayer(player);
+        if (arenaPlayer == null) {
+            Messages.NOT_IN_ARENA.send(player);
+            return;
+        }
+
+        if (this.arena.getTeams().isNonTeamGame()) {
+            Messages.CANNOT_JOIN_TEAM_SOLO.send(player);
+            return;
+        }
+
+        if (this.arena.getTeams().getTeamSelection() != TeamSelection.PICK) {
+            Messages.TEAM_SELECTION_NOT_AVAILABLE.send(player);
+            return;
+        }
+
+        if (!arenaPlayer.getCompetition().option(ArenaOptionType.TEAM_SELECTION)
+                .map(BooleanArenaOption::isEnabled)
+                .orElse(true)) {
+            Messages.TEAM_SELECTION_NOT_AVAILABLE.send(player);
+            return;
+        }
+
+        if (team.equals(arenaPlayer.getTeam())) {
+            Messages.ALREADY_ON_THIS_TEAM.send(player, team.getFormattedName());
+            return;
+        }
+
+        LiveCompetition<?> competition = arenaPlayer.getCompetition();
+        if (!competition.getTeamManager().canJoinTeam(team)) {
+            Messages.TEAM_FULL.send(player, team.getFormattedName());
+            return;
+        }
+
+        competition.getTeamManager().joinTeam(arenaPlayer, team);
+        Messages.TEAM_JOINED.send(player, team.getFormattedName());
+    }
+
+    @ArenaCommand(commands = "team", subCommands = { "leave", "l" }, description = "Leaves your current team.", permissionNode = "team.leave")
+    public void leaveTeam(Player player) {
+        ArenaPlayer arenaPlayer = ArenaPlayer.getArenaPlayer(player);
+        if (arenaPlayer == null) {
+            Messages.NOT_IN_ARENA.send(player);
+            return;
+        }
+
+        if (this.arena.getTeams().getTeamSelection() != TeamSelection.PICK) {
+            Messages.TEAM_SELECTION_NOT_AVAILABLE.send(player);
+            return;
+        }
+
+        if (!arenaPlayer.getCompetition().option(ArenaOptionType.TEAM_SELECTION)
+                .map(BooleanArenaOption::isEnabled)
+                .orElse(true)) {
+            Messages.TEAM_SELECTION_NOT_AVAILABLE.send(player);
+            return;
+        }
+
+        ArenaTeam team = arenaPlayer.getTeam();
+        if (team == null) {
+            Messages.NOT_ON_TEAM.send(player);
+            return;
+        }
+
+        LiveCompetition<?> competition = arenaPlayer.getCompetition();
+        competition.getTeamManager().leaveTeam(arenaPlayer);
+
+        Messages.TEAM_LEFT.send(player, team.getFormattedName());
+    }
+
+    @ArenaCommand(commands = "team", subCommands = "list", description = "List all available teams.", permissionNode = "team.list")
+    public void listTeams(Player player) {
+        ArenaPlayer arenaPlayer = ArenaPlayer.getArenaPlayer(player);
+        if (arenaPlayer == null) {
+            Messages.NOT_IN_ARENA.send(player);
+            return;
+        }
+
+        LiveCompetition<?> competition = arenaPlayer.getCompetition();
+        Set<ArenaTeam> availableTeams = competition.getTeamManager().getTeams();
+        if (availableTeams.isEmpty() || this.arena.getTeams().isNonTeamGame()) {
+            Messages.NO_TEAMS.send(player);
+            return;
+        }
+
+        Messages.HEADER.sendCentered(player, "Teams");
+        for (ArenaTeam team : availableTeams) {
+            int players = competition.getTeamManager().getNumberOfPlayersOnTeam(team);
+            int max = competition.getTeamManager().getMaximumTeamSize(team);
+            if (max == 0) {
+                continue; // Don't display empty teams
+            }
+
+            String playersText = max == Integer.MAX_VALUE ? " (" + players + ")" : " (" + players + "/" + max + ")";
+            player.sendMessage(Component.text("- ", NamedTextColor.GRAY).append(team.getFormattedName()).append(Component.text(playersText, Messages.PRIMARY_COLOR)));
+        }
+    }
+
     @Override
     protected Object onVerifyArgument(CommandSender sender, String arg, Class<?> parameter) {
         switch (parameter.getSimpleName().toLowerCase()) {
@@ -253,6 +359,12 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
             case "competitionmap" -> {
                 return this.arena.getPlugin().getMap(this.arena, arg);
             }
+            case "arenateam" -> {
+                return this.arena.getTeams().getAvailableTeams().stream()
+                        .filter(team -> team.getName().equalsIgnoreCase(arg))
+                        .findFirst()
+                        .orElse(null);
+            }
         }
 
         return super.onVerifyArgument(sender, arg, parameter);
@@ -263,6 +375,10 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
         switch (parameter.getSimpleName().toLowerCase()) {
             case "competition", "competitionmap" -> {
                 Messages.NO_ARENA_WITH_NAME.send(sender);
+                return true;
+            }
+            case "arenateam" -> {
+                Messages.NO_TEAM_WITH_NAME.send(sender, input);
                 return true;
             }
         }
@@ -283,6 +399,10 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
                     .map(CompetitionMap::getName)
                     .distinct()
                     .toList();
+        } else if (parameter.getSimpleName().equalsIgnoreCase("arenateam")) {
+            return this.arena.getTeams().getAvailableTeams().stream()
+                    .map(ArenaTeam::getName)
+                    .toList();
         }
 
         return super.onVerifyTabComplete(arg, parameter);
@@ -291,9 +411,9 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
     @Override
     protected String onGetUsageString(Class<?> parameter) {
         return switch (parameter.getSimpleName().toLowerCase()) {
-            case "arena" -> "<arena> ";
             case "competition" -> "<map> "; // Best name for player-facing values
             case "competitionmap" -> "<map> ";
+            case "arenateam" -> "<team> ";
             default -> super.onGetUsageString(parameter);
         };
     }

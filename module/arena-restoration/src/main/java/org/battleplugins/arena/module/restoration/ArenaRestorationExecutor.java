@@ -30,7 +30,7 @@ public class ArenaRestorationExecutor implements SubCommandExecutor {
         this.arena = arena;
     }
 
-    @ArenaCommand(commands = "schematic", description = "Creates a schematic for the specified arena from your clipboard.", permissionNode = "region")
+    @ArenaCommand(commands = "schematic", description = "Creates a schematic for the specified arena from the map bounds.", permissionNode = "region")
     public void region(Player player, Competition<?> competition) {
         if (!(competition instanceof LiveCompetition<?> liveCompetition)) {
             return; // Cannot restore a non-live competition

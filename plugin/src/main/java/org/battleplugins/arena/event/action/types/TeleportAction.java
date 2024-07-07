@@ -49,7 +49,7 @@ public class TeleportAction extends EventAction {
                 }
 
                 if (arenaPlayer.getTeam() == null) {
-                    throw new IllegalArgumentException("Team not defined for player");
+                    throw new IllegalArgumentException("Team not defined for player. Ensure that the 'join-random-team' action is specified so players that are not on a team get placed on one.");
                 }
 
                 String teamName = arenaPlayer.getTeam().getName();

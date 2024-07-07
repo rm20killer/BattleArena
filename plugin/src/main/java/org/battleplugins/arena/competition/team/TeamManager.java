@@ -2,6 +2,8 @@ package org.battleplugins.arena.competition.team;
 
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.competition.LiveCompetition;
+import org.battleplugins.arena.competition.map.LiveCompetitionMap;
+import org.battleplugins.arena.competition.map.options.Spawns;
 import org.battleplugins.arena.options.Teams;
 import org.battleplugins.arena.stat.StatHolder;
 import org.battleplugins.arena.team.ArenaTeam;
@@ -25,6 +27,10 @@ public class TeamManager {
 
     public TeamManager(LiveCompetition<?> competition) {
         this.competition = competition;
+
+        for (ArenaTeam availableTeam : competition.getArena().getTeams().getAvailableTeams()) {
+            this.teams.put(availableTeam, new HashSet<>());
+        }
     }
 
     /**
@@ -33,7 +39,11 @@ public class TeamManager {
      * @param player the player to join
      */
     public void joinTeam(ArenaPlayer player, ArenaTeam team) {
-        this.teams.computeIfAbsent(team, e -> new HashSet<>()).add(player);
+        if (player.getTeam() != null) {
+            this.teams.get(player.getTeam()).remove(player);
+        }
+
+        this.teams.get(team).add(player);
         player.setTeam(team);
     }
 
@@ -135,10 +145,41 @@ public class TeamManager {
         return this.stats.computeIfAbsent(team, e -> new TeamStatHolder(this, team));
     }
 
-    private boolean canJoinTeam(ArenaTeam team) {
-        Teams teams = this.competition.getArena().getTeams();
+    /**
+     * Returns whether the player can join the given {@link ArenaTeam}.
+     *
+     * @param team the team to check if the player can join
+     * @return whether the player can join the team
+     */
+    public boolean canJoinTeam(ArenaTeam team) {
         int playersOnTeam = this.getNumberOfPlayersOnTeam(team);
-        return playersOnTeam + 1 <= teams.getTeamSize().getMax();
+        return playersOnTeam < this.getMaximumTeamSize(team);
+    }
+
+    /**
+     * Returns the maximum team size for the given {@link ArenaTeam}.
+     *
+     * @param team the team to get the maximum team size for
+     * @return the maximum team size for the team
+     */
+    public int getMaximumTeamSize(ArenaTeam team) {
+        Teams teams = this.competition.getArena().getTeams();
+        int teamSizeMax = teams.getTeamSize().getMax();
+
+        // If spawn points are not shared, that means we only have a limited
+        // amount of spawn points for each team. We need to check if the team
+        // is full based on the amount of spawn points available.
+        Spawns spawns = this.competition.getMap().getSpawns();
+        if (!teams.isSharedSpawnPoints() && spawns != null) {
+            teamSizeMax = Math.min(teamSizeMax, spawns.getSpawnPointCount(team.getName()));
+        }
+
+        // If we have zero spawns in any situation, this team cannot hold any players
+        if (spawns == null || spawns.getSpawnPointCount(team.getName()) == 0) {
+            teamSizeMax = 0;
+        }
+
+        return teamSizeMax;
     }
 
     /**

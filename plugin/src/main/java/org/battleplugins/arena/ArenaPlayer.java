@@ -4,6 +4,8 @@ import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.competition.PlayerRole;
 import org.battleplugins.arena.competition.PlayerStorage;
 import org.battleplugins.arena.event.player.ArenaStatChangeEvent;
+import org.battleplugins.arena.event.player.ArenaTeamJoinEvent;
+import org.battleplugins.arena.event.player.ArenaTeamLeaveEvent;
 import org.battleplugins.arena.stat.ArenaStat;
 import org.battleplugins.arena.stat.StatHolder;
 import org.battleplugins.arena.team.ArenaTeam;
@@ -130,6 +132,14 @@ public class ArenaPlayer implements StatHolder {
      * @param team the team that this player is on
      */
     public void setTeam(@Nullable ArenaTeam team) {
+        if (this.team != null) {
+            new ArenaTeamLeaveEvent(this, this.team).callEvent();
+        }
+
+        if (team != null) {
+            new ArenaTeamJoinEvent(this, team).callEvent();
+        }
+
         this.team = team;
     }
 

@@ -39,15 +39,38 @@ public class HighestStatCondition<T extends LiveCompetition<T>> extends VictoryC
         // after the team has collectively retrieved a stat, or a stat that is
         // incremented by team (i.e. control points).
         StatHolder statHolder = event.getStatHolder();
-        if (this.teamStats && statHolder instanceof TeamStatHolder teamHolder) {
-            if (this.winAfter != -1 && event.getNewValue().intValue() >= this.winAfter) {
-                this.advanceToNextPhase(this.competition.getTeamManager().getPlayersOnTeam(teamHolder.getTeam()));
+        if (this.teamStats) {
+            if (statHolder instanceof TeamStatHolder teamHolder) {
+                if (this.winAfter != -1 && event.getNewValue().intValue() >= this.winAfter) {
+                    this.advanceToNextPhase(this.competition.getTeamManager().getPlayersOnTeam(teamHolder.getTeam()));
+                }
+            } else if (statHolder instanceof ArenaPlayer player) {
+                // Check for stats across all players on the team
+                ArenaTeam team = player.getTeam();
+                if (team == null) {
+                    return;
+                }
+
+                Set<ArenaPlayer> players = this.competition.getTeamManager().getPlayersOnTeam(team);
+                int score = 0;
+                for (ArenaPlayer teamPlayer : players) {
+                    if (teamPlayer == player) {
+                        score += event.getNewValue().intValue();
+                        continue;
+                    }
+
+                    score += teamPlayer.stat(this.stat).orElse(0).intValue();
+                }
+
+                if (score >= this.winAfter) {
+                    this.advanceToNextPhase(players);
+                }
             }
 
             return;
         }
 
-        if (!this.teamStats && statHolder instanceof ArenaPlayer player) {
+        if (statHolder instanceof ArenaPlayer player) {
             if (this.winAfter != -1 && event.getNewValue().intValue() >= this.winAfter) {
                 // Still need to check if the player is on a team, since we grant
                 // the victory based on whether the team one. If the player is to

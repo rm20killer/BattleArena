@@ -13,7 +13,7 @@ import org.battleplugins.arena.module.tournaments.algorithm.TournamentCalculator
 import org.battleplugins.arena.options.Teams;
 import org.battleplugins.arena.team.ArenaTeam;
 import org.battleplugins.arena.util.IntRange;
-import org.battleplugins.arena.util.UnitUtil;
+import org.battleplugins.arena.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
@@ -211,7 +211,7 @@ public class Tournament {
             }, ticks);
 
             for (Player watchingPlayer : this.watchingPlayers) {
-                NEXT_ROUND_STARTING_IN.send(watchingPlayer, UnitUtil.toUnitString(watchingPlayer, advanceTime.toSeconds(), TimeUnit.SECONDS));
+                NEXT_ROUND_STARTING_IN.send(watchingPlayer, Util.toUnitString(advanceTime.toSeconds(), TimeUnit.SECONDS));
             }
         }
     }

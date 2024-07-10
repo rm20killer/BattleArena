@@ -16,7 +16,7 @@ jobs:
           distribution: 'adopt'
           cache: gradle
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew bundledJar
       - name: Publish to Maven Repository
         if: ${{ success() && github.repository == 'BattlePlugins/BattleArena' && github.ref_name == 'rewrite' }}
         run: ./gradlew publish

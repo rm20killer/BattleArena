@@ -25,7 +25,7 @@ public class SendMessageAction extends EventAction {
                 .toUpperCase(Locale.ROOT)
         );
 
-        Component component = MiniMessage.miniMessage().deserialize(resolvable.resolve().resolveToString(message));
+        Component component = resolvable.resolve().resolveToComponent(MiniMessage.miniMessage().deserialize(message));
         switch (messageType) {
             case CHAT -> arenaPlayer.getPlayer().sendMessage(component);
             case ACTION_BAR -> arenaPlayer.getPlayer().sendActionBar(component);

@@ -3,6 +3,5 @@ repositories {
 }
 
 dependencies {
-    compileOnlyApi(project(":plugin"))
     compileOnly(libs.worldedit)
 }

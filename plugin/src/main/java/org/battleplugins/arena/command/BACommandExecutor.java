@@ -11,7 +11,7 @@ import org.battleplugins.arena.competition.event.EventType;
 import org.battleplugins.arena.messages.Messages;
 import org.battleplugins.arena.util.InventoryBackup;
 import org.battleplugins.arena.util.OptionSelector;
-import org.battleplugins.arena.util.UnitUtil;
+import org.battleplugins.arena.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -179,7 +179,7 @@ public class BACommandExecutor extends BaseCommandExecutor {
         }
 
         long end = System.currentTimeMillis();
-        Messages.RELOAD_COMPLETE.send(player, UnitUtil.toUnitString(player, end - start, TimeUnit.MILLISECONDS));
+        Messages.RELOAD_COMPLETE.send(player, Util.toUnitString(end - start, TimeUnit.MILLISECONDS));
     }
 
     public void sendHeader(CommandSender sender) {

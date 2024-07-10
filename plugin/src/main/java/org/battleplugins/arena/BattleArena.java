@@ -26,6 +26,7 @@ import org.battleplugins.arena.module.ModuleLoadException;
 import org.battleplugins.arena.team.ArenaTeams;
 import org.battleplugins.arena.util.CommandInjector;
 import org.battleplugins.arena.util.LoggerHolder;
+import org.battleplugins.arena.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.Configuration;
@@ -88,6 +89,8 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         this.arenasPath = dataFolder.resolve("arenas");
         Path modulesPath = dataFolder.resolve("modules");
 
+        Util.copyDirectories(this.getFile(), modulesPath, "modules");
+
         this.moduleLoader = new ArenaModuleLoader(this, this.getClassLoader(), modulesPath);
         try {
             this.moduleLoader.loadModules();
@@ -130,12 +133,7 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         this.debugMode = this.config.isDebugMode();
 
         if (Files.notExists(this.arenasPath)) {
-            this.saveResource("arenas/arena.yml", false);
-            this.saveResource("arenas/battlegrounds.yml", false);
-            this.saveResource("arenas/colosseum.yml", false);
-            this.saveResource("arenas/deathmatch.yml", false);
-            this.saveResource("arenas/ffa.yml", false);
-            this.saveResource("arenas/skirmish.yml", false);
+            Util.copyDirectories(this.getFile(), this.arenasPath, "arenas");
         }
 
         Path dataFolder = this.getDataFolder().toPath();
@@ -165,9 +163,6 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
 
         // Enable modules
         this.moduleLoader.enableModules();
-
-        // Load messages
-        MessageLoader.load(dataFolder.resolve("messages.yml"));
 
         // Register base command
         PluginCommand command = this.getCommand("battlearena");
@@ -220,6 +215,9 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
     }
 
     private void postInitialize() {
+        // Load messages
+        MessageLoader.load(this.getDataFolder().toPath().resolve("messages.yml"));
+
         // Load all arenas
         this.loadArenas();
 

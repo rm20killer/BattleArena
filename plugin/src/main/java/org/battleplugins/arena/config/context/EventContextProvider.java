@@ -83,9 +83,9 @@ public class EventContextProvider implements ContextProvider<Map<ArenaEventType<
 
                 EventActionType<?> actionType = EventActionType.get(root.value());
                 if (actionType == null) {
-                    throw new ParseException("Unrecognized event action detected (" + key + ") when loading configuration section " + configurationSection.getName())
+                    throw new ParseException("Unrecognized event action detected (" + root.value() + ") when loading configuration section " + configurationSection.getName())
                             .context("Section", configuration.getName())
-                            .context("Provided action", key)
+                            .context("Provided action", root.value())
                             .context("Valid events", EventActionType.values().stream().map(EventActionType::getName).toList().toString())
                             .cause(ParseException.Cause.INVALID_VALUE)
                             .type(EventActionType.class)

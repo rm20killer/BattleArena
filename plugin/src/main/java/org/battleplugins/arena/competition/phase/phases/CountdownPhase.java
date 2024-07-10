@@ -7,7 +7,7 @@ import org.battleplugins.arena.config.ArenaOption;
 import org.battleplugins.arena.event.ArenaEventHandler;
 import org.battleplugins.arena.event.player.ArenaLeaveEvent;
 import org.battleplugins.arena.messages.Messages;
-import org.battleplugins.arena.util.UnitUtil;
+import org.battleplugins.arena.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
@@ -63,7 +63,7 @@ public class CountdownPhase<T extends LiveCompetition<T>> extends LiveCompetitio
         if (this.countdown % 60 == 0 || this.countdown == 30 || this.countdown == 15 || this.countdown == 10 || this.countdown <= 5) {
             for (ArenaPlayer arenaPlayer : this.getCompetition().getPlayers()) {
                 Player player = arenaPlayer.getPlayer();
-                String timeToStart = UnitUtil.toUnitString(player, this.countdown, TimeUnit.SECONDS);
+                String timeToStart = Util.toUnitString(this.countdown, TimeUnit.SECONDS);
 
                 Messages.ARENA_STARTS_IN.send(player, this.competition.getArena().getName(), timeToStart);
 

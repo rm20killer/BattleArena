@@ -12,7 +12,7 @@ import org.battleplugins.arena.config.ArenaOption;
 import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.config.PostProcessable;
 import org.battleplugins.arena.util.BlockUtil;
-import org.battleplugins.arena.util.FieldUtil;
+import org.battleplugins.arena.util.Util;
 import org.battleplugins.arena.util.VoidChunkGenerator;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -249,7 +249,7 @@ public class LiveCompetitionMap implements ArenaLike, CompetitionMap, PostProces
         LiveCompetitionMap copy = arena.getMapFactory().create(this.name, arena, this.type, worldName, this.bounds, this.spawns);
         // Copy additional fields for custom maps
         if (copy.getClass() != LiveCompetitionMap.class) {
-            FieldUtil.copyFields(this, copy);
+            Util.copyFields(this, copy);
         }
 
         copy.mapWorld = world;

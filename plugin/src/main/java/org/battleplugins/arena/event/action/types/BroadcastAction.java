@@ -50,7 +50,7 @@ public class BroadcastAction extends EventAction {
         };
 
         for (Player player : players) {
-            Component component = MiniMessage.miniMessage().deserialize(resolvable.resolve().resolveToString(message));
+            Component component = resolvable.resolve().resolveToComponent(MiniMessage.miniMessage().deserialize(message));
             switch (messageType) {
                 case CHAT -> player.sendMessage(component);
                 case ACTION_BAR -> player.sendActionBar(component);

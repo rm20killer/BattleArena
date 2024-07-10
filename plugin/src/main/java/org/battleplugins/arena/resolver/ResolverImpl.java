@@ -1,5 +1,7 @@
 package org.battleplugins.arena.resolver;
 
+import net.kyori.adventure.text.Component;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +20,16 @@ class ResolverImpl implements Resolver {
         }
 
         return string;
+    }
+
+    @Override
+    public Component resolveToComponent(Component component) {
+        for (Map.Entry<ResolverKey<?>, ResolverProvider<?>> entry : this.results.entrySet()) {
+            String key = "%" + entry.getKey().getName().replace("-", "_") + "%";
+            component = component.replaceText(builder -> builder.matchLiteral(key).replacement(entry.getValue().toComponent(this)));
+        }
+
+        return component;
     }
 
     @SuppressWarnings("unchecked")

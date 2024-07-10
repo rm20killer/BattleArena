@@ -22,6 +22,8 @@ java {
 
 tasks {
     runServer {
+        dependsOn("bundledJar")
+
         minecraftVersion("1.20.6")
 
         // Set Java 21 (1.20.6 requires Java 21)
@@ -33,6 +35,21 @@ tasks {
     jar {
         from("src/main/java/resources") {
             include("*")
+        }
+
+        archiveFileName.set("BattleArena.jar")
+        archiveClassifier.set("")
+    }
+
+    create<Jar>("bundledJar") {
+        dependsOn(jar)
+        from(sourceSets.main.get().output)
+
+        // Bundle in our modules
+        project(":module").subprojects.forEach {
+            from(it.tasks.jar) {
+                into("modules")
+            }
         }
 
         archiveFileName.set("BattleArena.jar")

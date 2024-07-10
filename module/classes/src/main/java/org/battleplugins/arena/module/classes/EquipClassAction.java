@@ -4,6 +4,7 @@ import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.event.action.EventAction;
 import org.battleplugins.arena.options.types.BooleanArenaOption;
+import org.battleplugins.arena.resolver.Resolvable;
 
 import java.util.Map;
 import java.util.Optional;
@@ -18,7 +19,7 @@ public class EquipClassAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
         if (!arenaPlayer.getArena().isModuleEnabled(Classes.ID)) {
             return;
         }

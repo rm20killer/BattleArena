@@ -147,22 +147,22 @@ public class ArenaEventManager {
                 return event;
             }
 
-            this.pollActions(competition, actions.iterator(), players);
+            this.pollActions(event, competition, actions.iterator(), players);
         }
 
         return event;
     }
 
-    private void pollActions(Competition<?> competition, Iterator<EventAction> iterator, Collection<ArenaPlayer> players) {
+    private <T extends Event & ArenaEvent> void pollActions(T event, Competition<?> competition, Iterator<EventAction> iterator, Collection<ArenaPlayer> players) {
         while (iterator.hasNext()) {
             EventAction action = iterator.next();
             if (action instanceof DelayAction delayAction) {
-                Bukkit.getScheduler().runTaskLater(BattleArena.getInstance(), () -> this.pollActions(competition, iterator, players), delayAction.getTicks());
+                Bukkit.getScheduler().runTaskLater(BattleArena.getInstance(), () -> this.pollActions(event, competition, iterator, players), delayAction.getTicks());
                 return;
             }
 
             try {
-                action.preProcess(this.arena, competition);
+                action.preProcess(this.arena, competition, event);
             } catch (Throwable e) {
                 this.arena.getPlugin().warn("An error occurred pre-processing event action {}", action, e);
                 return;
@@ -170,7 +170,7 @@ public class ArenaEventManager {
 
             for (ArenaPlayer player : new HashSet<>(players)) {
                 try {
-                    action.call(player);
+                    action.call(player, event);
                 } catch (Throwable e) {
                     this.arena.getPlugin().warn("An error occurred calling event action {}", action, e);
                     return;
@@ -178,7 +178,7 @@ public class ArenaEventManager {
             }
 
             try {
-                action.postProcess(this.arena, competition);
+                action.postProcess(this.arena, competition, event);
             } catch (Throwable e) {
                 this.arena.getPlugin().warn("An error occurred post-processing event action {}", action, e);
                 return;

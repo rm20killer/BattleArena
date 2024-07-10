@@ -5,6 +5,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.event.action.EventAction;
+import org.battleplugins.arena.resolver.Resolvable;
 
 import java.util.Locale;
 import java.util.Map;
@@ -18,13 +19,13 @@ public class SendMessageAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
         String message = this.get(MESSAGE_KEY);
         MessageType messageType = MessageType.valueOf(this.getOrDefault(TYPE_KEY, MessageType.CHAT.name())
                 .toUpperCase(Locale.ROOT)
         );
 
-        Component component = MiniMessage.miniMessage().deserialize(message);
+        Component component = MiniMessage.miniMessage().deserialize(resolvable.resolve().resolveToString(message));
         switch (messageType) {
             case CHAT -> arenaPlayer.getPlayer().sendMessage(component);
             case ACTION_BAR -> arenaPlayer.getPlayer().sendActionBar(component);

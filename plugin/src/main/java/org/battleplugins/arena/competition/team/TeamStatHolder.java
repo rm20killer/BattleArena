@@ -70,6 +70,11 @@ public class TeamStatHolder implements StatHolder {
         });
     }
 
+    @Override
+    public String describe() {
+        return this.team.getName();
+    }
+
     public ArenaTeam getTeam() {
         return this.team;
     }

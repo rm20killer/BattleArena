@@ -4,6 +4,7 @@ import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.competition.Competition;
 import org.battleplugins.arena.competition.map.options.TeamSpawns;
 import org.battleplugins.arena.event.action.EventAction;
+import org.battleplugins.arena.resolver.Resolvable;
 import org.battleplugins.arena.util.PositionWithRotation;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -25,7 +26,7 @@ public class TeleportAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
         Player player = arenaPlayer.getPlayer();
         TeleportLocation location = TeleportLocation.valueOf(this.get(LOCATION_KEY).toUpperCase(Locale.ROOT));
         boolean randomized = Boolean.parseBoolean(this.getOrDefault(RANDOM, "false"));

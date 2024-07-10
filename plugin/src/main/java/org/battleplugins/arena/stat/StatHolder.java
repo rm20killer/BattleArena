@@ -15,4 +15,6 @@ public interface StatHolder {
     <T> void setStat(ArenaStat<T> stat, T value);
 
     <T> void computeStat(ArenaStat<T> stat, Function<? super T, ? extends T> computeFunction);
+
+    String describe();
 }

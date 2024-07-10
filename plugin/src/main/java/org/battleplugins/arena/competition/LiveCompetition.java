@@ -18,9 +18,12 @@ import org.battleplugins.arena.event.player.ArenaSpectateEvent;
 import org.battleplugins.arena.options.ArenaOptionType;
 import org.battleplugins.arena.options.TeamSelection;
 import org.battleplugins.arena.options.Teams;
+import org.battleplugins.arena.resolver.Resolvable;
+import org.battleplugins.arena.resolver.Resolver;
+import org.battleplugins.arena.resolver.ResolverKeys;
+import org.battleplugins.arena.resolver.ResolverProvider;
 import org.battleplugins.arena.team.ArenaTeam;
 import org.battleplugins.arena.team.ArenaTeams;
-import org.battleplugins.arena.util.IntRange;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,7 +40,7 @@ import java.util.concurrent.CompletableFuture;
  * A {@link Competition} that is occurring on the same server
  * that this plugin is running on.
  */
-public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Competition<T> {
+public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Competition<T>, Resolvable {
     private final Arena arena;
     private final CompetitionType type;
     private final LiveCompetitionMap map;
@@ -363,5 +366,15 @@ public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Com
         }
 
         return maxPlayers;
+    }
+
+    @Override
+    public Resolver resolve() {
+        return this.arena.resolve().toBuilder()
+                .define(ResolverKeys.COMPETITION, ResolverProvider.simple(this.getCompetition(), this.getMap()::getName))
+                .define(ResolverKeys.ONLINE_PLAYERS, ResolverProvider.simple(this.getPlayers().size(), String::valueOf))
+                .define(ResolverKeys.MAX_PLAYERS, ResolverProvider.simple(this.getMaxPlayers(), String::valueOf))
+                .define(ResolverKeys.PLAYERS, ResolverProvider.simple(this.getPlayers(), players -> String.join(", ", players.stream().map(p -> p.getPlayer().getName()).toList())))
+                .build();
     }
 }

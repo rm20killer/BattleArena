@@ -4,6 +4,7 @@ import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.config.SingularValueParser;
 import org.battleplugins.arena.event.action.EventAction;
+import org.battleplugins.arena.resolver.Resolvable;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.Map;
@@ -16,7 +17,7 @@ public class GiveEffectsAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
         SingularValueParser.ArgumentBuffer buffer;
         try {
             buffer = SingularValueParser.parseUnnamed(this.get(EFFECTS_KEY), SingularValueParser.BraceStyle.SQUARE, ',');

@@ -3,6 +3,7 @@ package org.battleplugins.arena.event.action;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.competition.Competition;
+import org.battleplugins.arena.resolver.Resolvable;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -52,8 +53,9 @@ public abstract class EventAction {
      *
      * @param arena the arena the action is occurring in
      * @param competition the competition the action is occurring in
+     * @param resolvable the resolvable to call the action for
      */
-    public void preProcess(Arena arena, Competition<?> competition) {
+    public void preProcess(Arena arena, Competition<?> competition, Resolvable resolvable) {
     }
 
     /**
@@ -64,14 +66,16 @@ public abstract class EventAction {
      *
      * @param arena the arena the action is occurring in
      * @param competition the competition the action is occurring in
+     * @param resolvable the resolvable to call the action for
      */
-    public void postProcess(Arena arena, Competition<?> competition) {
+    public void postProcess(Arena arena, Competition<?> competition, Resolvable resolvable) {
     }
 
     /**
      * Calls the action for the given {@link ArenaPlayer}.
      *
      * @param arenaPlayer the player to call the action for
+     * @param resolvable the resolvable to call the action for
      */
-    public abstract void call(ArenaPlayer arenaPlayer);
+    public abstract void call(ArenaPlayer arenaPlayer, Resolvable resolvable);
 }

@@ -2,6 +2,9 @@ package org.battleplugins.arena.event.player;
 
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.event.EventTrigger;
+import org.battleplugins.arena.resolver.Resolver;
+import org.battleplugins.arena.resolver.ResolverKeys;
+import org.battleplugins.arena.resolver.ResolverProvider;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,6 +40,15 @@ public class ArenaKillEvent extends BukkitArenaPlayerEvent {
      */
     public ArenaPlayer getKiller() {
         return this.getArenaPlayer();
+    }
+
+    @Override
+    public Resolver resolve() {
+        return super.resolve()
+                .toBuilder()
+                .define(ResolverKeys.KILLER, ResolverProvider.simple(this.getKiller(), this.getKiller().getPlayer()::getName))
+                .define(ResolverKeys.KILLED, ResolverProvider.simple(this.getKilled(), this.getKilled().getPlayer()::getName))
+                .build();
     }
 
     @NotNull

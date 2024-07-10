@@ -44,6 +44,10 @@ class StatListener<T extends Competition<T>> implements ArenaListener, Competiti
                 return;
             }
 
+            if (newValue < 0) {
+                return;
+            }
+
             this.competition.getArena().getEventManager().callEvent(new ArenaLifeDepleteEvent(this.competition.getArena(), player, newValue));
         }
     }

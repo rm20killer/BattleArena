@@ -6,6 +6,10 @@ import org.battleplugins.arena.competition.PlayerStorage;
 import org.battleplugins.arena.event.player.ArenaStatChangeEvent;
 import org.battleplugins.arena.event.player.ArenaTeamJoinEvent;
 import org.battleplugins.arena.event.player.ArenaTeamLeaveEvent;
+import org.battleplugins.arena.resolver.Resolvable;
+import org.battleplugins.arena.resolver.Resolver;
+import org.battleplugins.arena.resolver.ResolverKeys;
+import org.battleplugins.arena.resolver.ResolverProvider;
 import org.battleplugins.arena.stat.ArenaStat;
 import org.battleplugins.arena.stat.StatHolder;
 import org.battleplugins.arena.team.ArenaTeam;
@@ -21,7 +25,7 @@ import java.util.function.Function;
 /**
  * Represents a player in an active competition.
  */
-public class ArenaPlayer implements StatHolder {
+public class ArenaPlayer implements StatHolder, Resolvable {
     private static final String ARENA_PLAYER_META_KEY = "arena-player";
 
     private final Player player;
@@ -273,6 +277,24 @@ public class ArenaPlayer implements StatHolder {
 
         this.competition.getTeamManager().leaveTeam(this);
         this.competition.findAndJoinTeamIfApplicable(this);
+    }
+
+
+    @Override
+    public String describe() {
+        return this.getPlayer().getName();
+    }
+
+    @Override
+    public Resolver resolve() {
+        Resolver.Builder builder = this.competition.resolve().toBuilder()
+                .define(ResolverKeys.PLAYER, ResolverProvider.simple(this, this.player::getName));
+
+        if (this.team != null) {
+            builder.define(ResolverKeys.TEAM, ResolverProvider.simple(this.team, ArenaTeam::getName, ArenaTeam::getFormattedName));
+        }
+
+        return builder.build();
     }
 
     @Override

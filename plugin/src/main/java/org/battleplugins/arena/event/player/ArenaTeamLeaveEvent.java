@@ -1,6 +1,9 @@
 package org.battleplugins.arena.event.player;
 
 import org.battleplugins.arena.ArenaPlayer;
+import org.battleplugins.arena.resolver.Resolver;
+import org.battleplugins.arena.resolver.ResolverKeys;
+import org.battleplugins.arena.resolver.ResolverProvider;
 import org.battleplugins.arena.team.ArenaTeam;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +29,13 @@ public class ArenaTeamLeaveEvent extends BukkitArenaPlayerEvent {
      */
     public ArenaTeam getTeam() {
         return this.team;
+    }
+
+    @Override
+    public Resolver resolve() {
+        return super.resolve().toBuilder()
+                .define(ResolverKeys.TEAM, ResolverProvider.simple(this.team, ArenaTeam::getName, ArenaTeam::getFormattedName))
+                .build();
     }
 
     @NotNull

@@ -5,6 +5,9 @@ import org.battleplugins.arena.competition.Competition;
 import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.event.ArenaEvent;
 import org.battleplugins.arena.event.EventTrigger;
+import org.battleplugins.arena.resolver.Resolver;
+import org.battleplugins.arena.resolver.ResolverKeys;
+import org.battleplugins.arena.resolver.ResolverProvider;
 import org.battleplugins.arena.stat.ArenaStat;
 import org.battleplugins.arena.stat.StatHolder;
 import org.bukkit.event.Event;
@@ -70,16 +73,6 @@ public class ArenaStatChangeEvent<T> extends Event implements ArenaEvent {
         return this.newValue;
     }
 
-    @NotNull
-    @Override
-    public HandlerList getHandlers() {
-        return HANDLERS;
-    }
-
-    public static HandlerList getHandlerList() {
-        return HANDLERS;
-    }
-
     @Override
     public Arena getArena() {
         return this.competition.getArena();
@@ -88,5 +81,25 @@ public class ArenaStatChangeEvent<T> extends Event implements ArenaEvent {
     @Override
     public Competition<?> getCompetition() {
         return this.competition;
+    }
+
+    @Override
+    public Resolver resolve() {
+        return ArenaEvent.super.resolve().toBuilder()
+                .define(ResolverKeys.STAT, ResolverProvider.simple(this.stat, ArenaStat::getName))
+                .define(ResolverKeys.STAT_HOLDER, ResolverProvider.simple(this.statHolder, StatHolder::describe))
+                .define(ResolverKeys.OLD_STAT_VALUE, ResolverProvider.simple(this.oldValue, Object::toString))
+                .define(ResolverKeys.NEW_STAT_VALUE, ResolverProvider.simple(this.newValue, Object::toString))
+                .build();
+    }
+
+    @NotNull
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 }

@@ -3,6 +3,9 @@ package org.battleplugins.arena.event.player;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.event.EventTrigger;
+import org.battleplugins.arena.resolver.Resolver;
+import org.battleplugins.arena.resolver.ResolverKeys;
+import org.battleplugins.arena.resolver.ResolverProvider;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,6 +36,14 @@ public class ArenaLifeDepleteEvent extends BukkitArenaPlayerEvent {
      */
     public int getLivesLeft() {
         return this.livesLeft;
+    }
+
+    @Override
+    public Resolver resolve() {
+        return super.resolve()
+                .toBuilder()
+                .define(ResolverKeys.LIVES_LEFT, ResolverProvider.simple(this.livesLeft, String::valueOf))
+                .build();
     }
 
     @NotNull

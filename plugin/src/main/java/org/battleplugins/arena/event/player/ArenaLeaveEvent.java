@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 public class ArenaLeaveEvent extends BukkitArenaPlayerEvent {
     private final static HandlerList HANDLERS = new HandlerList();
 
-    private Cause cause;
+    private final Cause cause;
 
     public ArenaLeaveEvent(ArenaPlayer player, Cause cause) {
         super(player.getArena(), player);

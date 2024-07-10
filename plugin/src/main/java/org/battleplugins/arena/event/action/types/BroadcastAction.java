@@ -8,6 +8,7 @@ import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.competition.Competition;
 import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.event.action.EventAction;
+import org.battleplugins.arena.resolver.Resolvable;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -25,11 +26,11 @@ public class BroadcastAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
     }
 
     @Override
-    public void postProcess(Arena arena, Competition<?> competition) {
+    public void postProcess(Arena arena, Competition<?> competition, Resolvable resolvable) {
         if (!(competition instanceof LiveCompetition<?> liveCompetition)) {
             return;
         }
@@ -49,7 +50,7 @@ public class BroadcastAction extends EventAction {
         };
 
         for (Player player : players) {
-            Component component = MiniMessage.miniMessage().deserialize(message);
+            Component component = MiniMessage.miniMessage().deserialize(resolvable.resolve().resolveToString(message));
             switch (messageType) {
                 case CHAT -> player.sendMessage(component);
                 case ACTION_BAR -> player.sendActionBar(component);

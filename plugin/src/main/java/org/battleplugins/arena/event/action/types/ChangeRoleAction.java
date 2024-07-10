@@ -5,6 +5,7 @@ import org.battleplugins.arena.competition.PlayerRole;
 import org.battleplugins.arena.event.action.EventAction;
 import org.battleplugins.arena.event.player.ArenaJoinEvent;
 import org.battleplugins.arena.event.player.ArenaSpectateEvent;
+import org.battleplugins.arena.resolver.Resolvable;
 
 import java.util.Locale;
 import java.util.Map;
@@ -17,7 +18,7 @@ public class ChangeRoleAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
         PlayerRole role = PlayerRole.valueOf(this.get(ROLE_KEY).toUpperCase(Locale.ROOT));
         boolean changedRole = arenaPlayer.getRole() != role;
         arenaPlayer.setRole(role);

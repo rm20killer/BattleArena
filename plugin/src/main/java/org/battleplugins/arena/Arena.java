@@ -22,6 +22,10 @@ import org.battleplugins.arena.event.action.EventAction;
 import org.battleplugins.arena.options.ArenaOptionType;
 import org.battleplugins.arena.options.Lives;
 import org.battleplugins.arena.options.Teams;
+import org.battleplugins.arena.resolver.Resolvable;
+import org.battleplugins.arena.resolver.Resolver;
+import org.battleplugins.arena.resolver.ResolverKeys;
+import org.battleplugins.arena.resolver.ResolverProvider;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
@@ -42,7 +46,7 @@ import java.util.Set;
  * active game actions will occur (i.e. game timer, score, etc.)
  */
 @DocumentationSource("https://docs.battleplugins.org/books/user-guide/chapter/configuration")
-public class Arena implements ArenaLike, ArenaListener {
+public class Arena implements ArenaLike, ArenaListener, Resolvable {
 
     @Scoped
     private BattleArena plugin;
@@ -315,5 +319,12 @@ public class Arena implements ArenaLike, ArenaListener {
     @Override
     public final Arena getArena() {
         return this;
+    }
+
+    @Override
+    public Resolver resolve() {
+        return Resolver.builder()
+                .define(ResolverKeys.ARENA, ResolverProvider.simple(this, Arena::getName))
+                .build();
     }
 }

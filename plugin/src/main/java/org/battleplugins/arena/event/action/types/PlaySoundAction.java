@@ -2,6 +2,7 @@ package org.battleplugins.arena.event.action.types;
 
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.event.action.EventAction;
+import org.battleplugins.arena.resolver.Resolvable;
 
 import java.util.Map;
 
@@ -15,7 +16,7 @@ public class PlaySoundAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
         String sound = this.get(SOUND_KEY);
         float pitch = Float.parseFloat(this.getOrDefault(PITCH_KEY, "1"));
         float volume = Float.parseFloat(this.getOrDefault(VOLUME_KEY, "1"));

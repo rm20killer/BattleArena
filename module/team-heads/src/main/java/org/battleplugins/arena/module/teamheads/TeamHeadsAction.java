@@ -5,6 +5,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.event.action.EventAction;
+import org.battleplugins.arena.resolver.Resolvable;
 import org.battleplugins.arena.team.ArenaTeam;
 import org.bukkit.inventory.ItemStack;
 
@@ -17,7 +18,7 @@ public class TeamHeadsAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
         if (!arenaPlayer.getArena().isModuleEnabled(TeamHeads.ID)) {
             return;
         }

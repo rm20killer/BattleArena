@@ -2,6 +2,7 @@ package org.battleplugins.arena.event.action.types;
 
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.event.action.EventAction;
+import org.battleplugins.arena.resolver.Resolvable;
 import org.bukkit.potion.PotionEffect;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public class ClearEffectsAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
         for (PotionEffect effect : List.copyOf(arenaPlayer.getPlayer().getActivePotionEffects())) {
             arenaPlayer.getPlayer().removePotionEffect(effect.getType());
         }

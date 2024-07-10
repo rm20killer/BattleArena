@@ -2,6 +2,7 @@ package org.battleplugins.arena.event.action.types;
 
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.event.action.EventAction;
+import org.battleplugins.arena.resolver.Resolvable;
 import org.bukkit.Bukkit;
 
 import java.util.Map;
@@ -15,8 +16,8 @@ public class RunCommandAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
-        String command = this.get(COMMAND_KEY);
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
+        String command = resolvable.resolve().resolveToString(this.get(COMMAND_KEY));
         String source = this.getOrDefault(SOURCE_KEY, "player");
         if (source.equalsIgnoreCase("player")) {
             arenaPlayer.getPlayer().performCommand(command);

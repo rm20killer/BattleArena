@@ -4,6 +4,7 @@ import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.competition.Competition;
 import org.battleplugins.arena.event.action.EventAction;
+import org.battleplugins.arena.resolver.Resolvable;
 
 import java.util.Map;
 
@@ -14,11 +15,11 @@ public class TeardownAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
     }
 
     @Override
-    public void postProcess(Arena arena, Competition<?> competition) {
+    public void postProcess(Arena arena, Competition<?> competition, Resolvable resolvable) {
         arena.getPlugin().removeCompetition(arena, competition);
     }
 }

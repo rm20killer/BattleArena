@@ -2,6 +2,7 @@ package org.battleplugins.arena.event.action.types;
 
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.event.action.EventAction;
+import org.battleplugins.arena.resolver.Resolvable;
 import org.bukkit.GameMode;
 
 import java.util.Locale;
@@ -15,7 +16,7 @@ public class ChangeGamemodeAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
         arenaPlayer.getPlayer().setGameMode(GameMode.valueOf(this.get(GAMEMODE_KEY).toUpperCase(Locale.ROOT)));
     }
 }

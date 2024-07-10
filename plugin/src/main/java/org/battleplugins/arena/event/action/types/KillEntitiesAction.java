@@ -8,6 +8,7 @@ import org.battleplugins.arena.competition.map.options.Bounds;
 import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.config.SingularValueParser;
 import org.battleplugins.arena.event.action.EventAction;
+import org.battleplugins.arena.resolver.Resolvable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -24,11 +25,11 @@ public class KillEntitiesAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
     }
 
     @Override
-    public void postProcess(Arena arena, Competition<?> competition) {
+    public void postProcess(Arena arena, Competition<?> competition, Resolvable resolvable) {
         if (!(competition instanceof LiveCompetition<?> liveCompetition)) {
             return;
         }

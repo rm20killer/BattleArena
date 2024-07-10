@@ -18,6 +18,7 @@ import org.battleplugins.arena.competition.Competition;
 import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.competition.map.options.Bounds;
 import org.battleplugins.arena.event.action.EventAction;
+import org.battleplugins.arena.resolver.Resolvable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,7 +33,7 @@ public class RestoreArenaAction extends EventAction {
     }
 
     @Override
-    public void postProcess(Arena arena, Competition<?> competition) {
+    public void postProcess(Arena arena, Competition<?> competition, Resolvable resolvable) {
         if (!arena.isModuleEnabled(ArenaRestoration.ID)) {
             return;
         }
@@ -95,7 +96,7 @@ public class RestoreArenaAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
         // No-op
     }
 }

@@ -2,6 +2,7 @@ package org.battleplugins.arena.event.action.types;
 
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.event.action.EventAction;
+import org.battleplugins.arena.resolver.Resolvable;
 
 import java.util.Map;
 
@@ -13,7 +14,7 @@ public class DelayAction extends EventAction {
     }
 
     @Override
-    public void call(ArenaPlayer arenaPlayer) {
+    public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
         // No-op; this is simply used to mark when a delay
         // should occur between other actions
     }

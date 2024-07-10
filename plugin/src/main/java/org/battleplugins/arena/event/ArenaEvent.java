@@ -2,12 +2,16 @@ package org.battleplugins.arena.event;
 
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.competition.Competition;
+import org.battleplugins.arena.resolver.Resolvable;
+import org.battleplugins.arena.resolver.Resolver;
+import org.battleplugins.arena.resolver.ResolverKeys;
+import org.battleplugins.arena.resolver.ResolverProvider;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents an event that occurs in an {@link Arena}.
  */
-public interface ArenaEvent {
+public interface ArenaEvent extends Resolvable {
 
     /**
      * Gets the {@link Arena} this event is occurring in.
@@ -35,5 +39,12 @@ public interface ArenaEvent {
         }
 
         return null;
+    }
+
+    default Resolver resolve() {
+        return Resolver.builder()
+                .define(ResolverKeys.ARENA, ResolverProvider.simple(this.getArena(), Arena::getName))
+                .define(ResolverKeys.COMPETITION, ResolverProvider.simple(this.getCompetition(), c -> c.getMap().getName()))
+                .build();
     }
 }

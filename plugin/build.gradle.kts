@@ -123,6 +123,6 @@ modrinth {
     versionNumber.set(rootProject.version as String + if (snapshot) "-" + System.getenv("BUILD_NUMBER") else "")
     versionType.set(if (snapshot) "beta" else "release")
     changelog.set(System.getenv("CHANGELOG") ?: "")
-    uploadFile.set(tasks.jar)
+    uploadFile.set(tasks.named("bundledJar"))
     gameVersions.set(supportedVersions)
 }

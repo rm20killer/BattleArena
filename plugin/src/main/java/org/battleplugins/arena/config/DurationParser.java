@@ -1,7 +1,6 @@
 package org.battleplugins.arena.config;
 
 import java.time.Duration;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,16 +10,22 @@ public final class DurationParser implements ArenaConfigParser.Parser<Duration> 
 
     @Override
     public Duration parse(Object object) throws ParseException {
-        return parseDuration(object);
-    }
-
-    public static Duration parseDuration(Object object) throws ParseException {
         if (object instanceof Number number) {
             return Duration.ofSeconds(number.longValue());
         }
 
-        String value = object.toString();
-        if (value.isBlank()) {
+        if (object instanceof String contents) {
+            return deserializeSingular(contents);
+        }
+
+        throw new ParseException("Invalid Duration for object: " + object)
+                .cause(ParseException.Cause.INVALID_TYPE)
+                .type(this.getClass())
+                .userError();
+    }
+
+    public static Duration deserializeSingular(String contents) throws ParseException {
+        if (contents.isBlank()) {
             throw new ParseException("Duration value was not provided!")
                     .cause(ParseException.Cause.MISSING_VALUE)
                     .type(DurationParser.class)
@@ -28,7 +33,7 @@ public final class DurationParser implements ArenaConfigParser.Parser<Duration> 
         }
 
         // Define a regular expression to match the duration format
-        Matcher matcher = DURATION_PATTERN.matcher(value);
+        Matcher matcher = DURATION_PATTERN.matcher(contents);
 
         long totalSeconds = 0;
         while (matcher.find()) {
@@ -66,7 +71,7 @@ public final class DurationParser implements ArenaConfigParser.Parser<Duration> 
         }
 
         if (totalSeconds == 0) {
-            throw new ParseException("Failed to parse Duration from value " + object)
+            throw new ParseException("Failed to parse Duration from value " + contents)
                     .cause(ParseException.Cause.INVALID_VALUE)
                     .type(DurationParser.class)
                     .userError();

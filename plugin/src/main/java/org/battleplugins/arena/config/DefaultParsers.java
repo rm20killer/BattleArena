@@ -16,6 +16,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 
 import java.awt.Color;
 import java.time.Duration;
@@ -31,6 +32,7 @@ final class DefaultParsers {
 
         ArenaConfigParser.registerProvider(Duration.class, new DurationParser());
         ArenaConfigParser.registerProvider(ItemStack.class, new ItemStackParser());
+        ArenaConfigParser.registerProvider(PotionEffect.class, new PotionEffectParser());
         ArenaConfigParser.registerProvider(PositionWithRotation.class, configValue -> {
             if (!(configValue instanceof ConfigurationSection positionSection)) {
                 return null;

@@ -56,7 +56,7 @@ phases:
     events:
       on-complete:
         - teleport{location=team_spawn}
-        - give-effects{effects=[speed 300 1]}
+        - give-effects{effects=[speed{duration=300;amplifier=1}]}
         - play-sound{sound=block.note_block.pling;pitch=2;volume=1}
   ingame:
     allow-join: false

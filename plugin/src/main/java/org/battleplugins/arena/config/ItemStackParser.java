@@ -1,6 +1,7 @@
 package org.battleplugins.arena.config;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -13,7 +14,6 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 import java.awt.Color;
 import java.util.Arrays;
@@ -21,11 +21,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 @DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/item-syntax")
 public final class ItemStackParser implements ArenaConfigParser.Parser<ItemStack> {
+    private static final Component NO_ITALIC = Component.empty().decoration(TextDecoration.ITALIC, false);
 
     @Override
     public ItemStack parse(Object object) throws ParseException {
@@ -93,7 +92,7 @@ public final class ItemStackParser implements ArenaConfigParser.Parser<ItemStack
                     }
                 }
                 case "display-name", "name" -> {
-                    itemMeta.displayName(MiniMessage.miniMessage().deserialize(value));
+                    itemMeta.displayName(NO_ITALIC.append(MiniMessage.miniMessage().deserialize(value)));
                 }
                 case "enchants", "enchantments" -> {
                     for (String enchant : getList(value)) {
@@ -119,6 +118,7 @@ public final class ItemStackParser implements ArenaConfigParser.Parser<ItemStack
                     List<Component> lore = getList(value)
                             .stream()
                             .map(MiniMessage.miniMessage()::deserialize)
+                            .map(NO_ITALIC::append)
                             .toList();
 
                     itemMeta.lore(lore);
@@ -135,16 +135,8 @@ public final class ItemStackParser implements ArenaConfigParser.Parser<ItemStack
                     }
 
                     for (String effect : getList(value)) {
-                        String[] effectSplit = effect.split(" ");
-                        PotionEffectType effectType = PotionEffectType.getByName(effectSplit[0]);
-                        if (effectType == null) {
-                            throw new ParseException("Invalid potion effect " + effectSplit[0]);
-                        }
-
-                        int duration = Integer.parseInt(effectSplit[1]) * 20;
-                        int amplifier = Integer.parseInt(effectSplit[2]) - 1;
-
-                        potionMeta.addCustomEffect(new PotionEffect(effectType, duration, amplifier), true);
+                        PotionEffect potionEffect = PotionEffectParser.deserializeSingular(effect);
+                        potionMeta.addCustomEffect(potionEffect, true);
                     }
                 }
             }
@@ -191,7 +183,7 @@ public final class ItemStackParser implements ArenaConfigParser.Parser<ItemStack
                     }
                 }
                 case "display-name", "name": {
-                    itemMeta.displayName(MiniMessage.miniMessage().deserialize(section.getString(meta)));
+                    itemMeta.displayName(NO_ITALIC.append(MiniMessage.miniMessage().deserialize(section.getString(meta))));
                 }
                 case "enchants", "enchantments": {
                     for (String enchant : section.getStringList(meta)) {
@@ -217,6 +209,7 @@ public final class ItemStackParser implements ArenaConfigParser.Parser<ItemStack
                     List<Component> lore = section.getStringList(meta)
                             .stream()
                             .map(MiniMessage.miniMessage()::deserialize)
+                            .map(NO_ITALIC::append)
                             .toList();
 
                     itemMeta.lore(lore);
@@ -233,16 +226,8 @@ public final class ItemStackParser implements ArenaConfigParser.Parser<ItemStack
                     }
 
                     for (String effect : section.getStringList(meta)) {
-                        String[] effectSplit = effect.split(" ");
-                        PotionEffectType effectType = PotionEffectType.getByName(effectSplit[0]);
-                        if (effectType == null) {
-                            throw new ParseException("Invalid potion effect " + effectSplit[0]);
-                        }
-
-                        int duration = Integer.parseInt(effectSplit[1]) * 20;
-                        int amplifier = Integer.parseInt(effectSplit[2]) - 1;
-
-                        potionMeta.addCustomEffect(new PotionEffect(effectType, duration, amplifier), true);
+                        PotionEffect potionEffect = PotionEffectParser.deserializeSingular(effect);
+                        potionMeta.addCustomEffect(potionEffect, true);
                     }
                 }
             }

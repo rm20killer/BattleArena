@@ -112,7 +112,7 @@ public class ParseException extends Exception {
             builder.append("Stacktrace (Debug Mode):\n");
 
             StringWriter writer = new StringWriter();
-            exception.printStackTrace(new PrintWriter(writer));
+            (exception.getCause() != null ? exception.getCause() : exception).printStackTrace(new PrintWriter(writer));
 
             builder.append(writer);
         }

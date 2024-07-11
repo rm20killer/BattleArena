@@ -1,6 +1,8 @@
 package org.battleplugins.arena.config;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 
 public final class SingularValueParser {
@@ -16,7 +18,7 @@ public final class SingularValueParser {
     private static ArgumentBuffer parse(String contents, BraceStyle style, char separator, boolean named) throws ParseException {
         ArgumentBuffer buffer = new ArgumentBuffer();
         if (named) {
-            String[] split = contents.split(style.open);
+            String[] split = contents.split(String.valueOf(new char[] { '\\', style.open }), 2);
             String dataType = split[0];
 
             buffer.push("root", dataType);
@@ -33,13 +35,15 @@ public final class SingularValueParser {
     }
 
     private static ArgumentBuffer parseNamed(ArgumentBuffer buffer, String contents, BraceStyle style, char separator) throws ParseException {
-        contents = contents.replace(style.close, "");
-        for (String argument : contents.split(Character.toString(separator))) {
-            String[] optionSplit = argument.split("=");
+        contents = contents.substring(0, contents.lastIndexOf(style.close));
+
+        for (String argument : parseArguments(contents, style, separator)) {
+            String[] optionSplit = argument.split("=", 2);
             if (optionSplit.length != 2) {
                 throw new ParseException("Invalid argument length! Expected arguments in the form of <key>=<value>, but got " + argument)
                         .cause(ParseException.Cause.INVALID_VALUE)
                         .context("Provided argument", argument)
+                        .context("Contents", contents)
                         .userError();
             }
 
@@ -54,11 +58,34 @@ public final class SingularValueParser {
         contents = contents.substring(0, contents.length() - 1);
 
         int index = 0;
-        for (String argument : contents.split(Character.toString(separator))) {
+        for (String argument : parseArguments(contents, style, separator)) {
             buffer.push(Integer.toString(index++), argument);
         }
 
         return buffer;
+    }
+
+    private static List<String> parseArguments(String contents, BraceStyle style, char separator) {
+        List<String> arguments = new ArrayList<>();
+        StringBuilder builder = new StringBuilder();
+        int depth = 0;
+        for (char c : contents.toCharArray()) {
+            if (c == style.open) {
+                depth++;
+            } else if (c == style.close) {
+                depth--;
+            }
+
+            if (depth == 0 && c == separator) {
+                arguments.add(builder.toString());
+                builder = new StringBuilder();
+            } else {
+                builder.append(c);
+            }
+        }
+
+        arguments.add(builder.toString());
+        return arguments;
     }
 
     public static final class ArgumentBuffer {
@@ -81,14 +108,14 @@ public final class SingularValueParser {
     }
 
     public enum BraceStyle {
-        CURLY("\\{", "}"),
-        SQUARE("\\[", "]"),
-        ROUND("\\(", ")");
+        CURLY('{', '}'),
+        SQUARE('[', ']'),
+        ROUND('(', ')');
 
-        private final String open;
-        private final String close;
+        private final char open;
+        private final char close;
 
-        BraceStyle(String open, String close) {
+        BraceStyle(char open, char close) {
             this.open = open;
             this.close = close;
         }

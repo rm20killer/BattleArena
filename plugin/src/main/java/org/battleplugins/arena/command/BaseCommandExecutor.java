@@ -438,7 +438,7 @@ public class BaseCommandExecutor implements TabExecutor {
             }
             case "duration" -> {
                 try {
-                    return DurationParser.parseDuration(arg);
+                    return DurationParser.deserializeSingular(arg);
                 } catch (ParseException e) {
                     ParseException.handle(e);
                     return null;

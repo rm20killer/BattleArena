@@ -2,6 +2,7 @@ plugins {
     id("maven-publish")
     id("xyz.jpenilla.run-paper") version "2.3.0"
     id("com.modrinth.minotaur") version "2.+"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 val supportedVersions = listOf("1.19.4", "1.20", "1.20.1", "1.20.2", "1.20.3", "1.20.4", "1.20.5", "1.20.6", "1.21")
@@ -11,6 +12,7 @@ repositories {
 }
 
 dependencies {
+    implementation(libs.bstats.bukkit)
     compileOnlyApi(libs.paper.api)
     compileOnly(libs.worldedit)
 }
@@ -33,16 +35,21 @@ tasks {
     }
 
     jar {
+        archiveClassifier.set("unshaded")
+    }
+
+    shadowJar {
         from("src/main/java/resources") {
             include("*")
         }
 
+        relocate("org.bstats", "org.battlearena.arena.shaded.bstats")
+
         archiveFileName.set("BattleArena.jar")
-        archiveClassifier.set("")
     }
 
     create<Jar>("bundledJar") {
-        dependsOn(jar)
+        dependsOn(shadowJar)
         from(sourceSets.main.get().output)
 
         // Bundle in our modules

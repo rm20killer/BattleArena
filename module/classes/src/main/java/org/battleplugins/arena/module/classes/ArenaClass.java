@@ -18,7 +18,7 @@ import java.util.Map;
 public class ArenaClass implements PostProcessable {
 
     @Scoped
-    private ArenaClasses classes;
+    private ClassesConfig classes;
 
     @ArenaOption(name = "name", description = "The name of the class.", required = true)
     private String name;

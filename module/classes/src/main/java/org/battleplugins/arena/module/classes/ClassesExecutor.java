@@ -36,6 +36,13 @@ public class ClassesExecutor implements SubCommandExecutor {
             return;
         }
 
+        if (this.module.isRequirePermission()) {
+            if (!player.hasPermission("battlearena.classes.equip." + arenaClass.getName().toLowerCase())) {
+                Messages.NO_PERMISSION.send(player);
+                return;
+            }
+        }
+
         // Ensure that the current competition phase allows class equipping
         boolean canEquip = arenaPlayer.getCompetition().option(Classes.CLASS_EQUIPPING_OPTION)
                 .map(BooleanArenaOption::isEnabled)

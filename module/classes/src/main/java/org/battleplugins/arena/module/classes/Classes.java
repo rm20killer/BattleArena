@@ -31,7 +31,7 @@ public class Classes implements ArenaModuleInitializer {
     public static final ArenaOptionType<BooleanArenaOption> CLASS_EQUIPPING_OPTION = ArenaOptionType.create("class-equipping", BooleanArenaOption::new);
     public static final ArenaOptionType<BooleanArenaOption> CLASS_EQUIP_ONLY_SELECTS_OPTION = ArenaOptionType.create("class-equip-only-selects", BooleanArenaOption::new);
 
-    private ArenaClasses classes;
+    private ClassesConfig classes;
 
     @EventHandler
     public void onPostInitialize(BattleArenaPostInitializeEvent event) {
@@ -54,7 +54,7 @@ public class Classes implements ArenaModuleInitializer {
 
         Configuration classesConfig = YamlConfiguration.loadConfiguration(classesPath.toFile());
         try {
-            this.classes = ArenaConfigParser.newInstance(classesPath, ArenaClasses.class, classesConfig, event.getBattleArena());
+            this.classes = ArenaConfigParser.newInstance(classesPath, ClassesConfig.class, classesConfig, event.getBattleArena());
         } catch (ParseException e) {
             ParseException.handle(e);
 
@@ -74,6 +74,10 @@ public class Classes implements ArenaModuleInitializer {
     @Nullable
     public ArenaClass getClass(String name) {
         return this.classes.getClasses().get(name);
+    }
+
+    public boolean isRequirePermission() {
+        return this.classes.isRequirePermission();
     }
 
     public Map<String, ArenaClass> getClasses() {

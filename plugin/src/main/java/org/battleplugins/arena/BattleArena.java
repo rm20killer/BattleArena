@@ -88,11 +88,13 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
 
         this.info("Loading BattleArena {} for {}", this.getPluginMeta().getVersion(), Version.getServerVersion());
 
+        this.loadConfig();
+
         Path dataFolder = this.getDataFolder().toPath();
         this.arenasPath = dataFolder.resolve("arenas");
         Path modulesPath = dataFolder.resolve("modules");
 
-        Util.copyDirectories(this.getFile(), modulesPath, "modules");
+        Util.copyDirectories(this.getFile(), modulesPath, "modules", this.config.getDisabledModules().toArray(String[]::new));
 
         this.moduleLoader = new ArenaModuleLoader(this, this.getClassLoader(), modulesPath);
         try {
@@ -118,21 +120,6 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
     }
 
     private void enable() {
-        // Copy our default configs
-        this.saveDefaultConfig();
-
-        File configFile = new File(this.getDataFolder(), "config.yml");
-        Configuration config = YamlConfiguration.loadConfiguration(configFile);
-        try {
-            this.config = ArenaConfigParser.newInstance(configFile.toPath(), BattleArenaConfig.class, config);
-        } catch (ParseException e) {
-            ParseException.handle(e);
-
-            this.error("Failed to load BattleArena configuration! Disabling plugin.");
-            this.getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
-
         this.debugMode = this.config.isDebugMode();
 
         if (Files.notExists(this.arenasPath)) {
@@ -267,6 +254,10 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         new BattleArenaReloadEvent(this).callEvent();
 
         this.disable();
+
+        // Reload the config
+        this.loadConfig();
+
         this.enable();
 
         // Reload loaders - has to be done this way for third party
@@ -747,6 +738,22 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
                     this.error("Failed to delete dynamic map {}", file.getName(), e);
                 }
             }
+        }
+    }
+
+    private void loadConfig() {
+        this.saveDefaultConfig();
+
+        File configFile = new File(this.getDataFolder(), "config.yml");
+        Configuration config = YamlConfiguration.loadConfiguration(configFile);
+        try {
+            this.config = ArenaConfigParser.newInstance(configFile.toPath(), BattleArenaConfig.class, config);
+        } catch (ParseException e) {
+            ParseException.handle(e);
+
+            this.error("Failed to load BattleArena configuration! Disabling plugin.");
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
         }
     }
 

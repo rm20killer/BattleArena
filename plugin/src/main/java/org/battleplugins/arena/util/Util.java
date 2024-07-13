@@ -151,7 +151,7 @@ public class Util {
         }
     }
 
-    public static void copyDirectories(File jarFile, Path outputPath, String directory) {
+    public static void copyDirectories(File jarFile, Path outputPath, String directory, String... ignoredFiles) {
         Path jarPath = jarFile.toPath();
         try {
             if (Files.notExists(outputPath)) {
@@ -175,6 +175,12 @@ public class Util {
                         Path targetPath = outputPath.resolve(relativePath.toString());
                         if (Files.exists(targetPath)) {
                             return;
+                        }
+
+                        for (String ignoredFile : ignoredFiles) {
+                            if (relativePath.toString().startsWith(ignoredFile)) {
+                                return;
+                            }
                         }
 
                         try {

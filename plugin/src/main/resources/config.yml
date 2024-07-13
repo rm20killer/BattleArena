@@ -17,6 +17,10 @@ max-backups: 5
 # Set to -1 to disable this limit.
 max-dynamic-maps: 5
 
+# Modules that are disabled by default. BattleArena comes pre-installed with
+# multiple modules that can be disabled below if their behavior is not desired
+disabled-modules: []
+
 # Event configurations
 events:
   FFA:

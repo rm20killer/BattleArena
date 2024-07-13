@@ -23,9 +23,12 @@ public class BattleArenaConfig {
     @ArenaOption(name = "max-dynamic-maps", description = "The maximum number of dynamic maps an Arena can have allocated at once.", required = true)
     private int maxDynamicMaps;
 
+    @ArenaOption(name = "disabled-modules", description = "Modules that are disabled by default.")
+    private List<String> disabledModules;
+
     @ArenaOption(name = "events", description = "The configured events.", required = true)
     private Map<String, List<EventOptions>> events;
-    
+
     @ArenaOption(name = "debug-mode", description = "Whether debug mode is enabled.")
     private boolean debugMode;
 
@@ -45,8 +48,12 @@ public class BattleArenaConfig {
         return this.maxDynamicMaps;
     }
 
+    public List<String> getDisabledModules() {
+        return this.disabledModules == null ? List.of() : List.copyOf(this.disabledModules);
+    }
+
     public Map<String, List<EventOptions>> getEvents() {
-        return this.events;
+        return Map.copyOf(this.events);
     }
 
     public boolean isDebugMode() {

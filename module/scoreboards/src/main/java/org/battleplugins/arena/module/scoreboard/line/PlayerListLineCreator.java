@@ -5,6 +5,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.battleplugins.arena.ArenaPlayer;
 import org.battleplugins.arena.config.ArenaOption;
+import org.battleplugins.arena.options.Lives;
+import org.battleplugins.arena.stat.ArenaStats;
 import org.battleplugins.arena.util.Version;
 
 import java.util.ArrayList;
@@ -18,6 +20,9 @@ public class PlayerListLineCreator implements ScoreboardLineCreator {
     @ArenaOption(name = "show-team-color", description = "Whether to show the team color of the player.")
     private boolean showTeamColor;
 
+    @ArenaOption(name = "require-alive", description = "Whether to only show alive players.")
+    private boolean requireAlive;
+
     @Override
     public List<Component> createLines(ArenaPlayer player) {
         List<Component> lines = new ArrayList<>(this.maxEntries);
@@ -25,6 +30,17 @@ public class PlayerListLineCreator implements ScoreboardLineCreator {
                 .stream()
                 .limit(this.maxEntries)
                 .toList();
+
+        if (this.requireAlive) {
+            players = players.stream().filter(entry -> {
+                Lives lives = entry.getArena().getLives();
+                if (lives == null || !lives.isEnabled()) {
+                    return entry.stat(ArenaStats.DEATHS).orElse(0) == 0;
+                }
+
+                return entry.stat(ArenaStats.LIVES).orElse(0) > 0;
+            }).toList();
+        }
 
         for (ArenaPlayer arenaPlayer : players) {
             Component component = Component.text(arenaPlayer.getPlayer().getName());

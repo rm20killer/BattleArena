@@ -6,12 +6,17 @@ team-options:
   team-size: 1
   team-amount: 1+
   team-selection: none
+  shared-spawn-points: true
+modules:
+  - arena-restoration
+  - scoreboards
 lives:
   enabled: false
 events:
   on-join:
     - store{types=location}
     - teleport{location=waitroom}
+    - apply-scoreboard{scoreboard=ingame-top-kills}
   on-spectate:
     - store{types=location}
     - change-gamemode{gamemode=spectator}
@@ -19,6 +24,7 @@ events:
     - teleport{location=spectator}
   on-leave:
     - restore{types=location}
+    - remove-scoreboard
   on-kill:
     - play-sound{sound=entity.player.levelup;pitch=1;volume=1}
   on-death:

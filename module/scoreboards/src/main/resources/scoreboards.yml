@@ -1,7 +1,7 @@
 # -----------------
 # Scoreboards configuration for BattleArena
 #
-# Documentation: https://docs.battleplugins.org/docs/ba/customization/teams
+# Documentation: https://docs.battleplugins.org/books/user-guide/page/scoreboards
 # Support: https://discord.gg/tMVPVJf
 # GitHub: https://github.com/BattlePlugins/BattleArena
 # -----------------
@@ -41,9 +41,25 @@ templates:
           lines:
             - " "
             - "<yellow>Map: <white>%map%"
+            - "<yellow>Players:"
+      - player-list:
+          max-entries: 10
+      - simple:
+          lines:
+            - " "
+            - "<white>battleplugins.org"
+  ingame-list-alive:
+    title: "<gold>%arena%"
+    refresh-time: 1s
+    lines:
+      - simple:
+          lines:
+            - " "
+            - "<yellow>Map: <white>%map%"
             - "<yellow>Alive players:"
       - player-list:
           max-entries: 10
+          require-alive: true
       - simple:
           lines:
             - " "

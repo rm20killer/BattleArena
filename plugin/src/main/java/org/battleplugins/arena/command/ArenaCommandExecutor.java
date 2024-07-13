@@ -194,7 +194,7 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
             return;
         }
 
-        Messages.HEADER.sendCentered(sender, "Competitions");
+        this.sendHeader(sender);
         for (Map.Entry<CompetitionMap, List<Competition<?>>> entry : competitionMap.entrySet()) {
             CompetitionMap map = entry.getKey();
             List<Competition<?>> competitions = entry.getValue();

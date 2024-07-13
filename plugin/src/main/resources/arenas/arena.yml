@@ -5,6 +5,10 @@ team-options:
   team-size: 1
   team-amount: 2
   team-selection: none
+modules:
+  - arena-restoration
+  - classes
+  - scoreboards
 lives:
   enabled: false
 victory-conditions:
@@ -26,6 +30,7 @@ events:
   on-leave:
     - clear-effects
     - restore{types=all}
+    - remove-scoreboard
   on-death:
     - clear-inventory
     - respawn
@@ -38,6 +43,7 @@ options:
   - damage-entities{option=never}
   - keep-inventory{enabled=true}
   - keep-experience{enabled=true}
+  - class-equip-only-selects{enabled=true}
 initial-phase: waiting
 phases:
   waiting:
@@ -45,6 +51,10 @@ phases:
     next-phase: countdown
     options:
       - damage-players{option=never}
+      - class-equipping{enabled=true}
+    events:
+      on-join:
+        - apply-scoreboard{scoreboard=waiting}
   countdown:
     allow-join: false
     allow-spectate: true
@@ -53,17 +63,23 @@ phases:
     countdown-time: 5s
     options:
       - damage-players{option=never}
+      - class-equipping{enabled=true}
     events:
-      on-complete:
-        - teleport{location=team_spawn}
-        - give-effects{effects=[speed{duration=300;amplifier=1}]}
-        - play-sound{sound=block.note_block.pling;pitch=2;volume=1}
+      on-start:
+        - apply-scoreboard{scoreboard=countdown}
   ingame:
     allow-join: false
     allow-spectate: true
     next-phase: victory
     options:
       - damage-players{option=other_team}
+    events:
+      on-start:
+        - equip-class{class=warrior}
+        - teleport{location=team_spawn}
+        - give-effects{effects=[speed{duration=300;amplifier=1}]}
+        - play-sound{sound=block.note_block.pling;pitch=2;volume=1}
+        - apply-scoreboard{scoreboard=ingame-list}
   victory:
     allow-join: false
     allow-spectate: false
@@ -72,6 +88,7 @@ phases:
     events:
       on-complete:
         - leave
+        - remove-scoreboard
       on-victory:
         - send-message{message=<green>Congrats, you won!</green>}
         - play-sound{sound=entity.player.levelup;pitch=1;volume=1}

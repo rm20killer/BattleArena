@@ -18,7 +18,7 @@ public class PlayerListLineCreator implements ScoreboardLineCreator {
     private int maxEntries;
 
     @ArenaOption(name = "show-team-color", description = "Whether to show the team color of the player.")
-    private boolean showTeamColor;
+    private boolean showTeamColor = true;
 
     @ArenaOption(name = "require-alive", description = "Whether to only show alive players.")
     private boolean requireAlive;

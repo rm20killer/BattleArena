@@ -31,6 +31,7 @@ templates:
           lines:
             - " "
             - "<yellow>Players: <white>%online_players%/%max_players%"
+            - "<yellow>Map: <white>%map%"
             - " "
             - "<white>battleplugins.org"
   ingame-list:
@@ -41,9 +42,11 @@ templates:
           lines:
             - " "
             - "<yellow>Map: <white>%map%"
+            - "<yellow>Time remaining: <white>%time_remaining_short%"
+            - " "
             - "<yellow>Players:"
       - player-list:
-          max-entries: 10
+          max-entries: 8
       - simple:
           lines:
             - " "
@@ -56,9 +59,11 @@ templates:
           lines:
             - " "
             - "<yellow>Map: <white>%map%"
+            - "<yellow>Time remaining: <white>%time_remaining_short%"
+            - " "
             - "<yellow>Alive players:"
       - player-list:
-          max-entries: 10
+          max-entries: 8
           require-alive: true
       - simple:
           lines:
@@ -72,10 +77,12 @@ templates:
           lines:
             - " "
             - "<yellow>Map: <white>%map%"
+            - "<yellow>Time remaining: <white>%time_remaining_short%"
+            - " "
             - "<yellow>Top kills:"
       - top-stat:
           stat: kills
-          max-entries: 10
+          max-entries: 8
       - simple:
           lines:
             - " "

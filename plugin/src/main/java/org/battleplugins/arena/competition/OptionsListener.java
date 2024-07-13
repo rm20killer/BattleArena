@@ -8,6 +8,7 @@ import org.battleplugins.arena.options.DamageOption;
 import org.battleplugins.arena.options.types.BooleanArenaOption;
 import org.battleplugins.arena.options.types.EnumArenaOption;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -81,53 +82,64 @@ class OptionsListener<T extends Competition<T>> implements ArenaListener, Compet
 
     @ArenaEventHandler(priority = EventPriority.LOWEST)
     public void onEntityDamage(EntityDamageByEntityEvent event) {
-        if (event.getDamager() instanceof Player damager) {
-            if (!(event.getEntity() instanceof Player damaged)) {
-                DamageOption damageOption = this.competition.option(ArenaOptionType.DAMAGE_ENTITIES)
-                        .map(EnumArenaOption::getOption)
-                        .orElse(DamageOption.ALWAYS);
-
-                if (damageOption == DamageOption.NEVER) {
-                    event.setCancelled(true);
-                }
+        Player damager;
+        if (event.getDamager() instanceof Player eventDamager) {
+            damager = eventDamager;
+        } else if (event.getDamager() instanceof Projectile projectile) {
+            if (projectile.getShooter() instanceof Player shooter) {
+                damager = shooter;
             } else {
-                // Player damage checking is slightly more complicated
-                DamageOption damageOption = this.competition.option(ArenaOptionType.DAMAGE_PLAYERS)
-                        .map(EnumArenaOption::getOption)
-                        .orElse(DamageOption.ALWAYS);
+                return;
+            }
+        } else {
+            return;
+        }
 
-                // If the damage option is always, then assume damage is enabled in
-                // any case and just return here
-                if (damageOption == DamageOption.ALWAYS) {
-                    return;
-                }
+        if (!(event.getEntity() instanceof Player damaged)) {
+            DamageOption damageOption = this.competition.option(ArenaOptionType.DAMAGE_ENTITIES)
+                    .map(EnumArenaOption::getOption)
+                    .orElse(DamageOption.ALWAYS);
 
-                ArenaPlayer damagerPlayer = ArenaPlayer.getArenaPlayer(damager);
-                ArenaPlayer damagedPlayer = ArenaPlayer.getArenaPlayer(damaged);
+            if (damageOption == DamageOption.NEVER) {
+                event.setCancelled(true);
+            }
+        } else {
+            // Player damage checking is slightly more complicated
+            DamageOption damageOption = this.competition.option(ArenaOptionType.DAMAGE_PLAYERS)
+                    .map(EnumArenaOption::getOption)
+                    .orElse(DamageOption.ALWAYS);
 
-                // Ensure that both players exist and are in an arena
-                if ((damagerPlayer == null && damagedPlayer != null) || (damagerPlayer != null && damagedPlayer == null)) {
-                    return;
-                }
+            // If the damage option is always, then assume damage is enabled in
+            // any case and just return here
+            if (damageOption == DamageOption.ALWAYS) {
+                return;
+            }
 
-                // Check to see if players are in the same arena
-                if (damagerPlayer != null && !damagerPlayer.getCompetition().equals(damagedPlayer.getCompetition())) {
-                    return;
-                }
+            ArenaPlayer damagerPlayer = ArenaPlayer.getArenaPlayer(damager);
+            ArenaPlayer damagedPlayer = ArenaPlayer.getArenaPlayer(damaged);
 
-                // If the damage option is never, then cancel the event
-                if (damageOption == DamageOption.NEVER) {
-                    event.setCancelled(true);
-                    return;
-                }
+            // Ensure that both players exist and are in an arena
+            if ((damagerPlayer == null && damagedPlayer != null) || (damagerPlayer != null && damagedPlayer == null)) {
+                return;
+            }
 
-                // Cancel the event if the damage option is other team and the
-                // players are on the same team
-                if (damageOption == DamageOption.OTHER_TEAM && damagerPlayer != null) {
-                    if (damagerPlayer.getTeam() != null && damagedPlayer.getTeam() != null) {
-                        if (!damagerPlayer.getTeam().isHostileTo(damagedPlayer.getTeam())) {
-                            event.setCancelled(true);
-                        }
+            // Check to see if players are in the same arena
+            if (damagerPlayer != null && !damagerPlayer.getCompetition().equals(damagedPlayer.getCompetition())) {
+                return;
+            }
+
+            // If the damage option is never, then cancel the event
+            if (damageOption == DamageOption.NEVER) {
+                event.setCancelled(true);
+                return;
+            }
+
+            // Cancel the event if the damage option is other team and the
+            // players are on the same team
+            if (damageOption == DamageOption.OTHER_TEAM && damagerPlayer != null) {
+                if (damagerPlayer.getTeam() != null && damagedPlayer.getTeam() != null) {
+                    if (!damagerPlayer.getTeam().isHostileTo(damagedPlayer.getTeam())) {
+                        event.setCancelled(true);
                     }
                 }
             }

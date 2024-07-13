@@ -47,7 +47,7 @@ public class EquipClassAction extends EventAction {
             arenaPlayer.getPlayer().getInventory().clear();
         }
 
-        boolean equipOnlySelects = arenaPlayer.getCompetition().option(Classes.CLASS_EQUIP_ONLY_SELECTS)
+        boolean equipOnlySelects = arenaPlayer.getCompetition().option(Classes.CLASS_EQUIP_ONLY_SELECTS_OPTION)
                 .map(BooleanArenaOption::isEnabled)
                 .orElse(false);
 

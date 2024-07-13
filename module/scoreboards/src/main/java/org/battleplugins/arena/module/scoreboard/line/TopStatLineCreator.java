@@ -29,7 +29,7 @@ public class TopStatLineCreator implements ScoreboardLineCreator {
     private boolean ascending;
 
     @ArenaOption(name = "show-team-color", description = "Whether to show the team color of the player.")
-    private boolean showTeamColor;
+    private boolean showTeamColor = true;
 
     @SuppressWarnings("unchecked")
     @Override

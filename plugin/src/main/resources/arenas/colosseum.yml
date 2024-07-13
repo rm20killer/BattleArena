@@ -56,6 +56,8 @@ phases:
       - damage-players{option=never}
       - class-equipping{enabled=true}
     events:
+      on-start:
+        - apply-scoreboard{scoreboard=waiting}
       on-join:
         - apply-scoreboard{scoreboard=waiting}
   countdown:
@@ -91,6 +93,7 @@ phases:
     events:
       on-complete:
         - leave
+        - restore-arena
         - remove-scoreboard
       on-victory:
         - send-message{message=<green>Congrats, you won!</green>}

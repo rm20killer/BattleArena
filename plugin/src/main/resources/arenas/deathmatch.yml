@@ -35,8 +35,11 @@ events:
     - remove-scoreboard
   on-death:
     - respawn
+    - clear-inventory
   on-respawn:
+    - delay{ticks=1}
     - teleport{location=team_spawn;random=true}
+    - equip-class{class=warrior}
 options:
   - block-break{enabled=false}
   - block-place{enabled=false}
@@ -54,6 +57,8 @@ phases:
       - damage-players{option=never}
       - class-equipping{enabled=true}
     events:
+      on-start:
+        - apply-scoreboard{scoreboard=waiting}
       on-join:
         - apply-scoreboard{scoreboard=waiting}
   countdown:
@@ -93,6 +98,7 @@ phases:
       on-complete:
         - leave
         - teardown
+        - restore-arena
         - remove-scoreboard
       on-victory:
         - send-message{message=<green>Congrats, you won!</green>}

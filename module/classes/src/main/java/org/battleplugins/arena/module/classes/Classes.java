@@ -15,7 +15,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +29,7 @@ public class Classes implements ArenaModuleInitializer {
 
     public static final EventActionType<EquipClassAction> EQUIP_CLASS_ACTION = EventActionType.create("equip-class", EquipClassAction.class, EquipClassAction::new);
     public static final ArenaOptionType<BooleanArenaOption> CLASS_EQUIPPING_OPTION = ArenaOptionType.create("class-equipping", BooleanArenaOption::new);
-    public static final ArenaOptionType<BooleanArenaOption> CLASS_EQUIP_ONLY_SELECTS = ArenaOptionType.create("class-equip-only-selects", BooleanArenaOption::new);
+    public static final ArenaOptionType<BooleanArenaOption> CLASS_EQUIP_ONLY_SELECTS_OPTION = ArenaOptionType.create("class-equip-only-selects", BooleanArenaOption::new);
 
     private ArenaClasses classes;
 

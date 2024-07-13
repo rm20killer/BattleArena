@@ -176,7 +176,7 @@ public class CompetitionManager {
                 liveCompetition.getPhaseManager().end(true);
             } else {
                 // No victory phase - just forcefully kick every player
-                for (ArenaPlayer player : liveCompetition.getPlayers()) {
+                for (ArenaPlayer player : Set.copyOf(liveCompetition.getPlayers())) {
                     liveCompetition.leave(player, ArenaLeaveEvent.Cause.SHUTDOWN);
                 }
             }

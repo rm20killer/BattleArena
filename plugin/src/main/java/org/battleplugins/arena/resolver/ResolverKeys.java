@@ -33,6 +33,7 @@ public final class ResolverKeys {
     public static final ResolverKey<CompetitionPhase> PHASE = ResolverKey.create("phase", CompetitionPhase.class);
     public static final ResolverKey<ArenaTeam> TEAM = ResolverKey.create("team", ArenaTeam.class);
     public static final ResolverKey<Duration> TIME_REMAINING = ResolverKey.create("time-remaining", Duration.class);
+    public static final ResolverKey<Duration> TIME_REMAINING_SHORT = ResolverKey.create("time-remaining-short", Duration.class);
     public static final ResolverKey<Duration> REMAINING_START_TIME = ResolverKey.create("remaining-start-time", Duration.class);
     public static final ResolverKey<VictoryConditionType> VICTORY_CONDITION_TYPE = ResolverKey.create("victory-condition-type", VictoryConditionType.class);
 }

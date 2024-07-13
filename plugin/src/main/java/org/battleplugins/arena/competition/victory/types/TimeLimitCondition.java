@@ -58,6 +58,7 @@ public class TimeLimitCondition<T extends LiveCompetition<T>> extends VictoryCon
     public Resolver resolve() {
         return super.resolve().toBuilder()
                 .define(ResolverKeys.TIME_REMAINING, ResolverProvider.simple(this.getTimeRemaining(), Util::toTimeString))
+                .define(ResolverKeys.TIME_REMAINING_SHORT, ResolverProvider.simple(this.getTimeRemaining(), Util::toTimeStringShort))
                 .build();
     }
 }

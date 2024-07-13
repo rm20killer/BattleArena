@@ -43,14 +43,20 @@ tasks {
             include("*")
         }
 
-        relocate("org.bstats", "org.battlearena.arena.shaded.bstats")
+        relocate("org.bstats", "org.battleplugins.arena.util.shaded.bstats")
 
         archiveFileName.set("BattleArena.jar")
     }
 
-    create<Jar>("bundledJar") {
+    val extractShadowJar by creating(Copy::class) {
         dependsOn(shadowJar)
-        from(sourceSets.main.get().output)
+        from(zipTree(shadowJar.get().archiveFile.get().asFile))
+        into(layout.buildDirectory.get().asFile.resolve("extractedShadow"))
+    }
+
+    create<Jar>("bundledJar") {
+        dependsOn(extractShadowJar)
+        from(layout.buildDirectory.get().asFile.resolve("extractedShadow"))
 
         // Bundle in our modules
         project(":module").subprojects.forEach {

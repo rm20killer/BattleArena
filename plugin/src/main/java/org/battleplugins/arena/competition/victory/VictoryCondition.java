@@ -9,10 +9,14 @@ import org.battleplugins.arena.competition.phase.phases.VictoryPhase;
 import org.battleplugins.arena.config.Id;
 import org.battleplugins.arena.config.Scoped;
 import org.battleplugins.arena.event.ArenaListener;
+import org.battleplugins.arena.resolver.Resolvable;
+import org.battleplugins.arena.resolver.Resolver;
+import org.battleplugins.arena.resolver.ResolverKeys;
+import org.battleplugins.arena.resolver.ResolverProvider;
 
 import java.util.Set;
 
-public class VictoryCondition<T extends LiveCompetition<T>> implements CompetitionLike<T>, ArenaListener {
+public class VictoryCondition<T extends LiveCompetition<T>> implements CompetitionLike<T>, ArenaListener, Resolvable {
 
     @Id
     private VictoryConditionType<?, ?> type;
@@ -75,5 +79,12 @@ public class VictoryCondition<T extends LiveCompetition<T>> implements Competiti
         // End all competition phases to ensure no other
         // victory conditions can run and get out of sync
         this.competition.getVictoryManager().end(false);
+    }
+
+    @Override
+    public Resolver resolve() {
+        return Resolver.builder()
+                .define(ResolverKeys.VICTORY_CONDITION_TYPE, ResolverProvider.simple(this.type, VictoryConditionType::getName))
+                .build();
     }
 }

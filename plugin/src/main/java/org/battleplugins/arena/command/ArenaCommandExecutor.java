@@ -1,6 +1,7 @@
 package org.battleplugins.arena.command;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaPlayer;
@@ -27,9 +28,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ArenaCommandExecutor extends BaseCommandExecutor {
     protected final Arena arena;
@@ -174,6 +179,68 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
                 }
             }
         });
+    }
+
+    @ArenaCommand(commands = "list", description = "List all maps and competitions in them.", permissionNode = "list")
+    public void list(CommandSender sender) {
+        Map<CompetitionMap, List<Competition<?>>> competitionMap = new HashMap<>();
+        for (LiveCompetitionMap map : this.arena.getPlugin().getMaps(this.arena)) {
+            List<Competition<?>> comps = this.arena.getPlugin().getCompetitions(this.arena, map.getName());
+            competitionMap.put(map, comps);
+        }
+
+        if (competitionMap.isEmpty()) {
+            Messages.NO_MAPS_FOR_ARENA.send(sender);
+            return;
+        }
+
+        Messages.HEADER.sendCentered(sender, "Competitions");
+        for (Map.Entry<CompetitionMap, List<Competition<?>>> entry : competitionMap.entrySet()) {
+            CompetitionMap map = entry.getKey();
+            List<Competition<?>> competitions = entry.getValue();
+
+            if (competitions.isEmpty()) {
+                sender.sendMessage(Component.text("- ", NamedTextColor.GRAY)
+                        .append(Component.text(map.getName() + ": ", NamedTextColor.WHITE))
+                        .append(Messages.NO_RUNNING_COMPETITIONS.toComponent())
+                );
+
+                continue;
+            }
+
+            if (competitions.size() == 1) {
+                Competition<?> competition = competitions.get(0);
+                Component competitionInfo = Component.text("- ", NamedTextColor.GRAY)
+                        .append(Component.text(map.getName() + ": ", NamedTextColor.WHITE))
+                        .append(Messages.PHASE.withContext(competition.getPhase().getName()).toComponent());
+
+                if (competition instanceof LiveCompetition<?> liveCompetition) {
+                    competitionInfo = competitionInfo.append(Component.space())
+                            .append(Messages.PLAYERS.withContext(String.valueOf(liveCompetition.getPlayers().size()), String.valueOf(liveCompetition.getMaxPlayers())).toComponent());
+                }
+
+                sender.sendMessage(competitionInfo);
+                continue;
+            }
+
+            Component mapInfo = Component.text("- ", NamedTextColor.GRAY)
+                    .append(Component.text(map.getName() + ": ", NamedTextColor.WHITE));
+
+            sender.sendMessage(mapInfo);
+            int i = 1;
+            for (Competition<?> competition : competitions) {
+                Component competitionInfo = Component.text("   - ", NamedTextColor.GRAY)
+                        .append(Component.text("[" + i++ + "] ", Messages.SECONDARY_COLOR))
+                        .append(Messages.PHASE.withContext(competition.getPhase().getName()).toComponent());
+
+                if (competition instanceof LiveCompetition<?> liveCompetition) {
+                    competitionInfo = competitionInfo.append(Component.space())
+                            .append(Messages.PLAYERS.withContext(String.valueOf(liveCompetition.getPlayers().size()), String.valueOf(liveCompetition.getMaxPlayers())).toComponent());
+                }
+
+                sender.sendMessage(competitionInfo);
+            }
+        }
     }
 
     @ArenaCommand(commands = { "leave", "l" }, description = "Leave an arena.", permissionNode = "leave")

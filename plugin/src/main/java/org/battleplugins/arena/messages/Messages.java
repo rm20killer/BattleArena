@@ -51,6 +51,8 @@ public final class Messages {
 
     // Arena messages
     public static final Message NO_OPEN_ARENAS = error("arena-no-open-arenas", "There are no open arenas!");
+    public static final Message NO_MAPS_FOR_ARENA = error("arena-no-open-maps-for-arena", "There arena has no open maps!");
+    public static final Message NO_RUNNING_COMPETITIONS = error("arena-no-running competitions", "No running competitions.");
     public static final Message NO_ARENA_WITH_NAME = error("arena-arena-with-name", "There is no arena with that name!");
     public static final Message ARENA_FULL = error("arena-full", "This arena is full!");
     public static final Message ARENA_NOT_JOINABLE = error("arena-not-joinable", "This arena is not joinable!");
@@ -67,6 +69,8 @@ public final class Messages {
     public static final Message ARENA_REMOVED = success("arena-removed", "The arena <secondary>{}</secondary> has been removed!");
     public static final Message NOT_EVENT = error("arena-not-event", "The specified arena is not an event!");
     public static final Message MANUAL_EVENT_MESSAGE = info("arena-manual-event-message", "%prefix% A {} event is starting! Run <secondary>/{} join</secondary> to join!");
+    public static final Message PHASE = info("arena-phase", "Phase: <secondary>{}</secondary>.");
+    public static final Message PLAYERS = info("arena-players", "Players: <secondary>{}/{}</secondary>.");
     public static final Message ADVANCED_PHASE = info("arena-advanced-phase", "Advanced to the next phase: <secondary>{}</secondary>!");
     public static final Message NO_PHASES = error("arena-no-phases", "There are no phases to advance to!");
     public static final Message NO_TEAM_WITH_NAME = error("arena-no-team-with-name", "There is no team with the name <secondary>{}</secondary>!");
@@ -112,6 +116,7 @@ public final class Messages {
     public static final Message MAP_CREATED = success("editor-map-created", "Successfully created map <secondary>{}</secondary> for {}!");
     public static final Message MAP_EDITED = success("editor-map-edited", "Successfully edited map <secondary>{}</secondary>!");
     public static final Message MAP_FAILED_TO_SAVE = error("editor-map-failed-to-save", "An error occurred saving map <secondary>{}</secondary>! Please see the console for errors.");
+    public static final Message WIZARD_CLOSED = success("editor-wizard-closed", "Wizard closed!");
 
     // Util strings
     public static final Message MILLISECONDS = message("util-milliseconds", "milliseconds");

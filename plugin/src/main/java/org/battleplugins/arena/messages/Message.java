@@ -20,7 +20,7 @@ public class Message {
         return this.translationKey;
     }
 
-    public Component getText() {
+    Component getText() {
         return this.text;
     }
 

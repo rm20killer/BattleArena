@@ -27,6 +27,7 @@ import org.battleplugins.arena.team.ArenaTeams;
 import org.battleplugins.arena.util.CommandInjector;
 import org.battleplugins.arena.util.LoggerHolder;
 import org.battleplugins.arena.util.Util;
+import org.battleplugins.arena.util.Version;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.Configuration;
@@ -84,6 +85,8 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
     @Override
     public void onLoad() {
         instance = this;
+
+        this.info("Loading BattleArena {} for {}", this.getPluginMeta().getVersion(), Version.getServerVersion());
 
         Path dataFolder = this.getDataFolder().toPath();
         this.arenasPath = dataFolder.resolve("arenas");

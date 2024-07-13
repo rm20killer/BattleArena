@@ -49,6 +49,11 @@ class ResolverImpl implements Resolver {
     }
 
     @Override
+    public void mergeInto(Builder builder) {
+        ((BuilderImpl) builder).results.putAll(this.results);
+    }
+
+    @Override
     public Builder toBuilder() {
         BuilderImpl builder = new BuilderImpl();
         builder.results.putAll(this.results);

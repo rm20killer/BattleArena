@@ -8,9 +8,11 @@ import org.battleplugins.arena.event.player.ArenaTeamJoinEvent;
 import org.battleplugins.arena.event.player.ArenaTeamLeaveEvent;
 import org.battleplugins.arena.resolver.Resolvable;
 import org.battleplugins.arena.resolver.Resolver;
+import org.battleplugins.arena.resolver.ResolverKey;
 import org.battleplugins.arena.resolver.ResolverKeys;
 import org.battleplugins.arena.resolver.ResolverProvider;
 import org.battleplugins.arena.stat.ArenaStat;
+import org.battleplugins.arena.stat.ArenaStats;
 import org.battleplugins.arena.stat.StatHolder;
 import org.battleplugins.arena.team.ArenaTeam;
 import org.bukkit.entity.Player;
@@ -49,6 +51,11 @@ public class ArenaPlayer implements StatHolder, Resolvable {
         this.storage = new PlayerStorage(this);
 
         this.setMetadata();
+
+        // Register default stats
+        for (ArenaStat<?> stat : ArenaStats.values()) {
+            this.stats.put(stat, stat.getDefaultValue());
+        }
     }
 
     /**
@@ -292,6 +299,11 @@ public class ArenaPlayer implements StatHolder, Resolvable {
 
         if (this.team != null) {
             builder.define(ResolverKeys.TEAM, ResolverProvider.simple(this.team, ArenaTeam::getName, ArenaTeam::getFormattedName));
+        }
+
+        for (Map.Entry<ArenaStat<?>, Object> entry : this.stats.entrySet()) {
+            ResolverKey<Object> statKey = ResolverKey.create("stat_" + entry.getKey().getKey(), Object.class);
+            builder.define(statKey, ResolverProvider.simple(entry.getValue(), String::valueOf));
         }
 
         return builder.build();

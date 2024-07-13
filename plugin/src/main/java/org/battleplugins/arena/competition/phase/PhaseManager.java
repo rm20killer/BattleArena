@@ -2,7 +2,6 @@ package org.battleplugins.arena.competition.phase;
 
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.competition.Competition;
-import org.battleplugins.arena.competition.victory.VictoryCondition;
 
 /**
  * Manages the phases of a competition.

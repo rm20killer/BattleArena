@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public final class ArenaStats {
     private static final Map<String, ArenaStat<?>> STATS = new HashMap<>();
@@ -23,5 +24,9 @@ public final class ArenaStats {
     @Nullable
     public static ArenaStat<?> get(String name) {
         return STATS.get(name);
+    }
+
+    public static Set<ArenaStat<?>> values() {
+        return Set.copyOf(STATS.values());
     }
 }

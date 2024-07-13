@@ -65,6 +65,13 @@ public interface Competition<T extends Competition<T>> extends CompetitionLike<T
      */
     void leave(Player player, ArenaLeaveEvent.Cause cause);
 
+    /**
+     * Gets the maximum amount of players that can join this competition.
+     *
+     * @return the maximum amount of players that can join this competition
+     */
+    int getMaxPlayers();
+
     @Override
     default T getCompetition() {
         return (T) this;

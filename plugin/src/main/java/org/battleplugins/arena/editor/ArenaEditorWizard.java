@@ -63,6 +63,7 @@ public class ArenaEditorWizard<E extends EditorContext<E>> {
         }
 
         this.players.remove(context.getPlayer().getUniqueId());
+        Messages.WIZARD_CLOSED.send(context.getPlayer());
     }
 
     public void openWizard(Player player, Arena arena) {

@@ -12,6 +12,8 @@ public interface Resolver {
 
     boolean has(ResolverKey<?> key);
 
+    void mergeInto(Builder builder);
+
     Builder toBuilder();
 
     static Builder builder() {

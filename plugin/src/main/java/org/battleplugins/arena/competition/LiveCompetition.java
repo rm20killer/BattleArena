@@ -3,6 +3,7 @@ package org.battleplugins.arena.competition;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaLike;
 import org.battleplugins.arena.ArenaPlayer;
+import org.battleplugins.arena.competition.map.CompetitionMap;
 import org.battleplugins.arena.competition.map.LiveCompetitionMap;
 import org.battleplugins.arena.competition.map.options.Spawns;
 import org.battleplugins.arena.competition.phase.CompetitionPhase;
@@ -262,11 +263,7 @@ public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Com
         return Collections.unmodifiableSet(this.playersByRole.getOrDefault(PlayerRole.SPECTATING, Set.of()));
     }
     
-    /**
-     * Gets the maximum amount of players that can join this competition.
-     *
-     * @return the maximum amount of players that can join this competition
-     */
+    @Override
     public final int getMaxPlayers() {
         return this.maxPlayers;
     }
@@ -370,11 +367,18 @@ public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Com
 
     @Override
     public Resolver resolve() {
-        return this.arena.resolve().toBuilder()
+        Resolver.Builder builder = this.arena.resolve().toBuilder()
                 .define(ResolverKeys.COMPETITION, ResolverProvider.simple(this.getCompetition(), this.getMap()::getName))
                 .define(ResolverKeys.ONLINE_PLAYERS, ResolverProvider.simple(this.getPlayers().size(), String::valueOf))
+                .define(ResolverKeys.MAP, ResolverProvider.simple(this.getMap(), CompetitionMap::getName))
                 .define(ResolverKeys.MAX_PLAYERS, ResolverProvider.simple(this.getMaxPlayers(), String::valueOf))
-                .define(ResolverKeys.PLAYERS, ResolverProvider.simple(this.getPlayers(), players -> String.join(", ", players.stream().map(p -> p.getPlayer().getName()).toList())))
-                .build();
+                .define(ResolverKeys.PHASE, ResolverProvider.simple(this.getPhaseManager().getCurrentPhase(), p -> p.getType().getName()));
+
+        this.getVictoryManager().resolve().mergeInto(builder);
+        if (this.getPhaseManager().getCurrentPhase() instanceof LiveCompetitionPhase<?> phase) {
+            phase.resolve().mergeInto(builder);
+        }
+        
+        return builder.build();
     }
 }

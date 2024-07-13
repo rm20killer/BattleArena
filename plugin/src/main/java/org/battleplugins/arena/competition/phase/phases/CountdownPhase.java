@@ -7,6 +7,9 @@ import org.battleplugins.arena.config.ArenaOption;
 import org.battleplugins.arena.event.ArenaEventHandler;
 import org.battleplugins.arena.event.player.ArenaLeaveEvent;
 import org.battleplugins.arena.messages.Messages;
+import org.battleplugins.arena.resolver.Resolver;
+import org.battleplugins.arena.resolver.ResolverKeys;
+import org.battleplugins.arena.resolver.ResolverProvider;
 import org.battleplugins.arena.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -77,5 +80,12 @@ public class CountdownPhase<T extends LiveCompetition<T>> extends LiveCompetitio
     @Override
     public void onComplete() {
         this.countdownTask.cancel();
+    }
+
+    @Override
+    public Resolver resolve() {
+        return super.resolve().toBuilder()
+                .define(ResolverKeys.REMAINING_START_TIME, ResolverProvider.simple(Duration.ofSeconds(this.countdown + 1), Util::toTimeString))
+                .build();
     }
 }

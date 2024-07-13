@@ -9,6 +9,8 @@ import org.battleplugins.arena.competition.phase.CompetitionPhaseType;
 import org.battleplugins.arena.event.ArenaEventHandler;
 import org.battleplugins.arena.event.ArenaListener;
 import org.battleplugins.arena.event.arena.ArenaPhaseStartEvent;
+import org.battleplugins.arena.resolver.Resolvable;
+import org.battleplugins.arena.resolver.Resolver;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,7 +22,7 @@ import java.util.Set;
  *
  * @param <T> the type of competition
  */
-public class VictoryManager<T extends Competition<T>> implements ArenaListener, CompetitionLike<T> {
+public class VictoryManager<T extends Competition<T>> implements ArenaListener, CompetitionLike<T>, Resolvable {
     private final Map<VictoryConditionType<?, ?>, VictoryCondition<?>> victoryConditions = new HashMap<>();
 
     private final Arena arena;
@@ -124,5 +126,15 @@ public class VictoryManager<T extends Competition<T>> implements ArenaListener, 
      */
     public final boolean isClosed() {
         return this.closed;
+    }
+
+    @Override
+    public Resolver resolve() {
+        Resolver.Builder builder = Resolver.builder();
+        for (VictoryCondition<?> value : this.victoryConditions.values()) {
+            value.resolve().mergeInto(builder);
+        }
+
+        return builder.build();
     }
 }

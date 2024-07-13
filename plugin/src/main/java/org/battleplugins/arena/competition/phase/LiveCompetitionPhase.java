@@ -4,6 +4,8 @@ import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.event.arena.ArenaPhaseCompleteEvent;
 import org.battleplugins.arena.event.arena.ArenaPhaseStartEvent;
 import org.battleplugins.arena.options.ArenaOptionType;
+import org.battleplugins.arena.resolver.Resolvable;
+import org.battleplugins.arena.resolver.Resolver;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -13,7 +15,7 @@ import java.util.Optional;
  *
  * @param <T> the type of competition
  */
-public abstract class LiveCompetitionPhase<T extends LiveCompetition<T>> extends CompetitionPhase<T> {
+public abstract class LiveCompetitionPhase<T extends LiveCompetition<T>> extends CompetitionPhase<T> implements Resolvable {
 
     public void setPhase(CompetitionPhaseType<T, CompetitionPhase<T>> phase) {
         this.competition.getPhaseManager().setPhase(phase);
@@ -95,5 +97,10 @@ public abstract class LiveCompetitionPhase<T extends LiveCompetition<T>> extends
         }
 
         return arenaOption;
+    }
+
+    @Override
+    public Resolver resolve() {
+        return Resolver.builder().build();
     }
 }

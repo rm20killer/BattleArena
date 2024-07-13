@@ -79,12 +79,17 @@ public class TeamSpawnInputStage<E extends EditorContext<E>> implements WizardSt
                 }
 
                 // Send list of valid teams
-                List<TextComponent> teamNames = context.getArena().getTeams().getAvailableTeams()
+                List<Component> validTeamNames = context.getArena().getTeams().getAvailableTeams()
                         .stream()
-                        .map(team -> Component.text(team.getName(), TextColor.color(team.getTextColor())))
+                        .map(ArenaTeam::getFormattedName)
                         .toList();
 
-                Component teamsList = Component.join(JoinConfiguration.commas(true), teamNames);
+                List<String> teamNames = context.getArena().getTeams().getAvailableTeams()
+                        .stream()
+                        .map(ArenaTeam::getName)
+                        .toList();
+
+                Component teamsList = Component.join(JoinConfiguration.commas(true), validTeamNames);
                 Messages.VALID_TEAMS.send(player, teamsList);
 
                 new InteractionInputs.ChatInput(player, Messages.INVALID_TEAM_VALID_TEAMS.withContext(teamsList)) {

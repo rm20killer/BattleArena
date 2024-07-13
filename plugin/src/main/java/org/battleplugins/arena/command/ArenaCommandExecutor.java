@@ -60,7 +60,7 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
         this.join(player, maps.iterator().next());
     }
 
-    @ArenaCommand(commands = { "join", "j" }, description = "Join an arena.", permissionNode = "join")
+    @ArenaCommand(commands = { "join", "j" }, description = "Join an arena.", permissionNode = "join.map")
     public void join(Player player, @Argument(name = "map") CompetitionMap map) {
         if (ArenaPlayer.getArenaPlayer(player) != null) {
             Messages.ALREADY_IN_ARENA.send(player);

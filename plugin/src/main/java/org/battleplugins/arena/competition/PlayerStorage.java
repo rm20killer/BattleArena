@@ -31,8 +31,9 @@ public class PlayerStorage {
 
     private double health;
     private int hunger;
-    
-    private int exp;
+
+    private int totalExp;
+    private float exp;
     private int expLevels;
 
     private float walkSpeed;
@@ -111,7 +112,8 @@ public class PlayerStorage {
     }
 
     private void storeExperience() {
-        this.exp = this.player.getPlayer().getTotalExperience();
+        this.totalExp = this.player.getPlayer().getTotalExperience();
+        this.exp = this.player.getPlayer().getExp();
         this.expLevels = this.player.getPlayer().getLevel();
     }
 
@@ -147,6 +149,7 @@ public class PlayerStorage {
         this.attributes.clear();
         this.health = 0;
         this.hunger = 0;
+        this.totalExp = 0;
         this.exp = 0;
         this.expLevels = 0;
         this.effects.clear();
@@ -199,11 +202,17 @@ public class PlayerStorage {
     }
 
     private void restoreExperience() {
-        this.player.getPlayer().setTotalExperience(this.exp);
+        this.player.getPlayer().setTotalExperience(this.totalExp);
+        this.player.getPlayer().setExp(this.exp);
         this.player.getPlayer().setLevel(this.expLevels);
     }
 
     private void restoreEffects() {
+        // Clear all effects from the arena
+        for (PotionEffect effect : this.player.getPlayer().getActivePotionEffects()) {
+            this.player.getPlayer().removePotionEffect(effect.getType());
+        }
+
         for (PotionEffect effect : this.effects) {
             this.player.getPlayer().addPotionEffect(effect);
         }
@@ -250,6 +259,7 @@ public class PlayerStorage {
         
         if (all || toStore.contains(Type.EXPERIENCE)) {
             this.player.getPlayer().setTotalExperience(0);
+            this.player.getPlayer().setExp(0);
             this.player.getPlayer().setLevel(0);
         }
 

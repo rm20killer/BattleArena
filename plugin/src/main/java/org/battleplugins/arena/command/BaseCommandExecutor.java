@@ -70,8 +70,13 @@ public class BaseCommandExecutor implements TabExecutor {
         }
 
         if ("help".equals(args[0])) {
-            int page = args.length > 1 ? Integer.parseInt(args[1]) : 1;
-            this.sendHelpMessage(sender, page);
+            try {
+                int page = args.length > 1 ? Integer.parseInt(args[1]) : 1;
+                this.sendHelpMessage(sender, page);
+            } catch (NumberFormatException e) {
+                this.sendHelpMessage(sender, 1);
+            }
+
             return true;
         }
 
@@ -310,8 +315,6 @@ public class BaseCommandExecutor implements TabExecutor {
     }
 
     public void sendHelpMessage(CommandSender sender, int page) {
-        this.sendHeader(sender);
-
         // Compile all the command arguments
         Map<String, CommandWrapper> commandWrappers = new HashMap<>();
         for (Map.Entry<String, Set<CommandWrapper>> entry : this.commandMethods.entrySet()) {
@@ -320,9 +323,19 @@ public class BaseCommandExecutor implements TabExecutor {
             }
         }
 
-        // Sort alphabetically
-        List<CommandWrapper> commands = new ArrayList<>(commandWrappers.values());
-        commands.sort(Comparator.comparing(wrapper -> wrapper.usage));
+        // Sort alphabetically and filter out commands that the sender doesn't have permission for
+        List<CommandWrapper> commands = new ArrayList<>(commandWrappers.values()).stream().filter(wrapper -> {
+            ArenaCommand arenaCommand = wrapper.getCommand();
+            return arenaCommand.permissionNode().isEmpty() || this.hasPermission(sender, this.getPermissionNode(arenaCommand.permissionNode()));
+        }).sorted(Comparator.comparing(wrapper -> wrapper.usage)).toList();
+
+        // Player has no permissions to view any commands
+        if (commands.isEmpty()) {
+            Messages.NO_PERMISSION.send(sender);
+            return;
+        }
+
+        this.sendHeader(sender);
 
         // Now send a certain page
         int maxPages = (int) Math.ceil(commands.size() / (double) COMMANDS_PER_PAGE);
@@ -342,22 +355,20 @@ public class BaseCommandExecutor implements TabExecutor {
                 continue;
             }
 
-            if (this.hasPermission(sender, this.getPermissionNode(wrapper.getCommand().permissionNode()))) {
-                ArenaCommand arenaCommand = wrapper.getCommand();
-                String command = "/" + this.parentCommand + " " + (arenaCommand.commands().length > 0 ? arenaCommand.commands()[0] : "");
-                if (arenaCommand.subCommands().length > 0) {
-                    command += " " + arenaCommand.subCommands()[0];
-                }
-
-                HoverEvent<Component> hoverEvent = HoverEvent.showText(Messages.CLICK_TO_PREPARE.toComponent(command));
-                ClickEvent clickEvent = ClickEvent.suggestCommand(command);
-                sender.sendMessage(
-                        Component.text("/" + this.parentCommand + " " + wrapper.usage, Messages.PRIMARY_COLOR)
-                                .append(Component.text(wrapper.getCommand().description(), Messages.SECONDARY_COLOR))
-                                .clickEvent(clickEvent)
-                                .hoverEvent(hoverEvent)
-                );
+            ArenaCommand arenaCommand = wrapper.getCommand();
+            String command = "/" + this.parentCommand + " " + (arenaCommand.commands().length > 0 ? arenaCommand.commands()[0] : "");
+            if (arenaCommand.subCommands().length > 0) {
+                command += " " + arenaCommand.subCommands()[0];
             }
+
+            HoverEvent<Component> hoverEvent = HoverEvent.showText(Messages.CLICK_TO_PREPARE.toComponent(command));
+            ClickEvent clickEvent = ClickEvent.suggestCommand(command);
+            sender.sendMessage(
+                    Component.text("/" + this.parentCommand + " " + wrapper.usage, Messages.PRIMARY_COLOR)
+                            .append(Component.text(wrapper.getCommand().description(), Messages.SECONDARY_COLOR))
+                            .clickEvent(clickEvent)
+                            .hoverEvent(hoverEvent)
+            );
         }
 
         TextComponent.Builder rootComponent = Component.text();
@@ -704,7 +715,7 @@ public class BaseCommandExecutor implements TabExecutor {
     }
 
     protected String getPermissionNode(String node) {
-        return "battlearena.command." + (this.permissionSubNode == null ? "" : node + ".") + node;
+        return "battlearena.command." + (this.permissionSubNode == null ? "" : this.permissionSubNode + ".") + node;
     }
 
     protected boolean hasPermission(CommandSender sender, String permission) {

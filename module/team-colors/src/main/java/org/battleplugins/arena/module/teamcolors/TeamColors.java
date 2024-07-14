@@ -27,6 +27,7 @@ import org.bukkit.scoreboard.Team;
 @ArenaModule(id = TeamColors.ID, name = "Team Colors", description = "Adds player team colors to their name.", authors = "BattlePlugins")
 public class TeamColors implements ArenaModuleInitializer {
     public static final String ID = "team-colors";
+
     public static final ArenaOptionType<BooleanArenaOption> TEAM_PREFIXES = ArenaOptionType.create("team-prefixes", BooleanArenaOption::new);
 
     @EventHandler
@@ -115,7 +116,7 @@ public class TeamColors implements ArenaModuleInitializer {
             return;
         }
 
-        this.post(5, () -> this.joinTeam(event.getPlayer(), event.getCompetition(), event.getTeam()));
+        this.post(6, () -> this.joinTeam(event.getPlayer(), event.getCompetition(), event.getTeam()));
     }
 
     @EventHandler

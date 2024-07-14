@@ -23,6 +23,7 @@ public class CommandInjector {
             PluginCommand pluginCommand = constructor.newInstance(commandName, BattleArena.getInstance());
             pluginCommand.setAliases(List.of(aliases));
             pluginCommand.setDescription(description);
+            pluginCommand.setPermission("battlearena.command." + commandName);
 
             Bukkit.getCommandMap().register(commandName, "battlearena", pluginCommand);
             return pluginCommand;

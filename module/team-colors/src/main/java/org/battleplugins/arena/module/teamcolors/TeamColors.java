@@ -39,7 +39,7 @@ public class TeamColors implements ArenaModuleInitializer {
             for (ArenaTeam team : event.getCompetition().getTeamManager().getTeams()) {
                 // Register a new Bukkit team for each team in the competition
                 Team bukkitTeam = event.getPlayer().getScoreboard().getTeam("ba-" + team.getName());
-                if (bukkitTeam != null) {
+                if (bukkitTeam == null) {
                     bukkitTeam = event.getPlayer().getScoreboard().registerNewTeam("ba-" + team.getName());
                     bukkitTeam.displayName(team.getFormattedName());
                     bukkitTeam.color(NamedTextColor.nearestTo(team.getTextColor()));

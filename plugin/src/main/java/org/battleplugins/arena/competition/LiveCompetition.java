@@ -246,6 +246,23 @@ public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Com
     }
 
     /**
+     * Changes the role of the player to the specified role.
+     *
+     * @param player the player to change the role of
+     * @param role the new role of the player
+     */
+    public final void changeRole(ArenaPlayer player, PlayerRole role) {
+        if (role == player.getRole()) {
+            return;
+        }
+
+        this.playersByRole.get(player.getRole()).remove(player);
+        this.playersByRole.computeIfAbsent(role, e -> new HashSet<>()).add(player);
+
+        player.setRole(role);
+    }
+
+    /**
      * Gets all the {@link ArenaPlayer players} in the competition.
      *
      * @return all players in the competition

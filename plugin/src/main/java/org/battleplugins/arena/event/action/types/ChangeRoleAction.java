@@ -21,7 +21,7 @@ public class ChangeRoleAction extends EventAction {
     public void call(ArenaPlayer arenaPlayer, Resolvable resolvable) {
         PlayerRole role = PlayerRole.valueOf(this.get(ROLE_KEY).toUpperCase(Locale.ROOT));
         boolean changedRole = arenaPlayer.getRole() != role;
-        arenaPlayer.setRole(role);
+        arenaPlayer.getCompetition().changeRole(arenaPlayer, role);
 
         if (changedRole && role == PlayerRole.SPECTATING) {
             arenaPlayer.getCompetition().getTeamManager().leaveTeam(arenaPlayer);

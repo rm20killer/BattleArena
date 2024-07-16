@@ -25,7 +25,7 @@ jobs:
           ORG_GRADLE_PROJECT_battlepluginsUsername: ${{ vars.DEPLOY_USER }}
           ORG_GRADLE_PROJECT_battlepluginsPassword: ${{ secrets.DEPLOY_SECRET }}
       - name: Publish to Modrinth
-        if: ${{ success() && github.repository == 'BattlePlugins/BattleArena' && github.ref_name == 'rewrite' }}
+        if: ${{ success() && github.repository == 'BattlePlugins/BattleArena' && github.ref_name == 'master' }}
         env:
           CHANGELOG: ${{ github.event.head_commit.message }}
           BUILD_NUMBER: ${{ github.run_number }}

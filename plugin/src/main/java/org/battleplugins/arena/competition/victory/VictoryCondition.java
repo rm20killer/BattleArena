@@ -58,6 +58,8 @@ public class VictoryCondition<T extends LiveCompetition<T>> implements Competiti
         CompetitionPhase<T> currentPhase = this.competition.getPhaseManager().getCurrentPhase();
         CompetitionPhaseType<T, CompetitionPhase<T>> nextPhase = currentPhase.getNextPhase();
 
+        this.competition.getArena().getPlugin().debug("Condition {} advancing to next phase: {}", this.getClass().getSimpleName(), nextPhase == null ? "NONE" : nextPhase.getName());
+
         // Ensure the next phase is a victory phase
         if (!CompetitionPhaseType.VICTORY.equals(nextPhase)) {
             this.competition.getArena().getPlugin().warn("Victory conditions for {} were met, but the next phase was not a victory phase. Not advancing onto the next phase!", this.getClass().getSimpleName());

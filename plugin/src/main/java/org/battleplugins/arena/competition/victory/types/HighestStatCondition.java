@@ -62,7 +62,7 @@ public class HighestStatCondition<T extends LiveCompetition<T>> extends VictoryC
                     score += teamPlayer.stat(this.stat).orElse(0).intValue();
                 }
 
-                if (score >= this.winAfter) {
+                if (this.winAfter != -1 && score >= this.winAfter) {
                     this.advanceToNextPhase(players);
                 }
             }

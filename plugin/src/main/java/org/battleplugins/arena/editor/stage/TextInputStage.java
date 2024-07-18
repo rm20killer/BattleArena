@@ -29,34 +29,21 @@ public class TextInputStage<E extends EditorContext<E>> implements WizardStage<E
     @Override
     public void enter(E context) {
         if (this.chatMessage != null) {
-            this.chatMessage.send(context.getPlayer());
+            context.inform(this.chatMessage);
         }
 
         new InteractionInputs.ChatInput(context.getPlayer(), this.invalidInputMessage) {
 
             @Override
             public void onChatInput(String input) {
-                if ("cancel".equalsIgnoreCase(input)) {
-                    context.getWizard().onCancel(context);
-                    return;
-                }
-
                 inputConsumer.apply(context).accept(input);
                 context.advanceStage();
             }
 
             @Override
             public boolean isValidChatInput(String input) {
-                return isCancel(input) || (!input.startsWith("/") && (validContentFunction == null || validContentFunction.apply(context, input)));
+                return (!input.startsWith("/") && (validContentFunction == null || validContentFunction.apply(context, input)));
             }
-        };
-    }
-
-    static boolean isCancel(String input) {
-        return "cancel".equalsIgnoreCase(input);
-    }
-
-    static boolean isCancelOrDone(String input) {
-        return "cancel".equalsIgnoreCase(input) || "done".equalsIgnoreCase(input);
+        }.bind(context);
     }
 }

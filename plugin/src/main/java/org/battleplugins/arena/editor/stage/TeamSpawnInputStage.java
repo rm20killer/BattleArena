@@ -2,8 +2,6 @@ package org.battleplugins.arena.editor.stage;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.TextColor;
 import org.battleplugins.arena.editor.EditorContext;
 import org.battleplugins.arena.editor.WizardStage;
 import org.battleplugins.arena.messages.Message;
@@ -38,7 +36,7 @@ public class TeamSpawnInputStage<E extends EditorContext<E>> implements WizardSt
     @Override
     public void enter(E context) {
         if (this.chatMessage != null) {
-            this.chatMessage.send(context.getPlayer());
+            context.inform(this.chatMessage);
         }
 
         this.enterWizardConversation(context);
@@ -59,11 +57,6 @@ public class TeamSpawnInputStage<E extends EditorContext<E>> implements WizardSt
                         context.advanceStage();
                     }
 
-                    return;
-                }
-
-                if ("cancel".equalsIgnoreCase(input)) {
-                    context.getWizard().onCancel(context);
                     return;
                 }
 
@@ -96,11 +89,6 @@ public class TeamSpawnInputStage<E extends EditorContext<E>> implements WizardSt
 
                     @Override
                     public void onChatInput(String input) {
-                        if ("cancel".equalsIgnoreCase(input)) {
-                            context.getWizard().onCancel(context);
-                            return;
-                        }
-
                         if (clear) {
                             clearConsumer.apply(context).accept(input);
 
@@ -117,15 +105,15 @@ public class TeamSpawnInputStage<E extends EditorContext<E>> implements WizardSt
 
                     @Override
                     public boolean isValidChatInput(String input) {
-                        return TextInputStage.isCancel(input) || (!input.startsWith("/") && teamNames.contains(input));
+                        return !input.startsWith("/") && teamNames.contains(input);
                     }
-                };
+                }.bind(context);
             }
 
             @Override
             public boolean isValidChatInput(String input) {
-                return input.equalsIgnoreCase("clear") || TextInputStage.isCancelOrDone(input) || (!input.startsWith("/") && TeamSpawnInputStage.this.input.equalsIgnoreCase(input));
+                return input.equalsIgnoreCase("clear") || input.equalsIgnoreCase("done") || (!input.startsWith("/") && TeamSpawnInputStage.this.input.equalsIgnoreCase(input));
             }
-        };
+        }.bind(context);
     }
 }

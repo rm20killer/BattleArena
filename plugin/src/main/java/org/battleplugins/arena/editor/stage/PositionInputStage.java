@@ -24,7 +24,7 @@ public class PositionInputStage<E extends EditorContext<E>> implements WizardSta
     @Override
     public void enter(E context) {
         if (this.chatMessage != null) {
-            this.chatMessage.send(context.getPlayer());
+            context.inform(this.chatMessage);
         }
 
         new InteractionInputs.PositionInput(context.getPlayer()) {
@@ -34,6 +34,6 @@ public class PositionInputStage<E extends EditorContext<E>> implements WizardSta
                 inputConsumer.apply(context).accept(position);
                 context.advanceStage();
             }
-        };
+        }.bind(context);
     }
 }

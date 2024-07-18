@@ -3,6 +3,7 @@ package org.battleplugins.arena.util;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.battleplugins.arena.BattleArena;
+import org.battleplugins.arena.editor.EditorContext;
 import org.battleplugins.arena.messages.Message;
 import org.battleplugins.arena.messages.Messages;
 import org.bukkit.Bukkit;
@@ -17,13 +18,16 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class InteractionInputs {
 
-    public static abstract class ChatInput {
+    public static abstract class ChatInput extends InputListener {
+        private final Message invalidInput;
 
         /**
          * Constructs a new ChatInput instance
@@ -31,9 +35,16 @@ public class InteractionInputs {
          * @param player the player to receive the chat input from
          */
         public ChatInput(Player player, Message invalidInput) {
-            Listener listener = new Listener() {
+            super(player);
 
-                @EventHandler
+            this.invalidInput = invalidInput;
+        }
+
+        @Override
+        Listener createListener(Player player) {
+            return new Listener() {
+
+                @EventHandler(ignoreCancelled = true)
                 public void onChat(AsyncChatEvent event) {
                     if (!player.equals(event.getPlayer())) {
                         return;
@@ -55,10 +66,9 @@ public class InteractionInputs {
                     });
 
                     HandlerList.unregisterAll(this);
+                    unbind();
                 }
             };
-
-            Bukkit.getPluginManager().registerEvents(listener, BattleArena.getInstance());
         }
 
         /**
@@ -79,7 +89,7 @@ public class InteractionInputs {
         }
     }
 
-    public static abstract class InventoryInput {
+    public static abstract class InventoryInput extends InputListener {
 
         /**
          * Constructs a new InventoryInput instance
@@ -87,7 +97,12 @@ public class InteractionInputs {
          * @param player the player to receive the inventory input from
          */
         public InventoryInput(Player player) {
-            Listener listener = new Listener() {
+            super(player);
+        }
+
+        @Override
+        Listener createListener(Player player) {
+            return new Listener() {
 
                 @EventHandler
                 public void onInventoryClick(InventoryClickEvent event) {
@@ -98,6 +113,7 @@ public class InteractionInputs {
                     if (!player.getInventory().equals(event.getClickedInventory())) {
                         Messages.INVALID_INVENTORY_CANCELLING.send(player);
                         HandlerList.unregisterAll(this);
+                        unbind();
                         return;
                     }
 
@@ -119,10 +135,9 @@ public class InteractionInputs {
                     player.updateInventory();
 
                     HandlerList.unregisterAll(this);
+                    unbind();
                 }
             };
-
-            Bukkit.getPluginManager().registerEvents(listener, BattleArena.getInstance());
         }
 
         /**
@@ -134,7 +149,7 @@ public class InteractionInputs {
         public abstract void onInventoryInteract(ItemStack item);
     }
 
-    public static abstract class PositionInput {
+    public static abstract class PositionInput extends InputListener {
         private static final Map<UUID, Long> LAST_INPUT = new HashMap<>();
 
         /**
@@ -143,7 +158,12 @@ public class InteractionInputs {
          * @param player the player to receive the position input from
          */
         public PositionInput(Player player) {
-            Listener listener = new Listener() {
+            super(player);
+        }
+
+        @Override
+        Listener createListener(Player player) {
+            return new Listener() {
 
                 @EventHandler
                 public void onInteract(PlayerInteractEvent event) {
@@ -169,10 +189,9 @@ public class InteractionInputs {
                     event.setCancelled(true);
 
                     HandlerList.unregisterAll(this);
+                    unbind();
                 }
             };
-
-            Bukkit.getPluginManager().registerEvents(listener, BattleArena.getInstance());
         }
 
         /**
@@ -181,5 +200,29 @@ public class InteractionInputs {
          * @param position the position the player interacted at
          */
         public abstract void onPositionInteract(Location position);
+    }
+
+    public abstract static class InputListener {
+        private final Listener listener;
+        private final List<Runnable> unregisterHandlers = new ArrayList<>();
+
+        public InputListener(Player player) {
+            this.listener = this.createListener(player);
+
+            Bukkit.getPluginManager().registerEvents(this.listener, BattleArena.getInstance());
+        }
+
+        abstract Listener createListener(Player player);
+
+        public <E extends EditorContext<E>> void bind(EditorContext<E> context) {
+            context.bind(this.listener);
+
+            this.unregisterHandlers.add(() -> context.unbind(this.listener));
+        }
+
+        public void unbind() {
+            this.unregisterHandlers.forEach(Runnable::run);
+            this.unregisterHandlers.clear();
+        }
     }
 }

@@ -14,7 +14,6 @@ import org.battleplugins.arena.competition.map.LiveCompetitionMap;
 import org.battleplugins.arena.competition.map.MapType;
 import org.battleplugins.arena.config.ArenaConfigParser;
 import org.battleplugins.arena.config.ParseException;
-import org.battleplugins.arena.event.BattleArenaPostInitializeEvent;
 import org.battleplugins.arena.event.BattleArenaPreInitializeEvent;
 import org.battleplugins.arena.event.BattleArenaReloadEvent;
 import org.battleplugins.arena.event.BattleArenaReloadedEvent;
@@ -34,9 +33,6 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -63,7 +59,7 @@ import java.util.stream.Stream;
 /**
  * The main class for BattleArena.
  */
-public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
+public class BattleArena extends JavaPlugin implements LoggerHolder {
     private static final int PLUGIN_ID = 4597;
 
     private static BattleArena instance;
@@ -111,7 +107,7 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
 
     @Override
     public void onEnable() {
-        Bukkit.getPluginManager().registerEvents(this, this);
+        Bukkit.getPluginManager().registerEvents(new BattleArenaListener(this), this);
 
         // Register default arenas
         this.registerArena(this, "Arena", Arena.class);
@@ -197,19 +193,7 @@ public class BattleArena extends JavaPlugin implements Listener, LoggerHolder {
         this.teams = null;
     }
 
-    @EventHandler
-    public void onServerLoad(ServerLoadEvent event) {
-        // There is logic called later, however by this point all plugins
-        // using the BattleArena API should have been loaded. As modules will
-        // listen for this event to register their behavior, we need to ensure
-        // they are fully initialized so any references to said modules in
-        // arena config files will be valid.
-        new BattleArenaPostInitializeEvent(this).callEvent();
-
-        this.postInitialize();
-    }
-
-    private void postInitialize() {
+    void postInitialize() {
         // Load messages
         MessageLoader.load(this.getDataFolder().toPath().resolve("messages.yml"));
 

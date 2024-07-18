@@ -5,17 +5,17 @@ import org.battleplugins.arena.BattleArena;
 import org.battleplugins.arena.editor.type.EditorKey;
 import org.battleplugins.arena.messages.Messages;
 import org.bukkit.entity.Player;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class ArenaEditorWizard<E extends EditorContext<E>> {
+    private static final String EDITOR_META_KEY = "editor";
 
     private final BattleArena plugin;
     private final ContextFactory<E> contextFactory;
@@ -25,8 +25,6 @@ public class ArenaEditorWizard<E extends EditorContext<E>> {
     private Consumer<E> onEditComplete;
     private Consumer<E> onCreationComplete;
     private Consumer<E> onCancel;
-
-    private final List<UUID> players = new ArrayList<>();
 
     public ArenaEditorWizard(BattleArena plugin, ContextFactory<E> contextFactory) {
         this.plugin = plugin;
@@ -40,6 +38,10 @@ public class ArenaEditorWizard<E extends EditorContext<E>> {
     public ArenaEditorWizard<E> addStage(EditorKey key, WizardStage<E> stage) {
         this.stages.put(key.getKey(), stage);
         return this;
+    }
+
+    Map<String, WizardStage<E>> getStages() {
+        return this.stages;
     }
 
     public ArenaEditorWizard<E> onEditComplete(Consumer<E> onEditComplete) {
@@ -62,7 +64,9 @@ public class ArenaEditorWizard<E extends EditorContext<E>> {
             this.onCancel.accept(context);
         }
 
-        this.players.remove(context.getPlayer().getUniqueId());
+        context.cancel();
+        context.getPlayer().removeMetadata(EDITOR_META_KEY, this.plugin);
+
         Messages.WIZARD_CLOSED.send(context.getPlayer());
     }
 
@@ -71,7 +75,7 @@ public class ArenaEditorWizard<E extends EditorContext<E>> {
     }
 
     public void openWizard(Player player, Arena arena, @Nullable Consumer<E> contextConsumer) {
-        if (this.players.contains(player.getUniqueId())) {
+        if (player.hasMetadata(EDITOR_META_KEY)) {
             Messages.ERROR_ALREADY_IN_EDITOR.send(player);
             return;
         }
@@ -97,7 +101,7 @@ public class ArenaEditorWizard<E extends EditorContext<E>> {
                     this.onCreationComplete.accept(context);
                 }
 
-                this.players.remove(player.getUniqueId());
+                player.removeMetadata(EDITOR_META_KEY, this.plugin);
             } else {
                 WizardStage<E> stage = iterator.next().getValue();
                 stage.enter(context);
@@ -108,14 +112,16 @@ public class ArenaEditorWizard<E extends EditorContext<E>> {
             contextConsumer.accept(context);
         }
 
+        Messages.ENTERED_WIZARD.send(player);
+
         WizardStage<E> initialStage = iterator.next().getValue();
         initialStage.enter(context);
 
-        this.players.add(player.getUniqueId());
+        player.setMetadata(EDITOR_META_KEY, new FixedMetadataValue(this.plugin, context));
     }
 
     public void openSingleWizardStage(Player player, Arena arena, WizardStage<E> stage, Consumer<E> contextConsumer) {
-        if (this.players.contains(player.getUniqueId())) {
+        if (player.hasMetadata(EDITOR_META_KEY)) {
             Messages.ERROR_ALREADY_IN_EDITOR.send(player);
             return;
         }
@@ -133,7 +139,7 @@ public class ArenaEditorWizard<E extends EditorContext<E>> {
                 this.onEditComplete.accept(context);
             }
 
-            this.players.remove(player.getUniqueId());
+            player.removeMetadata(EDITOR_META_KEY, this.plugin);
         });
 
         stage.enter(context);
@@ -147,6 +153,19 @@ public class ArenaEditorWizard<E extends EditorContext<E>> {
     @Nullable
     public WizardStage<E> getStage(EditorKey key) {
         return this.stages.get(key.getKey());
+    }
+
+    public static boolean inWizard(Player player) {
+        return player.hasMetadata(EDITOR_META_KEY);
+    }
+
+    public static <E extends EditorContext<E>> Optional<E> wizardContext(Player player) {
+        return Optional.ofNullable(getWizardContext(player));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <E extends EditorContext<E>> E getWizardContext(Player player) {
+        return player.hasMetadata(EDITOR_META_KEY) ? (E) player.getMetadata(EDITOR_META_KEY).get(0).value() : null;
     }
 
     public interface ContextFactory<E extends EditorContext<E>> {

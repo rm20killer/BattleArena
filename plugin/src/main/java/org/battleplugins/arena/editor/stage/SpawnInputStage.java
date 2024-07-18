@@ -23,7 +23,7 @@ public class SpawnInputStage<E extends EditorContext<E>> implements WizardStage<
     @Override
     public void enter(E context) {
         if (this.chatMessage != null) {
-            this.chatMessage.send(context.getPlayer());
+            context.inform(this.chatMessage);
         }
 
         // Player types in chat their location is used for the spawn
@@ -31,11 +31,6 @@ public class SpawnInputStage<E extends EditorContext<E>> implements WizardStage<
 
             @Override
             public void onChatInput(String input) {
-                if ("cancel".equalsIgnoreCase(input)) {
-                    context.getWizard().onCancel(context);
-                    return;
-                }
-
                 inputConsumer.apply(context).accept(context.getPlayer().getLocation());
                 context.advanceStage();
             }
@@ -44,6 +39,6 @@ public class SpawnInputStage<E extends EditorContext<E>> implements WizardStage<
             public boolean isValidChatInput(String input) {
                 return !input.startsWith("/") && SpawnInputStage.this.input.equalsIgnoreCase(input);
             }
-        };
+        }.bind(context);
     }
 }

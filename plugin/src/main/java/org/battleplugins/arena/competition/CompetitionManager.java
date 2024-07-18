@@ -181,6 +181,11 @@ public class CompetitionManager {
                 }
             }
 
+            // Remove spectators
+            for (ArenaPlayer player : Set.copyOf(liveCompetition.getSpectators())) {
+                liveCompetition.leave(player, ArenaLeaveEvent.Cause.SHUTDOWN);
+            }
+
             liveCompetition.destroy();
         }
 

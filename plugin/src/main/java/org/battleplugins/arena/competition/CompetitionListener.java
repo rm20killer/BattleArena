@@ -17,6 +17,8 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
+import java.util.Set;
+
 class CompetitionListener<T extends Competition<T>> implements ArenaListener, CompetitionLike<T> {
 
     private final LiveCompetition<T> competition;
@@ -27,7 +29,18 @@ class CompetitionListener<T extends Competition<T>> implements ArenaListener, Co
 
     @ArenaEventHandler(priority = EventPriority.HIGHEST)
     public void onPhaseComplete(ArenaPhaseCompleteEvent event) {
-        if (event.getCompetition().getMap().getType() == MapType.DYNAMIC && event.getPhase() instanceof VictoryPhase<?>) {
+        if (!(event.getPhase() instanceof VictoryPhase<?>)) {
+            return;
+        }
+
+        // Kick all spectators once the game is over
+        if (event.getCompetition() instanceof LiveCompetition<?> liveCompetition) {
+            for (ArenaPlayer spectator : Set.copyOf(liveCompetition.getSpectators())) {
+                spectator.getCompetition().leave(spectator, ArenaLeaveEvent.Cause.GAME);
+            }
+        }
+
+        if (event.getCompetition().getMap().getType() == MapType.DYNAMIC) {
             Arena arena = event.getArena();
 
             // Teardown if we are in a dynamic map

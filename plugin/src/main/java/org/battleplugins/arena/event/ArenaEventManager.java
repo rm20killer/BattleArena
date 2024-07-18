@@ -64,7 +64,7 @@ public class ArenaEventManager {
         }
     };
 
-    private final Map<Class<? extends Event>, Function<Event, LiveCompetition<?>>> arenaEventResolvers = new PolymorphicHashMap<>();
+    private final Map<Class<? extends Event>, List<Function<Event, LiveCompetition<?>>>> arenaEventResolvers = new PolymorphicHashMap<>();
     private final Map<Class<? extends ArenaEvent>, Function<ArenaEvent, Set<ArenaPlayer>>> capturedPlayerResolvers = new HashMap<>() {
         {
             this.put(ArenaVictoryEvent.class, event -> ((ArenaVictoryEvent) event).getVictors());
@@ -90,7 +90,7 @@ public class ArenaEventManager {
      */
     @SuppressWarnings("unchecked")
     public <E extends Event> void registerArenaResolver(Class<? extends E> eventClass, Function<E, LiveCompetition<?>> resolver) {
-        this.arenaEventResolvers.put(eventClass, (Function<Event, LiveCompetition<?>>) resolver);
+        this.arenaEventResolvers.computeIfAbsent(eventClass, key -> new ArrayList<>()).add((Function<Event, LiveCompetition<?>>) resolver);
     }
 
     /**
@@ -340,14 +340,18 @@ public class ArenaEventManager {
             return Pair.of(arenaPlayer.getArena(), arenaPlayer.getCompetition());
         }
 
-        Function<Event, LiveCompetition<?>> eventArenaFunction = this.arenaEventResolvers.get(event.getClass());
-        if (eventArenaFunction != null) {
-            LiveCompetition<?> competition = eventArenaFunction.apply(event);
-            if (competition == null) {
-                return null;
-            }
+        List<Function<Event, LiveCompetition<?>>> resolvers = this.arenaEventResolvers.get(event.getClass());
+        if (resolvers != null) {
+            for (Function<Event, LiveCompetition<?>> resolver : resolvers) {
+                if (resolver != null) {
+                    LiveCompetition<?> competition = resolver.apply(event);
+                    if (competition == null) {
+                        return null;
+                    }
 
-            return Pair.of(competition.getArena(), competition);
+                    return Pair.of(competition.getArena(), competition);
+                }
+            }
         }
 
         return null;

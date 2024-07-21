@@ -57,17 +57,19 @@ public class PlayerStorage {
      *
      * @param toStore the types to store
      */
-    public void store(Set<Type> toStore) {
+    public void store(Set<Type> toStore, boolean clearState) {
         if (this.stored) {
             return;
         }
-        
+
         for (Type type : toStore) {
             type.store(this);
         }
-        
+
         this.stored = true;
-        this.clearState(toStore);
+        if (clearState) {
+            this.clearState(toStore);
+        }
     }
 
     private void storeAll() {
@@ -82,7 +84,16 @@ public class PlayerStorage {
     }
 
     private void storeInventory() {
-        this.inventory = this.player.getPlayer().getInventory().getContents();
+        this.inventory = new ItemStack[this.player.getPlayer().getInventory().getSize()];
+        for (int i = 0; i < this.inventory.length; i++) {
+            ItemStack item = this.player.getPlayer().getInventory().getItem(i);
+            if (item == null) {
+                continue;
+            }
+
+            this.inventory[i] = item.clone();
+        }
+
         if (BattleArena.getInstance().getMainConfig().isBackupInventories()) {
             InventoryBackup.save(new InventoryBackup(this.player.getPlayer().getUniqueId(), this.inventory.clone()));
         }

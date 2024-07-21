@@ -10,6 +10,7 @@ import java.util.Set;
 
 public class StoreAction extends EventAction {
     private static final String TYPES_KEY = "types";
+    private static final String CLEAR_STATE = "clear-state";
 
     public StoreAction(Map<String, String> params) {
         super(params, TYPES_KEY);
@@ -23,6 +24,7 @@ public class StoreAction extends EventAction {
             toStore[i] = PlayerStorage.Type.valueOf(types[i].toUpperCase());
         }
 
-        arenaPlayer.getStorage().store(Set.of(toStore));
+        boolean clearState = Boolean.parseBoolean(this.getOrDefault(CLEAR_STATE, "true"));
+        arenaPlayer.getStorage().store(Set.of(toStore), clearState);
     }
 }

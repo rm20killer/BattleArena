@@ -50,7 +50,22 @@ public class TeamStatHolder implements StatHolder {
             if (total == null) {
                 total = (Number) playerStat;
             } else {
-                total = (Number) stat.getType().cast(total.doubleValue() + ((Number) playerStat).doubleValue());
+                Class<T> type = stat.getType();
+                if (type.equals(Integer.class)) {
+                    total = total.intValue() + (Integer) playerStat;
+                } else if (type.equals(Double.class)) {
+                    total = total.doubleValue() + (Double) playerStat;
+                } else if (type.equals(Float.class)) {
+                    total = total.floatValue() + (Float) playerStat;
+                } else if (type.equals(Long.class)) {
+                    total = total.longValue() + (Long) playerStat;
+                } else if (type.equals(Short.class)) {
+                    total = total.shortValue() + (Short) playerStat;
+                } else if (type.equals(Byte.class)) {
+                    total = total.byteValue() + (Byte) playerStat;
+                } else {
+                    throw new IllegalArgumentException("Don't know how to accumulate type " + stat.getType());
+                }
             }
         }
 

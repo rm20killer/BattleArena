@@ -14,6 +14,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -143,6 +144,13 @@ class OptionsListener<T extends Competition<T>> implements ArenaListener, Compet
                     }
                 }
             }
+        }
+    }
+
+    @ArenaEventHandler(priority = EventPriority.LOWEST)
+    public void onFoodLevelChange(FoodLevelChangeEvent event) {
+        if (!this.competition.option(ArenaOptionType.HUNGER_DEPLETE).map(BooleanArenaOption::isEnabled).orElse(true)) {
+            event.setCancelled(true);
         }
     }
 

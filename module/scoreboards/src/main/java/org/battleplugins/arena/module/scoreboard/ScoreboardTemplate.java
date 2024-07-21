@@ -22,7 +22,8 @@ public class ScoreboardTemplate {
             name = "lines",
             description = "The lines to display on the scoreboard.",
             contextProvider = ScoreboardLineCreatorContextProvider.class,
-            required = true)
+            required = true
+    )
     private List<ScoreboardLineCreator> lines;
 
     public Component getTitle() {

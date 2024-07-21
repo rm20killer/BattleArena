@@ -1,9 +1,11 @@
 package org.battleplugins.arena.competition.team;
 
 import org.battleplugins.arena.ArenaPlayer;
+import org.battleplugins.arena.BattleArena;
 import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.competition.map.LiveCompetitionMap;
 import org.battleplugins.arena.competition.map.options.Spawns;
+import org.battleplugins.arena.competition.map.options.TeamSpawns;
 import org.battleplugins.arena.options.Teams;
 import org.battleplugins.arena.stat.StatHolder;
 import org.battleplugins.arena.team.ArenaTeam;
@@ -28,8 +30,23 @@ public class TeamManager {
     public TeamManager(LiveCompetition<?> competition) {
         this.competition = competition;
 
-        for (ArenaTeam availableTeam : competition.getArena().getTeams().getAvailableTeams()) {
-            this.teams.put(availableTeam, new HashSet<>());
+        if (competition.getArena().getTeams().isNonTeamGame() || (competition.getMap().getSpawns() == null || competition.getMap().getSpawns().getTeamSpawns() == null)) {
+            for (ArenaTeam availableTeam : competition.getArena().getTeams().getAvailableTeams()) {
+                this.teams.put(availableTeam, new HashSet<>());
+            }
+
+            return;
+        }
+
+        for (Map.Entry<String, TeamSpawns> entry : competition.getMap().getSpawns().getTeamSpawns().entrySet()) {
+            String teamName = entry.getKey();
+            ArenaTeam team = BattleArena.getInstance().getTeams().getTeam(teamName);
+            if (team == null) {
+                BattleArena.getInstance().warn("Could not find team with name {} when loading {} for {}!", teamName, competition.getMap().getName(), competition.getArena().getName());
+                continue;
+            }
+
+            this.teams.put(team, new HashSet<>());
         }
     }
 

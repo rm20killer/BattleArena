@@ -356,7 +356,7 @@ public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Com
 
     private int calculateMaxPlayers() {
         Teams teams = this.arena.getTeams();
-        int teamAmount = teams.isNonTeamGame() ? teams.getTeamAmount().getMax() : teams.getAvailableTeams().size();
+        int teamAmount = teams.isNonTeamGame() ? teams.getTeamAmount().getMax() : this.teamManager.getTeams().size();
         int teamSizeMax = teams.getTeamSize().getMax();
         int maxPlayers;
         if (teamSizeMax == Integer.MAX_VALUE) {

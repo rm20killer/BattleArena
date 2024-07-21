@@ -10,7 +10,8 @@ public interface ScoreboardLineCreator {
     Map<String, Class<? extends ScoreboardLineCreator>> LINE_CREATORS = Map.of(
             "simple", SimpleLineCreator.class,
             "player-list", PlayerListLineCreator.class,
-            "top-stat", TopStatLineCreator.class
+            "top-stat", TopStatLineCreator.class,
+            "top-team-stat", TopTeamStatLineCreator.class
     );
 
     List<Component> createLines(ArenaPlayer player);

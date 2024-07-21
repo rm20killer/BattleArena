@@ -87,7 +87,7 @@ public class BattleArena extends JavaPlugin implements LoggerHolder {
 
         this.info("Loading BattleArena {} for {}", this.getPluginMeta().getVersion(), Version.getServerVersion());
 
-        this.loadConfig();
+        this.loadConfig(false);
 
         Path dataFolder = this.getDataFolder().toPath();
         this.arenasPath = dataFolder.resolve("arenas");
@@ -245,7 +245,7 @@ public class BattleArena extends JavaPlugin implements LoggerHolder {
         this.disable();
 
         // Reload the config
-        this.loadConfig();
+        this.loadConfig(true);
 
         this.enable();
 
@@ -730,7 +730,7 @@ public class BattleArena extends JavaPlugin implements LoggerHolder {
         }
     }
 
-    private void loadConfig() {
+    private void loadConfig(boolean reload) {
         this.saveDefaultConfig();
 
         File configFile = new File(this.getDataFolder(), "config.yml");
@@ -740,9 +740,10 @@ public class BattleArena extends JavaPlugin implements LoggerHolder {
         } catch (ParseException e) {
             ParseException.handle(e);
 
-            this.error("Failed to load BattleArena configuration! Disabling plugin.");
-            this.getServer().getPluginManager().disablePlugin(this);
-            return;
+            this.error("Failed to load BattleArena configuration!");
+            if (!reload) {
+                this.getServer().getPluginManager().disablePlugin(this);
+            }
         }
     }
 

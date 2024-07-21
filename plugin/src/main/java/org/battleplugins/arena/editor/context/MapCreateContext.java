@@ -10,6 +10,7 @@ import org.battleplugins.arena.competition.map.options.TeamSpawns;
 import org.battleplugins.arena.editor.ArenaEditorWizard;
 import org.battleplugins.arena.editor.EditorContext;
 import org.battleplugins.arena.team.ArenaTeam;
+import org.battleplugins.arena.util.IntRange;
 import org.battleplugins.arena.util.PositionWithRotation;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -91,7 +92,29 @@ public class MapCreateContext extends EditorContext<MapCreateContext> {
     }
 
     public boolean hasValidTeamSpawns() {
-        return this.getMissingTeams().isEmpty();
+        List<ArenaTeam> missingTeams = this.getMissingTeams();
+
+        // No missing teams - we don't need to check for anything further
+        if (missingTeams.isEmpty()) {
+            return true;
+        }
+
+        IntRange teamAmount = this.arena.getTeams().getTeamAmount();
+        if (teamAmount.getMax() == Integer.MAX_VALUE) {
+            // Check if we have the spawns for the minimum amount
+            int teamsWithSpawns = 0;
+            for (ArenaTeam availableTeam : this.arena.getTeams().getAvailableTeams()) {
+                if (this.spawns.containsKey(availableTeam.getName()) && !this.spawns.get(availableTeam.getName()).isEmpty()) {
+                    teamsWithSpawns++;
+                }
+            }
+
+            return teamsWithSpawns >= teamAmount.getMin();
+        }
+
+        // We are not bounded by the maximum value, so
+        // each team must have a spawnpoint
+        return false;
     }
 
     public List<ArenaTeam> getMissingTeams() {

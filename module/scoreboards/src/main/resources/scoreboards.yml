@@ -87,3 +87,21 @@ templates:
           lines:
             - " "
             - "<white>battleplugins.org"
+  ingame-top-team-kills:
+    title: "<gold>%arena%"
+    refresh-time: 1s
+    lines:
+      - simple:
+          lines:
+            - " "
+            - "<yellow>Map: <white>%map%"
+            - "<yellow>Time remaining: <white>%time_remaining_short%"
+            - " "
+            - "<yellow>Top teams:"
+      - top-team-stat:
+          stat: kills
+          max-entries: 8
+      - simple:
+          lines:
+            - " "
+            - "<white>battleplugins.org"

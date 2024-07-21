@@ -176,7 +176,7 @@ public final class ArenaConfigParser {
             }
         } else {
             // Value is not a primitive, let's check to see if we have a provider for it
-            if (OBJECT_PROVIDERS.containsKey(type)) {
+            if (OBJECT_PROVIDERS.containsKey(type) && configuration.contains(name)) {
                 try {
                     field.set(instance, OBJECT_PROVIDERS.get(type).parse(configuration.get(name)));
                 } catch (ParseException e) {

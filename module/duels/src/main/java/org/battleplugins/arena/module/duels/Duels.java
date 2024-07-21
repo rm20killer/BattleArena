@@ -47,6 +47,10 @@ public class Duels implements ArenaModuleInitializer {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         UUID requested = this.duelRequests.remove(event.getPlayer().getUniqueId());
+        if (requested == null) {
+            return;
+        }
+
         Player requestedPlayer = Bukkit.getPlayer(requested);
         if (requestedPlayer != null) {
             DuelsMessages.DUEL_REQUESTED_CANCELLED_QUIT.send(requestedPlayer, event.getPlayer().getName());

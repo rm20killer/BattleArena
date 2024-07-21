@@ -44,7 +44,7 @@ public class InteractionInputs {
         Listener createListener(Player player) {
             return new Listener() {
 
-                @EventHandler(ignoreCancelled = true)
+                @EventHandler
                 public void onChat(AsyncChatEvent event) {
                     if (!player.equals(event.getPlayer())) {
                         return;
@@ -53,6 +53,11 @@ public class InteractionInputs {
                     event.setCancelled(true);
                     String message = PlainTextComponentSerializer.plainText().serialize(event.originalMessage());
                     if (!isValidChatInput(message)) {
+                        // Don't send feedback if the message is "cancel"
+                        if (message.equalsIgnoreCase("cancel")) {
+                            return;
+                        }
+
                         if (invalidInput != null) {
                             invalidInput.send(player);
                         }
@@ -85,7 +90,7 @@ public class InteractionInputs {
          * @return true if the input is valid, false otherwise
          */
         public boolean isValidChatInput(String input) {
-            return true;
+            return !input.contains("cancel");
         }
     }
 

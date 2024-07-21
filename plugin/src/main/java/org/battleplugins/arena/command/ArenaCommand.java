@@ -12,8 +12,8 @@ public @interface ArenaCommand {
     int maxArgs() default -1;
 
     boolean overrideDisabled() default false;
-
     boolean requiresOp() default false;
+
     String permissionNode() default "";
 
     String description() default "";

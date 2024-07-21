@@ -1,7 +1,6 @@
 package org.battleplugins.arena.command;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.battleplugins.arena.Arena;
 import org.battleplugins.arena.ArenaPlayer;
@@ -33,8 +32,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class ArenaCommandExecutor extends BaseCommandExecutor {
     protected final Arena arena;

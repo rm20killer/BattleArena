@@ -8,6 +8,7 @@ team-options:
 modules:
   - arena-restoration
   - classes
+  - duels
   - scoreboards
 lives:
   enabled: false

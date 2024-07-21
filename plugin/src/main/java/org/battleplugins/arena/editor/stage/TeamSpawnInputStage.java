@@ -105,14 +105,14 @@ public class TeamSpawnInputStage<E extends EditorContext<E>> implements WizardSt
 
                     @Override
                     public boolean isValidChatInput(String input) {
-                        return !input.startsWith("/") && teamNames.contains(input);
+                        return super.isValidChatInput(input) && (!input.startsWith("/") && teamNames.contains(input));
                     }
                 }.bind(context);
             }
 
             @Override
             public boolean isValidChatInput(String input) {
-                return input.equalsIgnoreCase("clear") || input.equalsIgnoreCase("done") || (!input.startsWith("/") && TeamSpawnInputStage.this.input.equalsIgnoreCase(input));
+                return super.isValidChatInput(input) && (input.equalsIgnoreCase("clear") || input.equalsIgnoreCase("done") || (!input.startsWith("/") && TeamSpawnInputStage.this.input.equalsIgnoreCase(input)));
             }
         }.bind(context);
     }

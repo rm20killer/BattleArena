@@ -85,7 +85,7 @@ public class LiveCompetitionMap implements ArenaLike, CompetitionMap, PostProces
      * @param arena the arena to create the competition for
      * @return the created competition
      */
-    public Competition<?> createCompetition(Arena arena) {
+    public LiveCompetition<?> createCompetition(Arena arena) {
         return new LiveCompetition<>(arena, arena.getType(), this);
     }
 
@@ -224,7 +224,7 @@ public class LiveCompetitionMap implements ArenaLike, CompetitionMap, PostProces
      * @return the created dynamic competition
      */
     @Nullable
-    public final Competition<?> createDynamicCompetition(Arena arena) {
+    public final LiveCompetition<?> createDynamicCompetition(Arena arena) {
         if (this.type != MapType.DYNAMIC) {
             throw new IllegalStateException("Cannot create dynamic competition for non-dynamic map!");
         }

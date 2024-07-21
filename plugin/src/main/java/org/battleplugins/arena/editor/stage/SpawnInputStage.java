@@ -37,7 +37,7 @@ public class SpawnInputStage<E extends EditorContext<E>> implements WizardStage<
 
             @Override
             public boolean isValidChatInput(String input) {
-                return !input.startsWith("/") && SpawnInputStage.this.input.equalsIgnoreCase(input);
+                return super.isValidChatInput(input) && !input.startsWith("/") && SpawnInputStage.this.input.equalsIgnoreCase(input);
             }
         }.bind(context);
     }

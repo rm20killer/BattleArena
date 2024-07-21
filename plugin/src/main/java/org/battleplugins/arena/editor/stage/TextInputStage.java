@@ -42,7 +42,7 @@ public class TextInputStage<E extends EditorContext<E>> implements WizardStage<E
 
             @Override
             public boolean isValidChatInput(String input) {
-                return (!input.startsWith("/") && (validContentFunction == null || validContentFunction.apply(context, input)));
+                return super.isValidChatInput(input) && (!input.startsWith("/") && (validContentFunction == null || validContentFunction.apply(context, input)));
             }
         }.bind(context);
     }

@@ -644,7 +644,7 @@ public class BattleArena extends JavaPlugin implements LoggerHolder {
                     Configuration configuration = YamlConfiguration.loadConfiguration(Files.newBufferedReader(arenaPath));
                     String name = configuration.getString("name");
                     if (name == null) {
-                        this.info("Arena {} does not have a name!", arenaPath.getFileName());
+                        this.warn("Arena {} does not have a name!", arenaPath.getFileName());
                         return;
                     }
 

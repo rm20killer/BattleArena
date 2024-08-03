@@ -12,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -79,7 +80,7 @@ public class TeamSpawnInputStage<E extends EditorContext<E>> implements WizardSt
 
                 List<String> teamNames = context.getArena().getTeams().getAvailableTeams()
                         .stream()
-                        .map(ArenaTeam::getName)
+                        .map(team -> team.getName().toLowerCase(Locale.ROOT))
                         .toList();
 
                 Component teamsList = Component.join(JoinConfiguration.commas(true), validTeamNames);
@@ -105,7 +106,7 @@ public class TeamSpawnInputStage<E extends EditorContext<E>> implements WizardSt
 
                     @Override
                     public boolean isValidChatInput(String input) {
-                        return super.isValidChatInput(input) && (!input.startsWith("/") && teamNames.contains(input));
+                        return super.isValidChatInput(input) && (!input.startsWith("/") && teamNames.contains(input.toLowerCase(Locale.ROOT)));
                     }
                 }.bind(context);
             }

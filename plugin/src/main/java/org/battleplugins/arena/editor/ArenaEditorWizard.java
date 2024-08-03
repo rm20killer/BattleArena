@@ -143,6 +143,8 @@ public class ArenaEditorWizard<E extends EditorContext<E>> {
         });
 
         stage.enter(context);
+
+        player.setMetadata(EDITOR_META_KEY, new FixedMetadataValue(this.plugin, context));
     }
 
     @Nullable

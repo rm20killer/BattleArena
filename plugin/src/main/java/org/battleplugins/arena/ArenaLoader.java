@@ -38,7 +38,7 @@ record ArenaLoader(BattleArena battleArena, String mode, Configuration configura
             this.battleArena.arenas.put(arena.getName(), arena);
 
             // Register command
-            PluginCommand command = this.battleArena.getCommand(arena.getName().toUpperCase(Locale.ROOT));
+            PluginCommand command = this.battleArena.getCommand(arena.getName().toLowerCase(Locale.ROOT));
 
             ArenaCommandExecutor executor = arena.createCommandExecutor();
             ArenaCreateExecutorEvent event = new ArenaCreateExecutorEvent(arena, executor);

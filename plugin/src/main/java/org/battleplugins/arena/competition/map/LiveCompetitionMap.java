@@ -266,6 +266,7 @@ public class LiveCompetitionMap implements ArenaLike, CompetitionMap, PostProces
         }
 
         copy.mapWorld = world;
+        copy.parentWorld = this.mapWorld;
         copy.postProcess();
 
         return copy.createCompetition(arena);

@@ -18,7 +18,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew bundledJar
       - name: Publish to Maven Repository
-        if: ${{ success() && github.repository == 'BattlePlugins/BattleArena' && github.ref_name == 'rewrite' }}
+        if: ${{ success() && github.repository == 'BattlePlugins/BattleArena' && github.ref_name == 'master' }}
         run: ./gradlew publish
         env:
           BUILD_NUMBER: ${{ github.run_number }}

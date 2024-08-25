@@ -54,6 +54,7 @@ public class LiveCompetitionMap implements ArenaLike, CompetitionMap, PostProces
     private Spawns spawns;
 
     private World mapWorld;
+    private World parentWorld;
 
     public LiveCompetitionMap() {
     }
@@ -156,6 +157,18 @@ public class LiveCompetitionMap implements ArenaLike, CompetitionMap, PostProces
      */
     public final World getWorld() {
         return this.mapWorld;
+    }
+
+    /**
+     * Gets the parent world of the map.
+     * <p>
+     * This is the world that the map is located in, or the parent world
+     * if the map is a dynamic map.
+     *
+     * @return the parent world of the map
+     */
+    public final World getParentWorld() {
+        return this.parentWorld == null ? this.mapWorld : this.parentWorld;
     }
 
     /**

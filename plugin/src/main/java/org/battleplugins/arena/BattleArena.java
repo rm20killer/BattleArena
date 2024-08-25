@@ -118,6 +118,11 @@ public class BattleArena extends JavaPlugin implements LoggerHolder {
         this.loadArenaLoaders(this.arenasPath);
 
         new Metrics(this, PLUGIN_ID);
+
+        // Cheeky little message about BattleTracker <3
+        if (Bukkit.getPluginManager().getPlugin("BattleTracker") == null) {
+            this.warn("BattleTracker not found! Arena statistics will not be tracked. You can download BattleTracker at: https://modrinth.com/project/battletracker.");
+        }
     }
 
     private void enable() {

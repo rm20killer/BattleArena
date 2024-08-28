@@ -137,6 +137,7 @@ public class MapCreateContext extends EditorContext<MapCreateContext> {
         }
 
         this.mapName = map.getName();
+        this.mapType = map.getType();
         this.min = Position.block(bounds.getMinX(), bounds.getMinY(), bounds.getMinZ());
         this.max = Position.block(bounds.getMaxX(), bounds.getMaxY(), bounds.getMaxZ());
 

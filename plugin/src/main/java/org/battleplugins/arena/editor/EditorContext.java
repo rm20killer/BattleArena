@@ -87,4 +87,17 @@ public abstract class EditorContext<E extends EditorContext<E>> {
     }
 
     public abstract boolean isComplete();
+
+    @Override
+    public String toString() {
+        return "EditorContext{" +
+                "wizard=" + this.wizard +
+                ", arena=" + this.arena +
+                ", player=" + this.player +
+                ", advanceListener=" + this.advanceListener +
+                ", position=" + this.position +
+                ", boundListeners=" + this.boundListeners +
+                ", reconstructed=" + this.reconstructed +
+                '}';
+    }
 }

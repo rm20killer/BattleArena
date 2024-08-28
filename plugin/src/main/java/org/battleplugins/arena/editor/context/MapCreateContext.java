@@ -186,4 +186,21 @@ public class MapCreateContext extends EditorContext<MapCreateContext> {
                 && this.spectatorSpawn != null
                 && this.hasValidTeamSpawns();
     }
+
+    @Override
+    public String toString() {
+        return "MapCreateContext{" +
+                "mapName='" + this.mapName + '\'' +
+                ", mapType=" + this.mapType +
+                ", min=" + this.min +
+                ", max=" + this.max +
+                ", waitroomSpawn=" + this.waitroomSpawn +
+                ", spectatorSpawn=" + this.spectatorSpawn +
+                ", spawns=" + this.spawns +
+                ", wizard=" + this.wizard +
+                ", arena=" + this.arena +
+                ", player=" + this.player +
+                ", reconstructed=" + this.reconstructed +
+                '}';
+    }
 }

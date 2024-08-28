@@ -94,6 +94,7 @@ public class ArenaEditorWizard<E extends EditorContext<E>> {
             if (!iterator.hasNext()) {
                 if (!context.isComplete()) {
                     Messages.ERROR_OCCURRED_APPLYING_CHANGES.send(player);
+                    this.plugin.warn("The wizard editor failed with no completion! Context: {}", context);
                     return;
                 }
 
@@ -132,6 +133,7 @@ public class ArenaEditorWizard<E extends EditorContext<E>> {
         context.setAdvanceListener(() -> {
             if (!context.isComplete()) {
                 Messages.ERROR_OCCURRED_APPLYING_CHANGES.send(player);
+                this.plugin.warn("The wizard editor failed with no completion! Context: {}", context);
                 return;
             }
 

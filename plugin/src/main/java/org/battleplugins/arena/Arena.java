@@ -9,6 +9,7 @@ import org.battleplugins.arena.competition.phase.CompetitionPhase;
 import org.battleplugins.arena.competition.phase.CompetitionPhaseType;
 import org.battleplugins.arena.competition.victory.VictoryConditionType;
 import org.battleplugins.arena.config.ArenaOption;
+import org.battleplugins.arena.config.ConfigHolder;
 import org.battleplugins.arena.config.DocumentationSource;
 import org.battleplugins.arena.config.Scoped;
 import org.battleplugins.arena.config.context.EventContextProvider;
@@ -26,9 +27,11 @@ import org.battleplugins.arena.resolver.Resolvable;
 import org.battleplugins.arena.resolver.Resolver;
 import org.battleplugins.arena.resolver.ResolverKeys;
 import org.battleplugins.arena.resolver.ResolverProvider;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -46,7 +49,7 @@ import java.util.Set;
  * active game actions will occur (i.e. game timer, score, etc.)
  */
 @DocumentationSource("https://docs.battleplugins.org/books/user-guide/chapter/configuration")
-public class Arena implements ArenaLike, ArenaListener, Resolvable {
+public class Arena implements ArenaLike, ArenaListener, Resolvable, ConfigHolder {
 
     @Scoped
     private BattleArena plugin;
@@ -103,6 +106,7 @@ public class Arena implements ArenaLike, ArenaListener, Resolvable {
     private List<String> modules;
 
     private final ArenaEventManager eventManager;
+    private final Map<String, ConfigurationSection> config = new HashMap<>();
 
     public Arena() {
         this.eventManager = new ArenaEventManager(this);
@@ -314,6 +318,11 @@ public class Arena implements ArenaLike, ArenaListener, Resolvable {
         }
 
         return (E) this.options.get(type);
+    }
+
+    @Override
+    public final Map<String, ConfigurationSection> getConfig() {
+        return this.config;
     }
 
     @Override

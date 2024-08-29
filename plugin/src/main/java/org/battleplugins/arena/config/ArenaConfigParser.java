@@ -61,6 +61,7 @@ public final class ArenaConfigParser {
     }
 
     private static void populateFields(@Nullable Path sourceFile, Object instance, ConfigurationSection configuration, @Nullable Object scope, @Nullable Object id) throws ParseException {
+        List<String> sectionsParsed = new ArrayList<>();
         for (Field field : FieldUtils.getAllFieldsList(instance.getClass())) {
             field.setAccessible(true);
             if (field.isAnnotationPresent(Scoped.class)) {
@@ -121,6 +122,17 @@ public final class ArenaConfigParser {
 
             // Get the type from the configuration
             populateType(sourceFile, field, arenaOption, instance, configuration, scope);
+
+            sectionsParsed.add(name);
+        }
+
+        // Check if there are any sections that were not parsed
+        if (instance instanceof ConfigHolder holder) {
+            for (String key : configuration.getKeys(false)) {
+                if (!sectionsParsed.contains(key) && configuration.isConfigurationSection(key)) {
+                    holder.getConfig().put(key, configuration.getConfigurationSection(key));
+                }
+            }
         }
     }
 

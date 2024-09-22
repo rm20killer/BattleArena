@@ -26,7 +26,30 @@ public class Bounds {
     public Bounds() {
     }
 
+    public Bounds(Position min, Position max) {
+        this(min.blockX(), min.blockY(), min.blockZ(), max.blockX(), max.blockY(), max.blockZ());
+    }
+
     public Bounds(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+        // Sanitize min max
+        if (minX > maxX) {
+            int temp = minX;
+            minX = maxX;
+            maxX = temp;
+        }
+
+        if (minY > maxY) {
+            int temp = minY;
+            minY = maxY;
+            maxY = temp;
+        }
+
+        if (minZ > maxZ) {
+            int temp = minZ;
+            minZ = maxZ;
+            maxZ = temp;
+        }
+
         this.minX = minX;
         this.minY = minY;
         this.minZ = minZ;
@@ -34,35 +57,6 @@ public class Bounds {
         this.maxX = maxX;
         this.maxY = maxY;
         this.maxZ = maxZ;
-    }
-
-    public Bounds(Position min, Position max) {
-        // Sanitize min max
-        if (min.blockX() > max.blockX()) {
-            int temp = min.blockX();
-            min = Position.block(max.blockX(), min.blockY(), min.blockZ());
-            max = Position.block(temp, max.blockY(), max.blockZ());
-        }
-
-        if (min.blockY() > max.blockY()) {
-            int temp = min.blockY();
-            min = Position.block(min.blockX(), max.blockY(), min.blockZ());
-            max = Position.block(max.blockX(), temp, max.blockZ());
-        }
-
-        if (min.blockZ() > max.blockZ()) {
-            int temp = min.blockZ();
-            min = Position.block(min.blockX(), min.blockY(), max.blockZ());
-            max = Position.block(max.blockX(), max.blockY(), temp);
-        }
-
-        this.minX = min.blockX();
-        this.minY = min.blockY();
-        this.minZ = min.blockZ();
-
-        this.maxX = max.blockX();
-        this.maxY = max.blockY();
-        this.maxZ = max.blockZ();
     }
 
     public int getMinX() {

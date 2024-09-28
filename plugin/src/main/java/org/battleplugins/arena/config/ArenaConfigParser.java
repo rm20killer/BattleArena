@@ -56,6 +56,7 @@ public final class ArenaConfigParser {
         } catch (Throwable t) {
             throw new ParseException("Failed to post-process instance of class " + type.getName(), t)
                     .cause(ParseException.Cause.INTERNAL_ERROR)
+                    .type(type)
                     .sourceFile(sourceFile);
         }
     }

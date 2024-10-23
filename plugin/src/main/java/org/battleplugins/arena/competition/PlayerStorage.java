@@ -114,7 +114,7 @@ public class PlayerStorage {
             if (instance == null) {
                 continue;
             }
-            
+
             this.attributes.put(attribute, instance.getBaseValue());
         }
 
@@ -172,8 +172,8 @@ public class PlayerStorage {
     private void restoreAll() {
         this.restoreInventory();
         this.restoreGameMode();
-        this.restoreHealth();
         this.restoreAttributes();
+        this.restoreHealth();
         this.restoreExperience();
         this.restoreFlight();
         this.restoreEffects();
@@ -188,11 +188,6 @@ public class PlayerStorage {
         this.player.getPlayer().setGameMode(this.gameMode);
     }
 
-    private void restoreHealth() {
-        this.player.getPlayer().setHealth(this.health);
-        this.player.getPlayer().setFoodLevel(this.hunger);
-    }
-
     private void restoreAttributes() {
         for (Map.Entry<Attribute, Double> entry : this.attributes.entrySet()) {
             AttributeInstance instance = this.player.getPlayer().getAttribute(entry.getKey());
@@ -205,6 +200,11 @@ public class PlayerStorage {
 
         this.player.getPlayer().setWalkSpeed(this.walkSpeed);
         this.player.getPlayer().setFlySpeed(this.flySpeed);
+    }
+
+    private void restoreHealth() {
+        this.player.getPlayer().setHealth(this.health);
+        this.player.getPlayer().setFoodLevel(this.hunger);
     }
 
     private void restoreFlight() {
@@ -293,8 +293,8 @@ public class PlayerStorage {
         ALL(PlayerStorage::storeAll, PlayerStorage::restoreAll),
         INVENTORY(PlayerStorage::storeInventory, PlayerStorage::restoreInventory),
         GAMEMODE(PlayerStorage::storeGameMode, PlayerStorage::restoreGameMode),
-        HEALTH(PlayerStorage::storeHealth, PlayerStorage::restoreHealth),
         ATTRIBUTES(PlayerStorage::storeAttributes, PlayerStorage::restoreAttributes),
+        HEALTH(PlayerStorage::storeHealth, PlayerStorage::restoreHealth),
         EXPERIENCE(PlayerStorage::storeExperience, PlayerStorage::restoreExperience),
         FLIGHT(PlayerStorage::storeFlight, PlayerStorage::restoreFlight),
         EFFECTS(PlayerStorage::storeEffects, PlayerStorage::restoreEffects),

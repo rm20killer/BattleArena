@@ -35,7 +35,7 @@ public class BroadcastAction extends EventAction {
             return;
         }
 
-        String message = this.get(MESSAGE_KEY);
+        String message = resolvable.resolve().resolveToString(this.get(MESSAGE_KEY));
         MessageType messageType = MessageType.valueOf(this.getOrDefault(TYPE_KEY, MessageType.CHAT.name())
                 .toUpperCase(Locale.ROOT)
         );

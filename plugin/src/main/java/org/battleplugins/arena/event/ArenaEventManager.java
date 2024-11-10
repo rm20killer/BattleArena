@@ -12,6 +12,7 @@ import org.battleplugins.arena.event.action.types.DelayAction;
 import org.battleplugins.arena.event.arena.ArenaLoseEvent;
 import org.battleplugins.arena.event.arena.ArenaVictoryEvent;
 import org.battleplugins.arena.event.player.ArenaPlayerEvent;
+import org.battleplugins.arena.resolver.Resolver;
 import org.battleplugins.arena.util.PolymorphicHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -169,8 +170,12 @@ public class ArenaEventManager {
             }
 
             for (ArenaPlayer player : new HashSet<>(players)) {
+                // Resolve with ArenaPlayer context
+                Resolver.Builder resolver = player.resolve().toBuilder();
+                event.resolve().mergeInto(resolver);
+
                 try {
-                    action.call(player, event);
+                    action.call(player, resolver.build());
                 } catch (Throwable e) {
                     this.arena.getPlugin().warn("An error occurred calling event action {}", action, e);
                     return;

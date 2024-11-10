@@ -2,7 +2,7 @@ package org.battleplugins.arena.resolver;
 
 import net.kyori.adventure.text.Component;
 
-public interface Resolver {
+public interface Resolver extends Resolvable {
 
     String resolveToString(String string);
 
@@ -15,6 +15,11 @@ public interface Resolver {
     void mergeInto(Builder builder);
 
     Builder toBuilder();
+
+    @Override
+    default Resolver resolve() {
+        return this;
+    }
 
     static Builder builder() {
         return new ResolverImpl.BuilderImpl();

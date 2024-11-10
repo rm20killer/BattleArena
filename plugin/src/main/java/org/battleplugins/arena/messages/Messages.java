@@ -97,7 +97,7 @@ public final class Messages {
                 """
     );
     public static final Message ERROR_OCCURRED_APPLYING_CHANGES = error("editor-error-occurred-applying-changes", "An error occurred while applying changes. Please see the console for more information!");
-    public static final Message ERROR_ALREADY_IN_EDITOR = error("editor-error-already-in-editor", "You are already in an editor wizard!");
+    public static final Message ERROR_ALREADY_IN_EDITOR = error("editor-error-already-in-editor", "You are already in an editor wizard! Type \"cancel\" to exit.");
 
     public static final Message MAP_CREATE_NAME = info("editor-map-create-name", "Enter a name for the map! Type \"cancel\" to cancel.");
     public static final Message MAP_EXISTS = error("editor-map-exists", "A map by that name already exists!");

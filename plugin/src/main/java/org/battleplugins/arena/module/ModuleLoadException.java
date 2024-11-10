@@ -9,7 +9,7 @@ public class ModuleLoadException extends RuntimeException {
         this.module = module;
     }
 
-    public ModuleLoadException(ArenaModule module, Exception exception) {
+    public ModuleLoadException(ArenaModule module, Throwable exception) {
         super(exception);
 
         this.module = module;

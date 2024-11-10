@@ -5,6 +5,7 @@ import org.battleplugins.arena.competition.victory.types.HighestStatCondition;
 import org.battleplugins.arena.competition.victory.types.TeamsAliveCondition;
 import org.battleplugins.arena.competition.victory.types.TimeLimitCondition;
 import org.battleplugins.arena.config.DocumentationSource;
+import org.battleplugins.arena.util.Describable;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -18,7 +19,7 @@ import java.util.Set;
  * @param <T> the type of victory condition
  */
 @DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/victory-conditions-reference")
-public final class VictoryConditionType<C extends LiveCompetition<C>, T extends VictoryCondition<C>> {
+public final class VictoryConditionType<C extends LiveCompetition<C>, T extends VictoryCondition<C>> implements Describable {
     private static final Map<String, VictoryConditionType<?, ?>> VICTORY_TYPES = new HashMap<>();
 
     public static final VictoryConditionType<?, ?> HIGHEST_STAT = new VictoryConditionType<>("highest-stat", HighestStatCondition.class);
@@ -50,6 +51,11 @@ public final class VictoryConditionType<C extends LiveCompetition<C>, T extends 
 
     public static <C extends LiveCompetition<C>, T extends VictoryCondition<C>> VictoryConditionType<C, T> create(String name, Class<T> clazz) {
         return new VictoryConditionType<>(name, clazz);
+    }
+
+    @Override
+    public String describe() {
+        return this.getName();
     }
 
     @Override

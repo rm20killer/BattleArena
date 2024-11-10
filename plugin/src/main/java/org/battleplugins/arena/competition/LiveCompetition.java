@@ -279,6 +279,16 @@ public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Com
     public final Set<ArenaPlayer> getSpectators() {
         return Collections.unmodifiableSet(this.playersByRole.getOrDefault(PlayerRole.SPECTATING, Set.of()));
     }
+
+    @Override
+    public final int getAlivePlayerCount() {
+        return this.getPlayers().size();
+    }
+
+    @Override
+    public final int getSpectatorCount() {
+        return this.getSpectators().size();
+    }
     
     @Override
     public final int getMaxPlayers() {
@@ -385,11 +395,13 @@ public class LiveCompetition<T extends Competition<T>> implements ArenaLike, Com
     @Override
     public Resolver resolve() {
         Resolver.Builder builder = this.arena.resolve().toBuilder()
+                .define(ResolverKeys.ALIVE_PLAYERS, ResolverProvider.simple(this.getAlivePlayerCount(), String::valueOf))
                 .define(ResolverKeys.COMPETITION, ResolverProvider.simple(this.getCompetition(), this.getMap()::getName))
-                .define(ResolverKeys.ONLINE_PLAYERS, ResolverProvider.simple(this.getPlayers().size(), String::valueOf))
+                .define(ResolverKeys.ONLINE_PLAYERS, ResolverProvider.simple(this.getAlivePlayerCount() + this.getSpectatorCount(), String::valueOf))
                 .define(ResolverKeys.MAP, ResolverProvider.simple(this.getMap(), CompetitionMap::getName))
                 .define(ResolverKeys.MAX_PLAYERS, ResolverProvider.simple(this.getMaxPlayers(), String::valueOf))
-                .define(ResolverKeys.PHASE, ResolverProvider.simple(this.getPhaseManager().getCurrentPhase(), p -> p.getType().getName()));
+                .define(ResolverKeys.PHASE, ResolverProvider.simple(this.getPhaseManager().getCurrentPhase(), p -> p.getType().getName()))
+                .define(ResolverKeys.SPECTATORS, ResolverProvider.simple(this.getSpectatorCount(), String::valueOf));
 
         this.getVictoryManager().resolve().mergeInto(builder);
         if (this.getPhaseManager().getCurrentPhase() instanceof LiveCompetitionPhase<?> phase) {

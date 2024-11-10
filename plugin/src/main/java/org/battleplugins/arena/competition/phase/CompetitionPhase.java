@@ -11,6 +11,7 @@ import org.battleplugins.arena.event.ArenaEventType;
 import org.battleplugins.arena.event.ArenaListener;
 import org.battleplugins.arena.event.action.EventAction;
 import org.battleplugins.arena.options.ArenaOptionType;
+import org.battleplugins.arena.util.Describable;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.Optional;
 /**
  * Represents the phase of a competition.
  */
-public abstract class CompetitionPhase<T extends Competition<T>> implements CompetitionLike<T>, ArenaListener {
+public abstract class CompetitionPhase<T extends Competition<T>> implements CompetitionLike<T>, ArenaListener, Describable {
     @Id
     private CompetitionPhaseType<T, CompetitionPhase<T>> type;
 
@@ -161,5 +162,10 @@ public abstract class CompetitionPhase<T extends Competition<T>> implements Comp
      */
     protected final void setPreviousPhase(CompetitionPhase<T> previousPhase) {
         this.previousPhase = previousPhase;
+    }
+
+    @Override
+    public final String describe() {
+        return this.type.describe();
     }
 }

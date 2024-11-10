@@ -53,8 +53,7 @@ public class ArenaModuleLoader {
                             AtomicReference<Class<?>> arenaModuleClassRef = new AtomicReference<>();
                             zipFile.stream().forEach((file -> {
                                 if (file.getName().endsWith(".class")) {
-                                    try {
-                                        InputStream inputStream = zipFile.getInputStream(file);
+                                    try (InputStream inputStream = zipFile.getInputStream(file)) {
                                         byte[] buffer = new byte[inputStream.available()];
                                         inputStream.read(buffer);
 
@@ -68,9 +67,16 @@ public class ArenaModuleLoader {
                                             // Set the annotation
                                             arenaModuleRef.set(clazz.getAnnotation(ArenaModule.class));
                                         }
+                                    } catch (Throwable e) {
+                                        // Ignore NoClassDefFoundError - this is typically thrown when
+                                        // a module extends a class from a third party plugin which may not be
+                                        // found when loading the module if the plugin is not present. The
+                                        // above logic just looks for a class annotated with @ArenaModule
+                                        // which will fail after this code runs anyway.
+                                        if (e instanceof NoClassDefFoundError) {
+                                            return;
+                                        }
 
-                                        inputStream.close();
-                                    } catch (Exception e) {
                                         this.plugin.error("Error when setting up module {}! Please contact the module author!", path.getFileName().toString(), e);
 
                                         // Add the exception to the failed modules set

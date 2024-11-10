@@ -1,9 +1,11 @@
 package org.battleplugins.arena.competition.map;
 
+import org.battleplugins.arena.util.Describable;
+
 /**
  * A map for a competition.
  */
-public interface CompetitionMap {
+public interface CompetitionMap extends Describable {
 
     /**
      * Gets the name of the map.
@@ -18,4 +20,9 @@ public interface CompetitionMap {
      * @return the type of map
      */
     MapType getType();
+
+    @Override
+    default String describe() {
+        return this.getName();
+    }
 }

@@ -27,6 +27,7 @@ import org.battleplugins.arena.resolver.Resolvable;
 import org.battleplugins.arena.resolver.Resolver;
 import org.battleplugins.arena.resolver.ResolverKeys;
 import org.battleplugins.arena.resolver.ResolverProvider;
+import org.battleplugins.arena.util.Describable;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,7 +50,7 @@ import java.util.Set;
  * active game actions will occur (i.e. game timer, score, etc.)
  */
 @DocumentationSource("https://docs.battleplugins.org/books/user-guide/chapter/configuration")
-public class Arena implements ArenaLike, ArenaListener, Resolvable, ConfigHolder {
+public class Arena implements ArenaLike, ArenaListener, ConfigHolder, Resolvable, Describable {
 
     @Scoped
     private BattleArena plugin;
@@ -328,6 +329,11 @@ public class Arena implements ArenaLike, ArenaListener, Resolvable, ConfigHolder
     @Override
     public final Arena getArena() {
         return this;
+    }
+
+    @Override
+    public final String describe() {
+        return this.getName();
     }
 
     @Override

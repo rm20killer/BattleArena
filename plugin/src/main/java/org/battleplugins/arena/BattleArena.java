@@ -224,7 +224,7 @@ public class BattleArena extends JavaPlugin implements LoggerHolder {
 
         // Initialize events
         for (Map.Entry<String, List<EventOptions>> entry : this.config.getEvents().entrySet()) {
-            Arena arena = this.arenas.get(entry.getKey());
+            Arena arena = this.getArena(entry.getKey());
             if (arena == null) {
                 this.warn("Event {} does not have a valid arena!", entry.getKey());
                 continue;
@@ -283,7 +283,7 @@ public class BattleArena extends JavaPlugin implements LoggerHolder {
      * @return the arena from the given name
      */
     public Optional<Arena> arena(String name) {
-        return Optional.ofNullable(this.arenas.get(name));
+        return Optional.ofNullable(this.getArena(name));
     }
 
     /**
@@ -294,7 +294,7 @@ public class BattleArena extends JavaPlugin implements LoggerHolder {
      */
     @Nullable
     public Arena getArena(String name) {
-        return this.arenas.get(name);
+        return this.arenas.get(name.toLowerCase(Locale.ROOT));
     }
 
     /**
@@ -714,7 +714,7 @@ public class BattleArena extends JavaPlugin implements LoggerHolder {
                     }
                 });
             } catch (IOException e) {
-                throw new RuntimeException("Error loading maps for arena " + arenaName, e);
+                throw new RuntimeException("Error loading maps for arena " + arena.getName(), e);
             }
         }
     }

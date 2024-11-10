@@ -35,7 +35,7 @@ record ArenaLoader(BattleArena battleArena, String mode, Configuration configura
 
             Bukkit.getPluginManager().registerEvents(arena, this.battleArena);
 
-            this.battleArena.arenas.put(arena.getName(), arena);
+            this.battleArena.arenas.put(arena.getName().toLowerCase(Locale.ROOT), arena);
 
             // Register command
             PluginCommand command = this.battleArena.getCommand(arena.getName().toLowerCase(Locale.ROOT));

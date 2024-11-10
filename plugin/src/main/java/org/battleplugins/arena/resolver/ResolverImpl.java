@@ -44,6 +44,16 @@ class ResolverImpl implements Resolver {
     }
 
     @Override
+    public <T> String resolveToString(ResolverKey<T> key) {
+        ResolverProvider<?> provider = this.results.get(key);
+        if (provider == null) {
+            throw new IllegalArgumentException("No provider defined for key " + key);
+        }
+
+        return provider.toString(this);
+    }
+
+    @Override
     public boolean has(ResolverKey<?> key) {
         return this.results.containsKey(key);
     }

@@ -66,6 +66,20 @@ public interface Competition<T extends Competition<T>> extends CompetitionLike<T
     void leave(Player player, ArenaLeaveEvent.Cause cause);
 
     /**
+     * Gets the amount of players currently in the competition.
+     *
+     * @return the amount of players currently in the competition
+     */
+    int getAlivePlayerCount();
+
+    /**
+     * Gets the amount of spectators currently in the competition.
+     *
+     * @return the amount of spectators currently in the competition
+     */
+    int getSpectatorCount();
+
+    /**
      * Gets the maximum amount of players that can join this competition.
      *
      * @return the maximum amount of players that can join this competition

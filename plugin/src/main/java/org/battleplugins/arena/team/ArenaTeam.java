@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.battleplugins.arena.config.ArenaOption;
 import org.battleplugins.arena.config.DocumentationSource;
+import org.battleplugins.arena.util.Describable;
 import org.bukkit.inventory.ItemStack;
 
 import java.awt.Color;
@@ -12,7 +13,7 @@ import java.awt.Color;
  * Represents a team in an arena.
  */
 @DocumentationSource("https://docs.battleplugins.org/books/user-guide/page/teams")
-public class ArenaTeam {
+public class ArenaTeam implements Describable {
 
     @ArenaOption(name = "name", description = "The name of the team.", required = true)
     private String name;
@@ -90,6 +91,11 @@ public class ArenaTeam {
 
         // TODO: Check additional game options to see if teams are hostile to each other
         return !team.equals(this);
+    }
+
+    @Override
+    public final String describe() {
+        return this.getName();
     }
 
     @Override

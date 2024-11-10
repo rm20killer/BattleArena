@@ -10,6 +10,8 @@ public interface Resolver extends Resolvable {
 
     <T> T resolve(ResolverKey<T> key);
 
+    <T> String resolveToString(ResolverKey<T> key);
+
     boolean has(ResolverKey<?> key);
 
     void mergeInto(Builder builder);

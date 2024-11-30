@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/module" />
+            <option value="$PROJECT_DIR$/module/arena-restoration" />
+            <option value="$PROJECT_DIR$/module/boundary-enforcer" />
+            <option value="$PROJECT_DIR$/module/classes" />
+            <option value="$PROJECT_DIR$/module/duels" />
+            <option value="$PROJECT_DIR$/module/one-in-the-chamber" />
+            <option value="$PROJECT_DIR$/module/placeholderapi-integration" />
+            <option value="$PROJECT_DIR$/module/scoreboards" />
+            <option value="$PROJECT_DIR$/module/team-colors" />
+            <option value="$PROJECT_DIR$/module/team-heads" />
+            <option value="$PROJECT_DIR$/module/tournaments" />
+            <option value="$PROJECT_DIR$/module/vault-integration" />
+            <option value="$PROJECT_DIR$/plugin" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

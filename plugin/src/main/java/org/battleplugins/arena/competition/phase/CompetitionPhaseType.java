@@ -5,6 +5,7 @@ import org.battleplugins.arena.competition.phase.phases.CountdownPhase;
 import org.battleplugins.arena.competition.phase.phases.IngamePhase;
 import org.battleplugins.arena.competition.phase.phases.VictoryPhase;
 import org.battleplugins.arena.competition.phase.phases.WaitingPhase;
+import org.battleplugins.arena.competition.phase.phases.WaitingForPlayersPhase;
 import org.battleplugins.arena.util.Describable;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,6 +24,7 @@ public final class CompetitionPhaseType<C extends Competition<C>, T extends Comp
     private static final Map<String, CompetitionPhaseType<?, ?>> PHASE_TYPES = new HashMap<>();
 
     public static final CompetitionPhaseType<?, WaitingPhase<?>> WAITING = new CompetitionPhaseType("waiting", WaitingPhase.class);
+    public static final CompetitionPhaseType<?, WaitingForPlayersPhase<?>> WAITINGFORPLAYER = new CompetitionPhaseType("waitingforplayers", WaitingForPlayersPhase.class);
     public static final CompetitionPhaseType<?, CountdownPhase<?>> COUNTDOWN = new CompetitionPhaseType("countdown", CountdownPhase.class);
     public static final CompetitionPhaseType<?, IngamePhase<?>> INGAME = new CompetitionPhaseType("ingame", IngamePhase.class);
     public static final CompetitionPhaseType<?, VictoryPhase<?>> VICTORY = new CompetitionPhaseType("victory", VictoryPhase.class);

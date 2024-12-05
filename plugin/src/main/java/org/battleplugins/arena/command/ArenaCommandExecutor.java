@@ -10,6 +10,7 @@ import org.battleplugins.arena.competition.LiveCompetition;
 import org.battleplugins.arena.competition.PlayerRole;
 import org.battleplugins.arena.competition.map.CompetitionMap;
 import org.battleplugins.arena.competition.map.LiveCompetitionMap;
+import org.battleplugins.arena.competition.map.MapType;
 import org.battleplugins.arena.competition.phase.CompetitionPhase;
 import org.battleplugins.arena.competition.phase.CompetitionPhaseType;
 import org.battleplugins.arena.competition.phase.PhaseManager;
@@ -26,6 +27,7 @@ import org.battleplugins.arena.team.ArenaTeam;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +36,19 @@ import java.util.Map;
 import java.util.Set;
 
 public class ArenaCommandExecutor extends BaseCommandExecutor {
+    private static final CompetitionMap RANDOM_MAP_MARKER = new CompetitionMap() {
+
+        @Override
+        public String getName() {
+            return "marker";
+        }
+
+        @Override
+        public MapType getType() {
+            return MapType.STATIC;
+        }
+    };
+
     protected final Arena arena;
 
     public ArenaCommandExecutor(Arena arena) {
@@ -48,13 +63,7 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
 
     @ArenaCommand(commands = { "join", "j" }, description = "Join an arena.", permissionNode = "join")
     public void join(Player player) {
-        List<LiveCompetitionMap> maps = this.arena.getPlugin().getMaps(this.arena);
-        if (maps.isEmpty()) {
-            Messages.NO_OPEN_ARENAS.send(player);
-            return;
-        }
-
-        this.join(player, maps.iterator().next());
+        this.join(player, RANDOM_MAP_MARKER);
     }
 
     @ArenaCommand(commands = { "join", "j" }, description = "Join an arena.", permissionNode = "join.map")
@@ -69,7 +78,7 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
             return;
         }
 
-        List<Competition<?>> competitions = this.arena.getPlugin().getCompetitions(this.arena, map.getName());
+        List<Competition<?>> competitions = map == RANDOM_MAP_MARKER ? this.arena.getPlugin().getCompetitions(this.arena) : this.arena.getPlugin().getCompetitions(this.arena, map.getName());
         this.arena.getPlugin().findJoinableCompetition(competitions, player, PlayerRole.PLAYING).whenCompleteAsync((result, e) -> {
             if (e != null) {
                 Messages.ARENA_ERROR.send(player, e.getMessage());
@@ -83,6 +92,11 @@ public class ArenaCommandExecutor extends BaseCommandExecutor {
 
                 Messages.ARENA_JOINED.send(player, competition.getMap().getName());
             } else {
+                if (map == RANDOM_MAP_MARKER) {
+                    Messages.NO_OPEN_ARENAS.send(player);
+                    return;
+                }
+
                 // Try and create a dynamic competition if possible
                 this.arena.getPlugin()
                         .getOrCreateCompetition(this.arena, player, PlayerRole.PLAYING, map.getName())

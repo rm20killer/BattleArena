@@ -120,12 +120,21 @@ public class CompetitionManager {
         return this.findJoinableCompetition(competitions, player, role, null);
     }
 
-    public CompletableFuture<CompetitionResult> findJoinableCompetition(List<Competition<?>> competitions, Player player, PlayerRole role, @Nullable JoinResult lastResult) {
+    private CompletableFuture<CompetitionResult> findJoinableCompetition(List<Competition<?>> competitions, Player player, PlayerRole role, @Nullable JoinResult lastResult) {
         if (competitions.isEmpty()) {
             return CompletableFuture.completedFuture(new CompetitionResult(null, lastResult == null ? JoinResult.NOT_JOINABLE : lastResult));
         }
 
-        Competition<?> competition = competitions.get(0);
+        if (this.plugin.getMainConfig().isRandomizedArenaJoin()) {
+            competitions = new ArrayList<>(competitions);
+            Collections.shuffle(competitions);
+        }
+
+        // Select the competition with the most number of players
+        Competition<?> competition = competitions.stream()
+                .max(Comparator.comparingInt(Competition::getAlivePlayerCount))
+                .orElse(null);
+
         CompletableFuture<JoinResult> result = competition.canJoin(player, role);
         JoinResult joinResult = result.join();
         if (joinResult == JoinResult.SUCCESS) {

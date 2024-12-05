@@ -28,7 +28,7 @@ public class Version implements Comparable<Version> {
     
     private Version(String version) {
         this.version = version;
-        this.tester = () -> Bukkit.getPluginManager().isPluginEnabled("BattleArena");
+        this.tester = () -> true;
     }
 
     private Version(Plugin plugin) {

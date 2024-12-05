@@ -2,6 +2,9 @@ package org.battleplugins.arena;
 
 import org.battleplugins.arena.competition.event.EventOptions;
 import org.battleplugins.arena.config.ArenaOption;
+import org.battleplugins.arena.config.Updater;
+import org.battleplugins.arena.config.updater.ConfigUpdater;
+import org.battleplugins.arena.config.updater.UpdaterStep;
 
 import java.util.List;
 import java.util.Map;
@@ -9,6 +12,7 @@ import java.util.Map;
 /**
  * Represents the BattleArena configuration.
  */
+@Updater(BattleArenaConfig.Updater.class)
 public class BattleArenaConfig {
 
     @ArenaOption(name = "config-version", description = "The version of the config.", required = true)
@@ -22,6 +26,9 @@ public class BattleArenaConfig {
 
     @ArenaOption(name = "max-dynamic-maps", description = "The maximum number of dynamic maps an Arena can have allocated at once.", required = true)
     private int maxDynamicMaps;
+
+    @ArenaOption(name = "randomized-arena-join", description = "Whether players should be randomly placed in an Arena when joining without specifying a map.", required = true)
+    private boolean randomizedArenaJoin;
 
     @ArenaOption(name = "disabled-modules", description = "Modules that are disabled by default.")
     private List<String> disabledModules;
@@ -48,6 +55,10 @@ public class BattleArenaConfig {
         return this.maxDynamicMaps;
     }
 
+    public boolean isRandomizedArenaJoin() {
+        return this.randomizedArenaJoin;
+    }
+
     public List<String> getDisabledModules() {
         return this.disabledModules == null ? List.of() : List.copyOf(this.disabledModules);
     }
@@ -58,5 +69,22 @@ public class BattleArenaConfig {
 
     public boolean isDebugMode() {
         return this.debugMode;
+    }
+
+    public static class Updater implements ConfigUpdater<BattleArenaConfig> {
+
+        @Override
+        public Map<String, UpdaterStep<BattleArenaConfig>> buildUpdaters() {
+            return Map.of(
+                    "3.1", (config, instance) -> {
+                        config.set("randomized-arena-join", false);
+                        config.setComments("randomized-arena-join", List.of(
+                                "Whether joining an arena using /<arena> join without specifying a map should",
+                                "randomly pick an arena, rather than joining the most convenient one. Competitions",
+                                "with players waiting will always be prioritized though, even with this setting",
+                                "enabled."
+                        ));
+                    });
+        }
     }
 }

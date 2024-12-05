@@ -47,7 +47,7 @@ public class BaseCommandExecutor implements TabExecutor {
     protected final String parentCommand;
     protected final String permissionSubNode;
 
-    private final Map<String, Set<CommandWrapper>> commandMethods = new HashMap<>();
+    private final Map<String, Set<CommandWrapper>> commandWrappers = new HashMap<>();
 
     private final List<SubCommandExecutor> subCommandExecutors = new ArrayList<>();
 
@@ -142,20 +142,20 @@ public class BaseCommandExecutor implements TabExecutor {
 
             CommandWrapper wrapper = new CommandWrapper(this, method, this.getUsage(method));
             for (String cmd : arenaCommand.commands()) {
-                Set<CommandWrapper> wrappers = this.commandMethods.getOrDefault(cmd, new HashSet<>());
+                Set<CommandWrapper> wrappers = this.commandWrappers.getOrDefault(cmd, new HashSet<>());
                 wrappers.add(wrapper);
 
-                this.commandMethods.put(cmd, wrappers);
+                this.commandWrappers.put(cmd, wrappers);
             }
         }
     }
 
     public void injectWrapper(CommandWrapper wrapper) {
         for (String cmd : wrapper.getCommand().commands()) {
-            Set<CommandWrapper> wrappers = this.commandMethods.getOrDefault(cmd, new HashSet<>());
+            Set<CommandWrapper> wrappers = this.commandWrappers.getOrDefault(cmd, new HashSet<>());
             wrappers.add(wrapper);
 
-            this.commandMethods.put(cmd, wrappers);
+            this.commandWrappers.put(cmd, wrappers);
         }
     }
 
@@ -317,7 +317,7 @@ public class BaseCommandExecutor implements TabExecutor {
     public void sendHelpMessage(CommandSender sender, int page) {
         // Compile all the command arguments
         Map<String, CommandWrapper> commandWrappers = new HashMap<>();
-        for (Map.Entry<String, Set<CommandWrapper>> entry : this.commandMethods.entrySet()) {
+        for (Map.Entry<String, Set<CommandWrapper>> entry : this.commandWrappers.entrySet()) {
             for (CommandWrapper wrapper : entry.getValue()) {
                 commandWrappers.put(wrapper.usage, wrapper);
             }
@@ -404,8 +404,8 @@ public class BaseCommandExecutor implements TabExecutor {
     private List<CommandWrapper> getCommandWrappers(String command, String subCommand) {
         List<CommandWrapper> wrappers = new ArrayList<>();
 
-        for (String cmd : this.commandMethods.keySet()) {
-            for (CommandWrapper wrapper : this.commandMethods.get(cmd)) {
+        for (String cmd : this.commandWrappers.keySet()) {
+            for (CommandWrapper wrapper : this.commandWrappers.get(cmd)) {
                 ArenaCommand arenaCommand = wrapper.getCommand();
 
                 if (!Arrays.asList(arenaCommand.commands()).contains(command)) {
@@ -658,8 +658,8 @@ public class BaseCommandExecutor implements TabExecutor {
         try {
             if (args.length == 1) {
                 List<String> commands = new ArrayList<>();
-                for (String cmd : this.commandMethods.keySet()) {
-                    CommandWrapper wrapper = this.commandMethods.get(cmd).iterator().next();
+                for (String cmd : this.commandWrappers.keySet()) {
+                    CommandWrapper wrapper = this.commandWrappers.get(cmd).iterator().next();
                     ArenaCommand arenaCommand = wrapper.getCommand();
 
                     if (!arenaCommand.permissionNode().isEmpty() && !this.hasPermission(sender, this.getPermissionNode(arenaCommand.permissionNode()))) {
@@ -677,7 +677,7 @@ public class BaseCommandExecutor implements TabExecutor {
             }
 
             if (args.length > 1) {
-                Set<CommandWrapper> wrappers = this.commandMethods.get(args[0]);
+                Set<CommandWrapper> wrappers = this.commandWrappers.get(args[0]);
                 for (CommandWrapper wrapper : wrappers) {
                     ArenaCommand arenaCommand = wrapper.getCommand();
                     if (!arenaCommand.permissionNode().isEmpty() && !this.hasPermission(sender, this.getPermissionNode(arenaCommand.permissionNode()))) {
@@ -714,7 +714,11 @@ public class BaseCommandExecutor implements TabExecutor {
         return completions;
     }
 
-    protected String getPermissionNode(String node) {
+    public Map<String, Set<CommandWrapper>> getCommandWrappers() {
+        return this.commandWrappers;
+    }
+
+    public String getPermissionNode(String node) {
         return "battlearena.command." + (this.permissionSubNode == null ? "" : this.permissionSubNode + ".") + node;
     }
 

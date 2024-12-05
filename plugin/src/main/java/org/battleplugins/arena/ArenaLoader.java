@@ -5,6 +5,7 @@ import org.battleplugins.arena.config.ArenaConfigParser;
 import org.battleplugins.arena.config.ParseException;
 import org.battleplugins.arena.event.arena.ArenaCreateExecutorEvent;
 import org.battleplugins.arena.event.arena.ArenaInitializeEvent;
+import org.battleplugins.arena.util.CommandInjector;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.Configuration;
@@ -45,6 +46,8 @@ record ArenaLoader(BattleArena battleArena, String mode, Configuration configura
             event.callEvent();
 
             command.setExecutor(executor);
+
+            CommandInjector.registerPermissions(arena.getName().toLowerCase(Locale.ROOT), executor);
 
             new ArenaInitializeEvent(arena).callEvent();
 

@@ -78,7 +78,9 @@ public class BattleArena extends JavaPlugin implements LoggerHolder {
 
     private Path arenasPath;
 
-    private boolean debugMode;
+    // Set to true before config is loaded in the event that the config
+    // fails to load and the additional debug information is required
+    private boolean debugMode = true;
 
     @Override
     public void onLoad() {
@@ -580,6 +582,8 @@ public class BattleArena extends JavaPlugin implements LoggerHolder {
     public void registerExecutor(String commandName, BaseCommandExecutor executor, String... aliases) {
         PluginCommand command = CommandInjector.inject(commandName, commandName.toLowerCase(Locale.ROOT), aliases);
         command.setExecutor(executor);
+
+        CommandInjector.registerPermissions(commandName.toLowerCase(Locale.ROOT), executor);
     }
 
     /**

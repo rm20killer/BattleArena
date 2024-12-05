@@ -1,11 +1,17 @@
 package org.battleplugins.arena.config;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.battleplugins.arena.BattleArena;
 import org.battleplugins.arena.config.context.ContextProvider;
+import org.battleplugins.arena.config.updater.ConfigUpdater;
+import org.battleplugins.arena.config.updater.UpdaterStep;
+import org.battleplugins.arena.util.Version;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
@@ -13,6 +19,7 @@ import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -44,6 +51,8 @@ public final class ArenaConfigParser {
 
     public static <T> T newInstance(@Nullable Path sourceFile, Class<T> type, ConfigurationSection configuration, @Nullable Object scope, @Nullable Object id) throws ParseException {
         T instance = newClassInstance(sourceFile, type);
+        updateConfig(type, configuration, instance, sourceFile);
+
         try {
             populateFields(sourceFile, instance, configuration, scope, id);
             if (instance instanceof PostProcessable postProcessable) {
@@ -530,6 +539,67 @@ public final class ArenaConfigParser {
         return sections;
     }
 
+    @SuppressWarnings("unchecked")
+    private static <T> void updateConfig(Class<T> type, ConfigurationSection configuration, T instance, @Nullable Path sourceFile) throws ParseException {
+        // Check if the config has an updater
+        if (!type.isAnnotationPresent(Updater.class)) {
+            return;
+        }
+
+        Updater updater = type.getDeclaredAnnotation(Updater.class);
+        try {
+            // Build the updaters and update the config if applicable
+            ConfigUpdater<T> configUpdater = (ConfigUpdater<T>) updater.value().getConstructor().newInstance();
+            Map<String, UpdaterStep<T>> updaters = configUpdater.buildUpdaters();
+            List<UpdaterEntry<T>> entries = updaters.entrySet().stream()
+                    .map(entry -> new UpdaterEntry<>(Version.of(entry.getKey()), entry.getValue()))
+                    .sorted(Comparator.comparing(UpdaterEntry::version))
+                    .toList();
+
+            // No entries - no need to update
+            if (entries.isEmpty()) {
+                return;
+            }
+
+            Version configVersion = Version.of(configuration.getString("config-version"));
+            Version latestVersion = entries.get(entries.size() - 1).version();
+
+            // If the config version is equal to (or greater?) than the latest version, we don't need to update
+            if (!configVersion.isGreaterThanOrEqualTo(latestVersion)) {
+                // Otherwise, we need to update
+                boolean updatersRan = false;
+                for (UpdaterEntry<T> entry : entries) {
+                    if (configVersion.isLessThan(entry.version())) {
+                        entry.step().update(configuration, instance);
+
+                        // Set the new config version
+                        configuration.set("config-version", entry.version().toString());
+
+                        BattleArena.getInstance().info("Updated config {} to version {}", type.getSimpleName(), entry.version());
+                        updatersRan = true;
+                    }
+                }
+
+                if (updatersRan) {
+                    // Save config
+                    if (configuration instanceof FileConfiguration fileConfig) {
+                        try {
+                            fileConfig.save(sourceFile.toFile());
+                        } catch (IOException e) {
+                            throw new ParseException("Failed to save configuration file " + sourceFile + " after processing updates", e)
+                                    .cause(ParseException.Cause.INTERNAL_ERROR)
+                                    .sourceFile(sourceFile);
+                        }
+                    }
+                }
+            }
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            throw new ParseException("Failed to instantiate updater for class " + type.getName(), e)
+                    .cause(ParseException.Cause.INTERNAL_ERROR)
+                    .sourceFile(sourceFile);
+        }
+    }
+
     private static ConfigurationSection toMemorySection(Map<String, Object> map) {
         MemoryConfiguration memoryConfig = new MemoryConfiguration();
         memoryConfig.addDefaults(map);
@@ -539,4 +609,6 @@ public final class ArenaConfigParser {
     public interface Parser<T> {
         T parse(Object object) throws ParseException;
     }
+
+    private record UpdaterEntry<T>(Version version, UpdaterStep<T> step) {}
 }

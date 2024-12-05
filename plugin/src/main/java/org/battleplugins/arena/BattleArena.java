@@ -584,6 +584,8 @@ public class BattleArena extends JavaPlugin implements LoggerHolder {
     public void registerExecutor(String commandName, BaseCommandExecutor executor, String... aliases) {
         PluginCommand command = CommandInjector.inject(commandName, commandName.toLowerCase(Locale.ROOT), aliases);
         command.setExecutor(executor);
+
+        CommandInjector.registerPermissions(commandName.toLowerCase(Locale.ROOT), executor);
     }
 
     /**

@@ -27,7 +27,6 @@ import org.battleplugins.arena.util.CommandInjector;
 import org.battleplugins.arena.util.LoggerHolder;
 import org.battleplugins.arena.util.Util;
 import org.battleplugins.arena.util.Version;
-import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.Configuration;
@@ -117,7 +116,6 @@ public class BattleArena extends JavaPlugin implements LoggerHolder {
         // Loads all arena loaders
         this.loadArenaLoaders(this.arenasPath);
 
-        new Metrics(this, PLUGIN_ID);
 
         // Cheeky little message about BattleTracker <3
         if (Bukkit.getPluginManager().getPlugin("BattleTracker") == null) {
